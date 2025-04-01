@@ -1,0 +1,2 @@
+WEB_SOCKET_HOST = "localhost"
+WEB_SOCKET_PORT = 1337

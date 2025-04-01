@@ -1,0 +1,33 @@
+[project]
+name = "pytest-ahriman"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Zaloog", email = "gramslars@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "pytest>=8.3.5",
+    "textual>=3.0.0",
+    "websockets>=15.0.1",
+]
+
+[project.entry-points.pytest11]
+ahriman = "pytest_ahriman.plugin"
+
+[project.scripts]
+pan = "pytest_ahriman:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.2.0",
+    "textual-dev>=1.7.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ['tests']
