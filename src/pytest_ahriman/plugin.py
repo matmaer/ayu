@@ -1,9 +1,10 @@
+import asyncio
 import pytest
 from pytest import Config, TestReport, Session, Item
 from _pytest.terminal import TerminalReporter
 from _pytest.nodes import Node
 
-from pprint import pprint
+from pytest_ahriman.event_dispatcher import send_event, check_connection
 
 
 def pytest_addoption(parser) -> None:
@@ -25,50 +26,50 @@ def pytest_configure(config: Config) -> None:
 class Ahriman:
     def __init__(self, config: Config):
         self.config = config
+        self.connected = False
+        try:
+            asyncio.run(check_connection())
+            print("connected")
+            self.connected = True
+        except OSError:
+            self.connected = False
+            print("Websocket not connected")
 
-    def pytest_collection_modifyitems(
-        self, session: Session, config: Config, items: TestReport
-    ):
-        return
-        for item in items:
-            print(f"item: {item}")
-
+    # build test tree
     def pytest_collection_finish(self, session: Session):
-        build_tree(items=session.items)
+        if self.connected:
+            tree = build_tree(items=session.items)
+            asyncio.run(send_event(msg=f"{tree}"))
         return
 
-        for item in session.items:
-            print()
-            print(f"list: {item.listchain()[1:]}")
-            print(f"item_node: {item.nodeid}")
-            print(f"item: {item}")
-
-    # Infos during run
+    # gather status updates during run
     @pytest.hookimpl(tryfirst=True)
     def pytest_runtest_logreport(self, report: TestReport):
         if report.when == "call":  # After test execution
-            print(f"duration: {report.duration:.3f}")
-            print(f"nodeid: {report.nodeid}")
-            print(f"dir:{report.location[0]}")
-            print(f"line_no:{report.location[1]}")
-            print(f"test:{report.location[2]}")
-            print(f"{report.outcome}")
+            if self.connected:
+                asyncio.run(
+                    send_event(msg=f"report: {report.nodeid}: {report.outcome}")
+                )
+            # print(f"duration: {report.duration:.3f}")
+            # print(f"nodeid: {report.nodeid}")
+            # print(f"dir:{report.location[0]}")
+            # print(f"line_no:{report.location[1]}")
+            # print(f"test:{report.location[2]}")
+            # print(f"{report.outcome}")
 
-    # Infos during run
+    # summary after run for each tests
     @pytest.hookimpl(tryfirst=True)
     def pytest_terminal_summary(self, terminalreporter: TerminalReporter):
-        return
         for report in terminalreporter.stats[""]:
-            if report.when == "call":
-                return
-            print("## Summary ##")
-            print(f"when: {report.when}")
-            print(f"cap: {report.caplog}")
-            print(f"long: {report.longreprtext}")
-            print(f"dur: {report.duration}")
-            print(f"outcome: {report.outcome}")
-            print(f"err: {report.capstderr}")
-            print("## End ##")
+            if report.when == "teardown":
+                print("## Summary ##")
+                print(f"when: {report.when}")
+                print(f"cap: {report.caplog}")
+                print(f"long: {report.longreprtext}")
+                print(f"dur: {report.duration}")
+                print(f"outcome: {report.outcome}")
+                print(f"err: {report.capstderr}")
+                print("## End ##")
 
 
 def build_tree(items: list[Item]):
@@ -120,5 +121,4 @@ def build_tree(items: list[Item]):
                 tree[root.name] = create_node(root)
             add_node(parts_to_collect[1:], tree[root.name])
 
-    pprint(tree, sort_dicts=False)
     return tree
