@@ -11,5 +11,5 @@ class Event:
 
     def serialize(self) -> str:
         return json.dumps(
-            {"type": self.event_type, "payload": self.event_payload},
+            {"type": self.event_type, "payload": self.event_payload}, indent=4
         )

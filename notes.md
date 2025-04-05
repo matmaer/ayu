@@ -1,7 +1,6 @@
 # general
 - has to be a pytest plugin?
 - install plugin on the fly?
-- send to websocket
 
 # pytest-plugin
 - intermediate test results for test tree update
@@ -11,6 +10,7 @@
 - Test Tree for overview
     - test node: (refresh symbol) (marker) DIR/DIR::CLASS::TEST (status)
         - status values: queued/running/passed/failed/skipped
+        - use `render_label()`
     - markers (fav)
 - Final Report Stats Table
 - Overview by failed/skipped/passed

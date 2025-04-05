@@ -91,7 +91,20 @@ class Ahriman:
                 print("## End ##")
 
 
-def build_tree(items: list[Item]):
+def build_tree(items: list[Item]) -> dict:
+    tree = {
+        "0": f"{items[0].parent.parent.parent.parent.parent.parent}",
+        "1": f"{items[0].parent.parent.parent.parent.parent}",
+        "2": f"{items[0].parent.parent.parent.parent}",
+        "3": f"{items[0].parent.parent.parent}",
+        "4": f"{items[0].parent.parent}",
+        "5": f"{items[0].parent}",
+        "6": f"{items[0]}",
+    }
+    return tree
+
+
+def build_tree1(items: list[Item]) -> dict:
     def create_node(
         node: Node, parent_name: Node | None = None, parent_type: Node | None = None
     ) -> dict:

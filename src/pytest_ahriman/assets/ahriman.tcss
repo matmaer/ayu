@@ -1,3 +1,7 @@
 Log {
-    height: 20;
+    height: 50;
+}
+
+*:focus {
+    background: $error;
 }
