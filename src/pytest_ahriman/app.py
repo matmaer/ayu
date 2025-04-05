@@ -2,7 +2,7 @@ from pathlib import Path
 from textual import work
 from textual.app import App
 from textual.events import Key
-from textual.widgets import Log
+from textual.widgets import Log, Header
 
 from pytest_ahriman.event_dispatcher import EventDispatcher
 
@@ -15,13 +15,14 @@ class AhrimanApp(App):
         super().__init__(*args, **kwargs)
 
     def compose(self):
+        yield Header()
         yield Log(highlight=True)
 
     async def on_load(self):
         self.start_socket()
 
     def on_mount(self):
-        self.query_one(Log).write_line("Hello")
+        # self.query_one(Log).write_line("Hello")
         self.dispatcher.register_handler(handler=lambda msg: self.update_log(msg))
 
     @work(exclusive=True)
@@ -31,16 +32,17 @@ class AhrimanApp(App):
         await self.dispatcher.start()
 
     def on_key(self, event: Key):
+        self.query_one(Log).write_line(20 * "#")
         if event.key == "space":
-            self.notify("pressed")
-            self.notify(f"{self.workers}")
             self.run_test()
+        if event.key == "c":
+            self.query_one(Log).clear()
 
     @work(thread=True)
     def run_test(self):
         import subprocess
 
-        subprocess.run("pytest", capture_output=True)
+        subprocess.run(["pytest"], capture_output=True)
 
     def update_log(self, msg):
         self.query_one(Log).write_line(f"{msg}")

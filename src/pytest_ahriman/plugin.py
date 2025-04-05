@@ -5,6 +5,8 @@ from _pytest.terminal import TerminalReporter
 from _pytest.nodes import Node
 
 from pytest_ahriman.event_dispatcher import send_event, check_connection
+from pytest_ahriman.classes.event import Event
+from pytest_ahriman.utils import EventType
 
 
 def pytest_addoption(parser) -> None:
@@ -39,23 +41,38 @@ class Ahriman:
     def pytest_collection_finish(self, session: Session):
         if self.connected:
             tree = build_tree(items=session.items)
-            asyncio.run(send_event(msg=f"{tree}"))
+            asyncio.run(
+                send_event(
+                    event=Event(
+                        event_type=EventType.COLLECTION,
+                        event_payload=tree,
+                    )
+                )
+            )
         return
 
     # gather status updates during run
-    @pytest.hookimpl(tryfirst=True)
+    @pytest.hookimpl(trylast=True)
     def pytest_runtest_logreport(self, report: TestReport):
-        if report.when == "call":  # After test execution
-            if self.connected:
-                asyncio.run(
-                    send_event(msg=f"report: {report.nodeid}: {report.outcome}")
+        is_relevant = (report.when == "call") or (
+            (report.when == "setup") and (report.outcome in ["failed", "skipped"])
+        )
+
+        if self.connected and is_relevant:
+            asyncio.run(
+                send_event(
+                    event=Event(
+                        event_type=EventType.OUTCOME,
+                        event_payload={
+                            "nodeid": report.nodeid,
+                            "outcome": report.outcome,
+                        },
+                    )
                 )
-            # print(f"duration: {report.duration:.3f}")
-            # print(f"nodeid: {report.nodeid}")
-            # print(f"dir:{report.location[0]}")
-            # print(f"line_no:{report.location[1]}")
-            # print(f"test:{report.location[2]}")
-            # print(f"{report.outcome}")
+            )
+            # asyncio.run(
+            #     send_event(msg=f"report: {report.when} {report.nodeid} {report.outcome}")
+            # )
 
     # summary after run for each tests
     @pytest.hookimpl(tryfirst=True)
@@ -69,6 +86,8 @@ class Ahriman:
                 print(f"dur: {report.duration}")
                 print(f"outcome: {report.outcome}")
                 print(f"err: {report.capstderr}")
+                print(f"line_no:{report.location[1]}")
+                print(f"test:{report.location[2]}")
                 print("## End ##")
 
 
@@ -79,7 +98,7 @@ def build_tree(items: list[Item]):
         return {
             "name": node.name,
             "id": node.nodeid,
-            "path": node.path,
+            "path": node.path.as_posix(),
             "parent_name": parent_name,
             "parent_type": parent_type,
             "type": type(node).__name__.upper(),

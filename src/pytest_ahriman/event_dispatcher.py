@@ -5,6 +5,7 @@ from websockets.exceptions import ConnectionClosedOK
 import asyncio
 
 from pytest_ahriman.constants import WEB_SOCKET_HOST, WEB_SOCKET_PORT
+from pytest_ahriman.classes.event import Event
 
 
 class EventDispatcher:
@@ -58,12 +59,12 @@ class EventDispatcher:
 
 # send events
 async def send_event(
-    msg: str, host: str = WEB_SOCKET_HOST, port: int = WEB_SOCKET_PORT
+    event: Event, host: str = WEB_SOCKET_HOST, port: int = WEB_SOCKET_PORT
 ):
     uri = f"ws://{host}:{port}"
 
     async with connect(uri) as websocket:
-        await websocket.send(f"{msg}")
+        await websocket.send(message=event.serialize())
 
 
 async def check_connection(host: str = WEB_SOCKET_HOST, port: int = WEB_SOCKET_PORT):
