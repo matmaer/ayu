@@ -36,12 +36,11 @@ class EventDispatcher:
                         handler = self.event_handler[EventType.COLLECTION]
                     case EventType.OUTCOME:
                         handler = self.event_handler[EventType.OUTCOME]
+                    case EventType.REPORT:
+                        handler = self.event_handler[EventType.REPORT]
 
             if handler:
                 handler(event_payload)
-
-                # handler = self.event_handler["test"]
-                # handler(msg)
 
             self.data = msg
 

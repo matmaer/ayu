@@ -58,6 +58,7 @@ class Ahriman:
             (report.when == "setup") and (report.outcome in ["failed", "skipped"])
         )
 
+        print(f"is connected: {self.connected}")
         if self.connected and is_relevant:
             asyncio.run(
                 send_event(
@@ -70,13 +71,11 @@ class Ahriman:
                     )
                 )
             )
-            # asyncio.run(
-            #     send_event(msg=f"report: {report.when} {report.nodeid} {report.outcome}")
-            # )
 
     # summary after run for each tests
     @pytest.hookimpl(tryfirst=True)
     def pytest_terminal_summary(self, terminalreporter: TerminalReporter):
+        return
         for report in terminalreporter.stats.get("", []):
             if report.when == "teardown":
                 print("## Summary ##")
