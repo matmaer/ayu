@@ -5,6 +5,8 @@ from textual.events import Key
 from textual.widgets import Log, Header
 
 from pytest_ahriman.event_dispatcher import EventDispatcher
+from pytest_ahriman.utils import EventType
+from pytest_ahriman.widgets.navigation import TestTree
 
 
 class AhrimanApp(App):
@@ -16,6 +18,7 @@ class AhrimanApp(App):
 
     def compose(self):
         yield Header()
+        yield TestTree(label="bla")
         yield Log(highlight=True)
 
     async def on_load(self):
@@ -23,7 +26,10 @@ class AhrimanApp(App):
 
     def on_mount(self):
         # self.query_one(Log).write_line("Hello")
-        self.dispatcher.register_handler(handler=lambda msg: self.update_log(msg))
+        # self.dispatcher.register_handler(handler=lambda msg: self.update_log(msg))
+        self.dispatcher.register_handler(
+            event_type=EventType.OUTCOME, handler=lambda msg: self.update_log(msg)
+        )
 
     @work(exclusive=True)
     async def start_socket(self):

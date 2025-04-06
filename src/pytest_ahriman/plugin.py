@@ -77,7 +77,7 @@ class Ahriman:
     # summary after run for each tests
     @pytest.hookimpl(tryfirst=True)
     def pytest_terminal_summary(self, terminalreporter: TerminalReporter):
-        for report in terminalreporter.stats[""]:
+        for report in terminalreporter.stats.get("", []):
             if report.when == "teardown":
                 print("## Summary ##")
                 print(f"when: {report.when}")
@@ -91,7 +91,7 @@ class Ahriman:
                 print("## End ##")
 
 
-def build_tree(items: list[Item]) -> dict:
+def build_own_tree(items: list[Item]) -> dict:
     tree = {
         "0": f"{items[0].parent.parent.parent.parent.parent.parent}",
         "1": f"{items[0].parent.parent.parent.parent.parent}",
@@ -104,13 +104,14 @@ def build_tree(items: list[Item]) -> dict:
     return tree
 
 
-def build_tree1(items: list[Item]) -> dict:
+def build_tree(items: list[Item]) -> dict:
     def create_node(
         node: Node, parent_name: Node | None = None, parent_type: Node | None = None
     ) -> dict:
         return {
             "name": node.name,
             "id": node.nodeid,
+            "mark": f"{node.own_markers}",
             "path": node.path.as_posix(),
             "parent_name": parent_name,
             "parent_type": parent_type,

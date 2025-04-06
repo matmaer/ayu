@@ -6,6 +6,7 @@ import asyncio
 
 from pytest_ahriman.constants import WEB_SOCKET_HOST, WEB_SOCKET_PORT
 from pytest_ahriman.classes.event import Event
+from pytest_ahriman.utils import EventType
 
 
 class EventDispatcher:
@@ -14,7 +15,7 @@ class EventDispatcher:
         self.port = port
         self.running = False
         self.server = None
-        self.event_handler: dict[Any, Any] = {}
+        self.event_handler: dict[EventType | None, Any] = {}
 
         self.data = ""
 
@@ -26,24 +27,35 @@ class EventDispatcher:
             except ConnectionClosedOK:
                 break
 
-            print(f"msg: {msg}")
             if self.event_handler:
-                handler = self.event_handler["test"]
-                handler(msg)
+                event = Event.deserialize(msg)
+                event_type = event.event_type
+                event_payload = event.event_payload
+                match event_type:
+                    case EventType.COLLECTION:
+                        handler = self.event_handler[EventType.COLLECTION]
+                    case EventType.OUTCOME:
+                        handler = self.event_handler[EventType.OUTCOME]
+
+            if handler:
+                handler(event_payload)
+
+                # handler = self.event_handler["test"]
+                # handler(msg)
 
             self.data = msg
 
-    def register_handler(self, handler: Callable):
+    def register_handler(self, event_type: EventType, handler: Callable):
         # with asyncio.Lock():
-        self.event_handler["test"] = handler
+        self.event_handler[event_type] = handler
+
+    def unregister_handler(self, event_type: EventType):
+        # with asyncio.Lock():
+        self.event_handler.pop(event_type)
 
     # Start Websocket Server
     async def start(self):
         asyncio.create_task(self.start_socket_server(), name="socket")
-
-        # asyncio.run(
-        #     asyncio.run(self.run())
-        # )
 
     def stop(self):
         asyncio.get_running_loop().create_future()
