@@ -3,7 +3,7 @@ Log {
     height: 2fr;
 }
 TestTree {
-    height: 1fr;
+    height: auto;
 }
 
 *:focus {

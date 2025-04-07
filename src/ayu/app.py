@@ -63,8 +63,8 @@ class AyuApp(App):
         import subprocess
 
         subprocess.run(
-            # ["python","-m", "pytest"],
-            ["uv", "run", "--with", "../ayu", "pytest"],
+            ["python", "-m", "pytest"],
+            # ["uv", "run", "--with", "../ayu", "pytest"],
             capture_output=True,
             # executable=Path(sys.executable),
             # cwd=Path.cwd(),

@@ -1,4 +1,5 @@
 import asyncio
+from typing import Any
 import pytest
 from pytest import Config, TestReport, Session, Item
 from _pytest.terminal import TerminalReporter
@@ -6,7 +7,7 @@ from _pytest.nodes import Node
 
 from ayu.event_dispatcher import send_event, check_connection
 from ayu.classes.event import Event
-from ayu.utils import EventType
+from ayu.utils import EventType, NodeType
 
 
 def pytest_addoption(parser) -> None:
@@ -41,7 +42,7 @@ class Ayu:
     def pytest_collection_finish(self, session: Session):
         print("Connected to Ayu")
         if self.connected:
-            tree = build_tree(items=session.items)
+            tree = build_own_tree(items=session.items)
             asyncio.run(
                 send_event(
                     event=Event(
@@ -102,15 +103,32 @@ class Ayu:
 
 
 def build_own_tree(items: list[Item]) -> dict:
-    tree = {
-        "0": f"{items[0].parent.parent.parent.parent.parent.parent}",
-        "1": f"{items[0].parent.parent.parent.parent.parent}",
-        "2": f"{items[0].parent.parent.parent.parent}",
-        "3": f"{items[0].parent.parent.parent}",
-        "4": f"{items[0].parent.parent}",
-        "5": f"{items[0].parent}",
-        "6": f"{items[0]}",
-    }
+    def create_node(
+        node: Node, parent_name: Node | None = None, parent_type: Node | None = None
+    ) -> dict[Any, Any]:
+        return {
+            "name": node.name,
+            "id": node.nodeid,
+            "markers": f"{node.own_markers}",
+            "path": node.path.as_posix(),
+            "parent_name": parent_name,
+            "parent_type": parent_type,
+            "type": type(node).__name__.upper(),
+            "children": [],
+        }
+
+    # tree = {
+    #     i:f'{item.listchain()[1:]}' for i,item in enumerate(items)
+    # }
+    tree: dict[Any, Any] = {}
+    for item in items:
+        # gets all parents except session
+        tree[f"{item}"] = []
+        parts_to_collect = item.listchain()[1:]
+        while parts_to_collect:
+            current = parts_to_collect.pop(0)
+            if type(current).__name__.upper() == NodeType.FUNCTION:
+                tree[f"{item}"] += [current.parent.nodeid]
     return tree
 
 
