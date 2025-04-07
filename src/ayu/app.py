@@ -2,7 +2,7 @@ from pathlib import Path
 from textual import work
 from textual.app import App
 from textual.events import Key
-from textual.widgets import Log, Header
+from textual.widgets import Log, Header, Collapsible
 
 from ayu.event_dispatcher import EventDispatcher
 from ayu.utils import EventType
@@ -18,16 +18,19 @@ class AyuApp(App):
 
     def compose(self):
         yield Header()
-        yield TestTree(label="bla")
+        yield TestTree(label="Tests")
         outcome_log = Log(highlight=True, id="log_outcome")
         outcome_log.border_title = "Outcome"
         report_log = Log(highlight=True, id="log_report")
         report_log.border_title = "Report"
         collection_log = Log(highlight=True, id="log_collection")
         collection_log.border_title = "Collection"
-        yield outcome_log
-        yield report_log
-        yield collection_log
+        with Collapsible(title="Outcome"):
+            yield outcome_log
+        with Collapsible(title="Report"):
+            yield report_log
+        with Collapsible(title="Collection", collapsed=False):
+            yield collection_log
 
     async def on_load(self):
         self.start_socket()
@@ -40,10 +43,10 @@ class AyuApp(App):
         self.dispatcher.register_handler(
             event_type=EventType.REPORT, handler=lambda msg: self.update_report_log(msg)
         )
-        self.dispatcher.register_handler(
-            event_type=EventType.COLLECTION,
-            handler=lambda msg: self.update_collection_log(msg),
-        )
+        # self.dispatcher.register_handler(
+        #     event_type=EventType.COLLECTION,
+        #     handler=lambda msg: self.update_collection_log(msg),
+        # )
 
     @work(exclusive=True)
     async def start_socket(self):

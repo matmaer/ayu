@@ -7,7 +7,7 @@ from _pytest.nodes import Node
 
 from ayu.event_dispatcher import send_event, check_connection
 from ayu.classes.event import Event
-from ayu.utils import EventType, NodeType
+from ayu.utils import EventType
 
 
 def pytest_addoption(parser) -> None:
@@ -42,7 +42,7 @@ class Ayu:
     def pytest_collection_finish(self, session: Session):
         print("Connected to Ayu")
         if self.connected:
-            tree = build_own_tree(items=session.items)
+            tree = build_dict_tree(items=session.items)
             asyncio.run(
                 send_event(
                     event=Event(
@@ -102,14 +102,14 @@ class Ayu:
                 print("## End ##")
 
 
-def build_own_tree(items: list[Item]) -> dict:
+def build_dict_tree(items: list[Item]) -> dict:
     def create_node(
         node: Node, parent_name: Node | None = None, parent_type: Node | None = None
     ) -> dict[Any, Any]:
         return {
             "name": node.name,
             "id": node.nodeid,
-            "markers": f"{node.own_markers}",
+            "markers": [mark.name for mark in node.own_markers],
             "path": node.path.as_posix(),
             "parent_name": parent_name,
             "parent_type": parent_type,
@@ -117,69 +117,43 @@ def build_own_tree(items: list[Item]) -> dict:
             "children": [],
         }
 
-    # tree = {
-    #     i:f'{item.listchain()[1:]}' for i,item in enumerate(items)
-    # }
-    tree: dict[Any, Any] = {}
-    for item in items:
-        # gets all parents except session
-        tree[f"{item}"] = []
-        parts_to_collect = item.listchain()[1:]
-        while parts_to_collect:
-            current = parts_to_collect.pop(0)
-            if type(current).__name__.upper() == NodeType.FUNCTION:
-                tree[f"{item}"] += [current.parent.nodeid]
-    return tree
-
-
-def build_tree(items: list[Item]) -> dict:
-    def create_node(
-        node: Node, parent_name: Node | None = None, parent_type: Node | None = None
-    ) -> dict:
-        return {
-            "name": node.name,
-            "id": node.nodeid,
-            "mark": f"{node.own_markers}",
-            "path": node.path.as_posix(),
-            "parent_name": parent_name,
-            "parent_type": parent_type,
-            "type": type(node).__name__.upper(),
-            "children": [],
-        }
-
-    def add_node(node_list: list[Node], tree: dict):
+    def add_node(node_list: list[Node], sub_tree: dict):
         if not node_list:
             return
 
-        node = node_list.pop(0)
-        data = create_node(
-            node=node,
-            parent_type=type(node.parent).__name__.upper(),
-            parent_name=node.parent.name,
+        # take root node
+        current_node = node_list.pop(0)
+        node_dict = create_node(
+            node=current_node,
+            parent_name=current_node.parent.name,
+            parent_type=type(current_node.parent).__name__.upper(),
         )
 
-        if "children" not in tree:
-            tree["children"] = []
-
         existing_node = next(
-            (child for child in tree["children"] if child["name"] == data["name"]), None
+            (
+                node
+                for node in sub_tree["children"]
+                if node["id"] == current_node.nodeid
+            ),
+            None,
         )
 
         if existing_node is None:
-            tree["children"].append(data)
-            existing_node = data
+            sub_tree["children"].append(node_dict)
+            existing_node = node_dict
 
-        add_node(node_list=node_list, tree=existing_node)
+        add_node(
+            node_list=node_list,
+            sub_tree=existing_node,
+        )
 
-    tree = {}
+    tree: dict[Any, Any] = {}
+    root = items[0].listchain()[1]
+    tree[root.name] = create_node(node=root)
 
     for item in items:
+        # gets all parents except session
         parts_to_collect = item.listchain()[1:]
-        if parts_to_collect:
-            root = parts_to_collect[0]
+        add_node(node_list=parts_to_collect[1:], sub_tree=tree[root.name])
 
-            if root.name not in tree:
-                tree[root.name] = create_node(root)
-            add_node(parts_to_collect[1:], tree[root.name])
-
-    return tree
+    return {"tree": tree, "meta": {"test_count": len(items)}}

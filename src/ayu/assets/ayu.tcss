@@ -1,11 +1,20 @@
 Log {
     border: $primary;
-    height: 2fr;
+    max-height: 20;
+    height:auto;
 }
 TestTree {
+    height: auto;
+}
+Collapsible {
     height: auto;
 }
 
 *:focus {
     background: $error;
+}
+
+#aa {
+    margin:0;
+    padding:0;
 }
