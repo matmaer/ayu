@@ -1,5 +1,5 @@
 [project]
-name = "pytest-ahriman"
+name = "ayu"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -14,10 +14,10 @@ dependencies = [
 ]
 
 [project.entry-points.pytest11]
-ahriman = "pytest_ahriman.plugin"
+ayu-plugin = "ayu.plugin"
 
 [project.scripts]
-pan = "pytest_ahriman:main"
+ayu = "ayu:main"
 
 [build-system]
 requires = ["hatchling"]

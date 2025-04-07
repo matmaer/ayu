@@ -1,7 +1,0 @@
-Log {
-    height: 40;
-}
-
-*:focus {
-    background: $error;
-}

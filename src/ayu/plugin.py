@@ -4,28 +4,28 @@ from pytest import Config, TestReport, Session, Item
 from _pytest.terminal import TerminalReporter
 from _pytest.nodes import Node
 
-from pytest_ahriman.event_dispatcher import send_event, check_connection
-from pytest_ahriman.classes.event import Event
-from pytest_ahriman.utils import EventType
+from ayu.event_dispatcher import send_event, check_connection
+from ayu.classes.event import Event
+from ayu.utils import EventType
 
 
 def pytest_addoption(parser) -> None:
     parser.addoption(
-        "--disable-ahriman",
+        "--disable-ayu",
         "--da",
         action="store_true",
         default=False,
-        help="Enable Orisa plugin functionality",
+        help="Enable Ayu plugin functionality",
     )
 
 
 @pytest.hookimpl(trylast=True)
 def pytest_configure(config: Config) -> None:
-    if not config.getoption("--disable-ahriman"):
-        config.pluginmanager.register(Ahriman(config), "ahriman_plugin")
+    if not config.getoption("--disable-ayu"):
+        config.pluginmanager.register(Ayu(config), "ayu_plugin")
 
 
-class Ahriman:
+class Ayu:
     def __init__(self, config: Config):
         self.config = config
         self.connected = False
@@ -75,6 +75,16 @@ class Ahriman:
     # summary after run for each tests
     @pytest.hookimpl(tryfirst=True)
     def pytest_terminal_summary(self, terminalreporter: TerminalReporter):
+        asyncio.run(
+            send_event(
+                event=Event(
+                    event_type=EventType.REPORT,
+                    event_payload={
+                        "report": f"{terminalreporter.stats.get('', [])}",
+                    },
+                )
+            )
+        )
         return
         for report in terminalreporter.stats.get("", []):
             if report.when == "teardown":

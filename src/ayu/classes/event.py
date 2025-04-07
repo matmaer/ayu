@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 
-from pytest_ahriman.utils import EventType
+from ayu.utils import EventType
 
 
 @dataclass

@@ -1,8 +1,8 @@
-from pytest_ahriman.app import AhrimanApp
+from ayu.app import AyuApp
 
 
 def main():
-    app = AhrimanApp()
+    app = AyuApp()
     app.run(
         # inline=True
     )

@@ -1,0 +1,11 @@
+Log {
+    border: $primary;
+    height: 2fr;
+}
+TestTree {
+    height: 1fr;
+}
+
+*:focus {
+    background: $error;
+}

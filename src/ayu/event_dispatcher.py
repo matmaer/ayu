@@ -4,9 +4,9 @@ from websockets.asyncio.client import connect
 from websockets.exceptions import ConnectionClosedOK
 import asyncio
 
-from pytest_ahriman.constants import WEB_SOCKET_HOST, WEB_SOCKET_PORT
-from pytest_ahriman.classes.event import Event
-from pytest_ahriman.utils import EventType
+from ayu.constants import WEB_SOCKET_HOST, WEB_SOCKET_PORT
+from ayu.classes.event import Event
+from ayu.utils import EventType
 
 
 class EventDispatcher:
