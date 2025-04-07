@@ -39,6 +39,7 @@ class Ayu:
 
     # build test tree
     def pytest_collection_finish(self, session: Session):
+        print("Connected to Ayu")
         if self.connected:
             tree = build_tree(items=session.items)
             asyncio.run(
@@ -58,7 +59,6 @@ class Ayu:
             (report.when == "setup") and (report.outcome in ["failed", "skipped"])
         )
 
-        print(f"is connected: {self.connected}")
         if self.connected and is_relevant:
             asyncio.run(
                 send_event(
@@ -75,16 +75,17 @@ class Ayu:
     # summary after run for each tests
     @pytest.hookimpl(tryfirst=True)
     def pytest_terminal_summary(self, terminalreporter: TerminalReporter):
-        asyncio.run(
-            send_event(
-                event=Event(
-                    event_type=EventType.REPORT,
-                    event_payload={
-                        "report": f"{terminalreporter.stats.get('', [])}",
-                    },
+        if self.connected:
+            asyncio.run(
+                send_event(
+                    event=Event(
+                        event_type=EventType.REPORT,
+                        event_payload={
+                            "report": f"{terminalreporter.stats.get('', [])}",
+                        },
+                    )
                 )
             )
-        )
         return
         for report in terminalreporter.stats.get("", []):
             if report.when == "teardown":

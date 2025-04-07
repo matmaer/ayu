@@ -24,7 +24,7 @@ class AyuApp(App):
         report_log = Log(highlight=True, id="log_report")
         report_log.border_title = "Report"
         collection_log = Log(highlight=True, id="log_collection")
-        collection_log.border_title = "Colleciton"
+        collection_log.border_title = "Collection"
         yield outcome_log
         yield report_log
         yield collection_log
@@ -33,8 +33,6 @@ class AyuApp(App):
         self.start_socket()
 
     def on_mount(self):
-        # self.query_one(Log).write_line("Hello")
-        # self.dispatcher.register_handler(handler=lambda msg: self.update_log(msg))
         self.dispatcher.register_handler(
             event_type=EventType.OUTCOME,
             handler=lambda msg: self.update_outcome_log(msg),
@@ -64,7 +62,13 @@ class AyuApp(App):
     def run_test(self):
         import subprocess
 
-        subprocess.run(["pytest"], capture_output=True)
+        subprocess.run(
+            # ["python","-m", "pytest"],
+            ["uv", "run", "--with", "../ayu", "pytest"],
+            capture_output=True,
+            # executable=Path(sys.executable),
+            # cwd=Path.cwd(),
+        )
 
     def update_outcome_log(self, msg):
         self.query_one("#log_outcome", Log).write_line(f"{msg}")
