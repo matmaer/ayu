@@ -20,7 +20,7 @@ class TestTree(Tree):
             handler=lambda data: self.build_tree(data),
         )
         self.action_refresh_tree()
-        self.expand = True
+        self.auto_expand = True
 
         return super().on_mount()
 
