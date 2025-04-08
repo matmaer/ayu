@@ -75,8 +75,6 @@ class TestTree(Tree):
             else:
                 parent.add_leaf(key, data=key)
 
-        # self.notify(f'{self._tree_nodes}', timeout=10)
-
     def update_test_outcome(self, test_result: dict):
         for node in self._tree_nodes.values():
             if node.data and (node.data.get("nodeid") == test_result.get("nodeid")):
@@ -104,7 +102,6 @@ class TestTree(Tree):
     def action_mark_test(
         self, node: TreeNode | None = None, parent_val: bool | None = None
     ):
-        # self.notify(f'{self._tree_lines[self.cursor_line]}')
         if node is None:
             node = self.cursor_node
 
@@ -126,10 +123,6 @@ class TestTree(Tree):
                 parent_node.data["favourite"] = node.data["favourite"]
                 parent_node.label = self.update_node_label(node=parent_node)
                 parent_node = parent_node.parent
-
-        # self.notify(f"{self.cursor_node.data['type']}")
-        # self.notify(f"{self.cursor_node.data}")
-        # Run Test
 
     def update_node_label(self, node: TreeNode) -> str:
         fav_substring = "⭐ " if node.data["favourite"] else ""
