@@ -124,6 +124,8 @@ def build_dict_tree(items: list[Item]) -> dict:
             "parent_name": parent_name,
             "parent_type": parent_type,
             "type": type(node).__name__.upper(),
+            "favourite": False,
+            "status": "",
             "children": [],
         }
 

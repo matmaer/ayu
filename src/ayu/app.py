@@ -2,7 +2,7 @@ from pathlib import Path
 from textual import work
 from textual.app import App
 from textual.events import Key
-from textual.widgets import Log, Header, Collapsible
+from textual.widgets import Log, Header, Footer, Collapsible
 
 from ayu.event_dispatcher import EventDispatcher
 from ayu.utils import EventType
@@ -18,6 +18,7 @@ class AyuApp(App):
 
     def compose(self):
         yield Header()
+        yield Footer()
         yield TestTree(label="Tests")
         outcome_log = Log(highlight=True, id="log_outcome")
         outcome_log.border_title = "Outcome"

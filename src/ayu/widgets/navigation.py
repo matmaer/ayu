@@ -13,7 +13,12 @@ from ayu.constants import OUTCOME_SYMBOLS
 
 class TestTree(Tree):
     app: "AyuApp"
-    BINDINGS = [Binding("r", "refresh_tree", "Refresh")]
+    BINDINGS = [
+        Binding("r", "refresh_tree", "Refresh"),
+        Binding("j,down", "cursor_down"),
+        Binding("k,up", "cursor_up"),
+        Binding("m", "mark_test", "⭐ Mark"),
+    ]
     show_root = False
     auto_expand = True
     guide_depth = 2
@@ -40,8 +45,8 @@ class TestTree(Tree):
         import subprocess
 
         subprocess.run(
-            # ["pytest", "--co"],
-            ["uv", "run", "--with", "../ayu", "pytest", "--co"],
+            ["pytest", "--co"],
+            # ["uv", "run", "--with", "../ayu", "-U", "pytest", "--co"],
             capture_output=True,
         )
 
@@ -76,7 +81,9 @@ class TestTree(Tree):
         for node in self._tree_nodes.values():
             if node.data and (node.data.get("nodeid") == test_result.get("nodeid")):
                 outcome = test_result["outcome"]
-                node.label = f"{node.data['name']} {OUTCOME_SYMBOLS[outcome]}"
+                # node.label = f"{node.label} {OUTCOME_SYMBOLS[outcome]}"
+                node.data["status"] = outcome
+                node.label = self.update_node_label(node=node)
 
     def mark_tests_as_running(self, nodeids: list[str]) -> None:
         for node in self._tree_nodes.values():
@@ -85,4 +92,35 @@ class TestTree(Tree):
                 # and isinstance(node.data, dict)
                 and (node.data.get("nodeid") in nodeids)
             ):
-                node.label = f"{node.data['name']} {OUTCOME_SYMBOLS['queued']}"
+                # node.label = f"{node.data['name']} {OUTCOME_SYMBOLS['queued']}"
+                node.data["status"] = "queued"
+                node.label = self.update_node_label(node=node)
+
+    def on_tree_node_selected(self, event: Tree.NodeSelected):
+        ...
+        # self.notify(f"{event.node.data['name']}")
+        # Run Test
+
+    def action_mark_test(self, node: TreeNode | None = None):
+        # self.notify(f'{self._tree_lines[self.cursor_line]}')
+        if node is None:
+            node = self.cursor_node
+
+        if node.data["children"]:
+            for child in node.data["children"]:
+                self.action_mark_test(node=child)
+        else:
+            node.data["favourite"] = not node.data["favourite"]
+            node.label = self.update_node_label(node=node)
+
+        # self.notify(f"{self.cursor_node.data['type']}")
+        # self.notify(f"{self.cursor_node.data}")
+        # Run Test
+
+    def update_node_label(self, node: TreeNode) -> str:
+        fav_substring = "⭐ " if node.data["favourite"] else ""
+        status_substring = (
+            f" {OUTCOME_SYMBOLS[node.data['status']]}" if node.data["status"] else ""
+        )
+
+        return f"{fav_substring}{node.data['name']}{status_substring}"
