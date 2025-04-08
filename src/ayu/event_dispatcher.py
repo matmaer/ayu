@@ -50,8 +50,6 @@ class EventDispatcher:
             self.data = msg
 
     def register_handler(self, event_type: EventType, handler: Callable):
-        # with asyncio.Lock():
-        # self.event_handler[event_type] = handler
         self.event_handler[event_type].append(handler)
 
     def unregister_handler(self, event_type: EventType):

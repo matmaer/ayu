@@ -7,7 +7,7 @@ from textual.binding import Binding
 from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
 
-from ayu.utils import EventType
+from ayu.utils import EventType, get_nice_tooltip
 from ayu.constants import OUTCOME_SYMBOLS
 
 
@@ -50,6 +50,11 @@ class TestTree(Tree):
             capture_output=True,
         )
 
+    def on_mouse_move(self):
+        if self.hover_line != -1:
+            data = self._tree_lines[self.hover_line].node.data
+            self.tooltip = get_nice_tooltip(node_data=data)
+
     def build_tree(self, collection_data: dict[Any, Any]):
         if collection_data:
             self.clear()
@@ -66,7 +71,7 @@ class TestTree(Tree):
                     )
                     add_children(child_list=child["children"], parent_node=new_node)
                 else:
-                    parent_node.add_leaf(label=child["name"], data=child)
+                    new_node = parent_node.add_leaf(label=child["name"], data=child)
 
         for key, value in tree_data.items():
             if isinstance(value, dict) and "children" in value and value["children"]:

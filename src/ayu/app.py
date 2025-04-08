@@ -11,6 +11,7 @@ from ayu.widgets.navigation import TestTree
 
 class AyuApp(App):
     CSS_PATH = Path("assets/ayu.tcss")
+    TOOLTIP_DELAY = 0.2
 
     def __init__(self, *args, **kwargs):
         self.dispatcher = None
