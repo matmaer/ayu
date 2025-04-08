@@ -11,7 +11,8 @@
     - test node: (refresh symbol) (marker) DIR/DIR::CLASS::TEST (status)
         - status values: queued/running/passed/failed/skipped
         - marks?
-        - use `render_label()`
+        - use `render_label()`?
+        - align test outcomes to right/left
     - markers (fav)
 - Final Report Stats Table
 - Overview by failed/skipped/passed
