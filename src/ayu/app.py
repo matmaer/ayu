@@ -43,10 +43,10 @@ class AyuApp(App):
         self.dispatcher.register_handler(
             event_type=EventType.REPORT, handler=lambda msg: self.update_report_log(msg)
         )
-        # self.dispatcher.register_handler(
-        #     event_type=EventType.COLLECTION,
-        #     handler=lambda msg: self.update_collection_log(msg),
-        # )
+        self.dispatcher.register_handler(
+            event_type=EventType.COLLECTION,
+            handler=lambda msg: self.update_collection_log(msg),
+        )
 
     @work(exclusive=True)
     async def start_socket(self):
@@ -66,8 +66,8 @@ class AyuApp(App):
         import subprocess
 
         subprocess.run(
-            ["python", "-m", "pytest"],
-            # ["uv", "run", "--with", "../ayu", "pytest"],
+            # ["python", "-m", "pytest"],
+            ["uv", "run", "--with", "../ayu", "pytest"],
             capture_output=True,
             # executable=Path(sys.executable),
             # cwd=Path.cwd(),

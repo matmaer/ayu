@@ -8,7 +8,7 @@ from ayu.utils import EventType
 @dataclass
 class Event:
     event_type: EventType
-    event_payload: dict
+    event_payload: dict | list
 
     def serialize(self) -> str:
         return json.dumps(

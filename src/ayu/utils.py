@@ -10,5 +10,6 @@ class NodeType(str, Enum):
 
 class EventType(str, Enum):
     COLLECTION = "COLLECTION"
+    SCHEDULED = "SCHEDULED"
     OUTCOME = "OUTCOME"
     REPORT = "REPORT"

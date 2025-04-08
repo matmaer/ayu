@@ -1,4 +1,6 @@
-from typing import Callable, Any
+from typing import Callable
+from collections import defaultdict
+
 from websockets.asyncio.server import serve
 from websockets.asyncio.client import connect
 from websockets.exceptions import ConnectionClosedOK
@@ -15,7 +17,7 @@ class EventDispatcher:
         self.port = port
         self.running = False
         self.server = None
-        self.event_handler: dict[EventType | None, Any] = {}
+        self.event_handler: defaultdict[EventType | None, list] = defaultdict(list)
 
         self.data = ""
 
@@ -33,20 +35,24 @@ class EventDispatcher:
                 event_payload = event.event_payload
                 match event_type:
                     case EventType.COLLECTION:
-                        handler = self.event_handler[EventType.COLLECTION]
+                        handlers = self.event_handler[EventType.COLLECTION]
                     case EventType.OUTCOME:
-                        handler = self.event_handler[EventType.OUTCOME]
+                        handlers = self.event_handler[EventType.OUTCOME]
                     case EventType.REPORT:
-                        handler = self.event_handler[EventType.REPORT]
+                        handlers = self.event_handler[EventType.REPORT]
+                    case EventType.SCHEDULED:
+                        handlers = self.event_handler[EventType.SCHEDULED]
 
-            if handler:
-                handler(event_payload)
+            if handlers:
+                for handler in handlers:
+                    handler(event_payload)
 
             self.data = msg
 
     def register_handler(self, event_type: EventType, handler: Callable):
         # with asyncio.Lock():
-        self.event_handler[event_type] = handler
+        # self.event_handler[event_type] = handler
+        self.event_handler[event_type].append(handler)
 
     def unregister_handler(self, event_type: EventType):
         # with asyncio.Lock():

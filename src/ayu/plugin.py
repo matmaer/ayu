@@ -42,15 +42,25 @@ class Ayu:
     def pytest_collection_finish(self, session: Session):
         print("Connected to Ayu")
         if self.connected:
-            tree = build_dict_tree(items=session.items)
-            asyncio.run(
-                send_event(
-                    event=Event(
-                        event_type=EventType.COLLECTION,
-                        event_payload=tree,
+            if session.config.getoption("--collect-only"):
+                tree = build_dict_tree(items=session.items)
+                asyncio.run(
+                    send_event(
+                        event=Event(
+                            event_type=EventType.COLLECTION,
+                            event_payload=tree,
+                        )
                     )
                 )
-            )
+            else:
+                asyncio.run(
+                    send_event(
+                        event=Event(
+                            event_type=EventType.SCHEDULED,
+                            event_payload=[item.nodeid for item in session.items],
+                        )
+                    )
+                )
         return
 
     # gather status updates during run
@@ -108,7 +118,7 @@ def build_dict_tree(items: list[Item]) -> dict:
     ) -> dict[Any, Any]:
         return {
             "name": node.name,
-            "id": node.nodeid,
+            "nodeid": node.nodeid,
             "markers": [mark.name for mark in node.own_markers],
             "path": node.path.as_posix(),
             "parent_name": parent_name,
@@ -133,7 +143,7 @@ def build_dict_tree(items: list[Item]) -> dict:
             (
                 node
                 for node in sub_tree["children"]
-                if node["id"] == current_node.nodeid
+                if node["nodeid"] == current_node.nodeid
             ),
             None,
         )
