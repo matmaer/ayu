@@ -56,7 +56,7 @@ class AyuApp(App):
         await self.dispatcher.start()
 
     def on_key(self, event: Key):
-        if event.key == "space":
+        if event.key == "ctrl+j":
             self.run_test()
         if event.key == "c":
             for log in self.query(Log):

@@ -17,7 +17,7 @@ class TestTree(Tree):
         Binding("r", "refresh_tree", "Refresh"),
         Binding("j,down", "cursor_down"),
         Binding("k,up", "cursor_up"),
-        Binding("m", "mark_test", "⭐ Mark"),
+        Binding("f", "mark_test", "⭐ Mark"),
     ]
     show_root = False
     auto_expand = True
@@ -101,17 +101,31 @@ class TestTree(Tree):
         # self.notify(f"{event.node.data['name']}")
         # Run Test
 
-    def action_mark_test(self, node: TreeNode | None = None):
+    def action_mark_test(
+        self, node: TreeNode | None = None, parent_val: bool | None = None
+    ):
         # self.notify(f'{self._tree_lines[self.cursor_line]}')
         if node is None:
             node = self.cursor_node
 
-        if node.data["children"]:
-            for child in node.data["children"]:
-                self.action_mark_test(node=child)
-        else:
-            node.data["favourite"] = not node.data["favourite"]
+        if parent_val is None:
+            parent_val = not node.data["favourite"]
+
+        if node.children:
+            node.data["favourite"] = parent_val
             node.label = self.update_node_label(node=node)
+            for child in node.children:
+                self.action_mark_test(node=child, parent_val=parent_val)
+        else:
+            node.data["favourite"] = parent_val
+            node.label = self.update_node_label(node=node)
+
+        if not node.data["favourite"]:
+            parent_node = node.parent
+            while parent_node.data is not None:
+                parent_node.data["favourite"] = node.data["favourite"]
+                parent_node.label = self.update_node_label(node=parent_node)
+                parent_node = parent_node.parent
 
         # self.notify(f"{self.cursor_node.data['type']}")
         # self.notify(f"{self.cursor_node.data}")
