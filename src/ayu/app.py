@@ -1,18 +1,22 @@
 from pathlib import Path
 from textual import work
 from textual.app import App
+from textual.reactive import reactive
 from textual.events import Key
 from textual.widgets import Log, Header, Footer, Collapsible
 from textual.containers import Horizontal, Vertical
 
 from ayu.event_dispatcher import EventDispatcher
-from ayu.utils import EventType
+from ayu.utils import EventType, execute_all_tests
 from ayu.widgets.navigation import TestTree
 
 
 class AyuApp(App):
     CSS_PATH = Path("assets/ayu.tcss")
     TOOLTIP_DELAY = 0.5
+
+    data_test_tree: reactive[dict] = reactive({}, init=False)
+    count_total_tests: reactive[int] = reactive(0, init=False)
 
     def __init__(self, *args, **kwargs):
         self.dispatcher = None
@@ -48,15 +52,20 @@ class AyuApp(App):
         self.dispatcher.register_handler(
             event_type=EventType.REPORT, handler=lambda msg: self.update_report_log(msg)
         )
-        self.dispatcher.register_handler(
+        self.app.dispatcher.register_handler(
             event_type=EventType.COLLECTION,
-            handler=lambda msg: self.update_collection_log(msg),
+            handler=lambda data: self.update_app_data(data),
         )
+
+    def update_app_data(self, data):
+        self.data_test_tree = data["tree"]
+        self.count_total_tests = data["meta"]["test_count"]
+        # self.mutate_reactive(self.data_test_tree)
 
     @work(exclusive=True)
     async def start_socket(self):
         self.dispatcher = EventDispatcher()
-        self.notify("Websocket Connected", timeout=1)
+        self.notify("Websocket Started", timeout=1)
         await self.dispatcher.start()
 
     def on_key(self, event: Key):
@@ -70,15 +79,7 @@ class AyuApp(App):
 
     @work(thread=True)
     def run_test(self):
-        import subprocess
-
-        subprocess.run(
-            ["python", "-m", "pytest"],
-            # ["uv", "run", "--with", "../ayu", "pytest"],
-            capture_output=True,
-            # executable=Path(sys.executable),
-            # cwd=Path.cwd(),
-        )
+        execute_all_tests()
 
     def update_outcome_log(self, msg):
         self.query_one("#log_outcome", Log).write_line(f"{msg}")
@@ -86,8 +87,8 @@ class AyuApp(App):
     def update_report_log(self, msg):
         self.query_one("#log_report", Log).write_line(f"{msg}")
 
-    def update_collection_log(self, msg):
-        self.query_one("#log_collection", Log).write_line(f"{msg}")
+    def watch_data_test_tree(self):
+        self.query_one("#log_collection", Log).write_line(f"{self.data_test_tree}")
 
 
 # https://watchfiles.helpmanual.io

@@ -1,3 +1,4 @@
+import os
 import asyncio
 from typing import Any
 import pytest
@@ -64,8 +65,13 @@ class Ayu:
         return
 
     # gather status updates during run
-    @pytest.hookimpl(trylast=True)
+    # @pytest.hookimpl(trylast=True)
     def pytest_runtest_logreport(self, report: TestReport):
+        if self.config.pluginmanager.has_plugin("xdist") and (
+            "PYTEST_XDIST_WORKER" not in os.environ
+        ):
+            return
+
         is_relevant = (report.when == "call") or (
             (report.when == "setup") and (report.outcome in ["failed", "skipped"])
         )
@@ -78,6 +84,7 @@ class Ayu:
                         event_payload={
                             "nodeid": report.nodeid,
                             "outcome": report.outcome,
+                            "report": f"{report}",
                         },
                     )
                 )

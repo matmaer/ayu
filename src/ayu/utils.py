@@ -1,4 +1,6 @@
 from enum import Enum
+from pathlib import Path
+import subprocess
 
 
 class NodeType(str, Enum):
@@ -15,12 +17,40 @@ class EventType(str, Enum):
     REPORT = "REPORT"
 
 
-def get_nice_tooltip(node_data: dict) -> str | None:
-    tooltip_str = f"{node_data['name']:^20}\n".replace("[", "\[")
-    tooltip_str += f"[red strike]{node_data['name'].replace('[', '\['):^20}[/]\n"
+def run_test_collection():
+    if Path.cwd().name == "ayu":
+        command = "pytest --co".split()
+    else:
+        command = "uv run --with ../ayu pytest --co".split()
+    subprocess.run(
+        command,
+        # ["pytest", "--co"],
+        # ["uv", "run", "--with", "../ayu", "-U", "pytest", "--co"],
+        capture_output=True,
+    )
 
-    status = node_data["status"].replace("[", "\[")
-    tooltip_str += f"\n[yellow]{status}[/]\n\n"
+
+def execute_all_tests():
+    if Path.cwd().name == "ayu":
+        command = "python -m pytest".split()
+    else:
+        command = "uv run --with ../ayu pytest".split()
+        # command = "python -m pytest".split()
+    subprocess.run(
+        command,
+        # ["pytest", "--co"],
+        # ["uv", "run", "--with", "../ayu", "-U", "pytest", "--co"],
+        capture_output=True,
+    )
+
+
+def get_nice_tooltip(node_data: dict) -> str | None:
+    tooltip_str = ""
+    # tooltip_str = f"{node_data['name'].replace("[", "\["):^20}\n"
+    # tooltip_str += f"[red strike]{node_data['name'].replace('[', '\['):^20}[/]\n"
+    #
+    # status = node_data["status"].replace("[", "\[")
+    # tooltip_str += f"\n[yellow]{status}[/]\n\n"
     # tooltip_str += f"Level needed: [blue]{node_data.level_needed:>6}[/]\n"
     # tooltip_str += f"Damage: [blue]{node_data.damage:>12}[/]\n" if item.damage > 0 else ""
     # tooltip_str += (

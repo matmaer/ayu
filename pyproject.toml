@@ -26,8 +26,13 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "pre-commit>=4.2.0",
+    "pytest-cov>=6.1.1",
+    "pytest-xdist>=3.6.1",
     "textual-dev>=1.7.0",
 ]
 
 [tool.pytest.ini_options]
-testpaths = ['tests']
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "--cov src/ayu --cov-report term-missing --verbose --color=yes -n auto --dist=worksteal"
+testpaths = ["tests"]

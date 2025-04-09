@@ -9,7 +9,7 @@ from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
 from rich.text import Text
 
-from ayu.utils import EventType, get_nice_tooltip
+from ayu.utils import EventType, get_nice_tooltip, run_test_collection
 from ayu.constants import OUTCOME_SYMBOLS
 
 
@@ -29,13 +29,8 @@ class TestTree(Tree):
     count_passed: reactive[int] = reactive(0)
     count_failed: reactive[int] = reactive(0)
     count_skipped: reactive[int] = reactive(0)
-    count_total: reactive[int] = reactive(0)
 
     def on_mount(self):
-        self.app.dispatcher.register_handler(
-            event_type=EventType.COLLECTION,
-            handler=lambda data: self.build_tree(data),
-        )
         self.app.dispatcher.register_handler(
             event_type=EventType.SCHEDULED,
             handler=lambda data: self.mark_tests_as_running(data),
@@ -44,28 +39,24 @@ class TestTree(Tree):
             event_type=EventType.OUTCOME,
             handler=lambda data: self.update_test_outcome(data),
         )
+
         self.action_collect_tests()
-        self.border_title = self.update_border_title()
+        self.watch(self.app, "count_total_tests", self.update_border_title)
+        self.watch(self.app, "data_test_tree", self.build_tree)
 
         return super().on_mount()
 
     @work(thread=True)
     def action_collect_tests(self):
-        import subprocess
+        run_test_collection()
 
-        subprocess.run(
-            ["pytest", "--co"],
-            # ["uv", "run", "--with", "../ayu", "-U", "pytest", "--co"],
-            capture_output=True,
-        )
-
-    def build_tree(self, collection_data: dict[Any, Any]):
-        if collection_data:
+    def build_tree(self):
+        if self.app.data_test_tree:
             self.clear()
-            self.update_tree(tree_data=collection_data["tree"])
+            self.update_tree(tree_data=self.app.data_test_tree)
+        self.loading = False
 
     def update_tree(self, *, tree_data: dict[Any, Any]):
-        self.count_total = 0
         parent = self.root
 
         def add_children(child_list: list[dict[Any, Any]], parent_node: TreeNode):
@@ -77,7 +68,6 @@ class TestTree(Tree):
                     add_children(child_list=child["children"], parent_node=new_node)
                 else:
                     new_node = parent_node.add_leaf(label=child["name"], data=child)
-                    self.count_total += 1
 
         for key, value in tree_data.items():
             if isinstance(value, dict) and "children" in value and value["children"]:
@@ -175,13 +165,10 @@ class TestTree(Tree):
     def watch_count_skipped(self):
         self.update_border_title()
 
-    def watch_count_total(self):
-        self.update_border_title()
-
     def update_border_title(self):
         symbol = "hourglass_not_done" if self.count_queue > 0 else "hourglass_done"
         self.border_title = Text.from_markup(
             f" :{symbol}: {self.count_queue} | :x: {self.count_failed}"
             + f" | :white_check_mark: {self.count_passed} | :next_track_button: {self.count_skipped}"
-            + f" | Tests to run {self.count_total} "
+            + f" | Tests to run {self.app.count_total_tests} "
         )

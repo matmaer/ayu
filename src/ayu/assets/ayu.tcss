@@ -10,7 +10,7 @@ TestTree {
 
 }
 Vertical{
-    width:2fr;
+    width:1fr;
 }
 
 Collapsible {
