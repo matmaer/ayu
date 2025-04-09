@@ -120,7 +120,6 @@ class TestTree(Tree):
                 self.count_queue += 1
 
     def on_tree_node_selected(self, event: Tree.NodeSelected):
-        event.node.visible = False
         ...
         # self.notify(f"{event.node.data['name']}")
         # self.scroll_to_node()
