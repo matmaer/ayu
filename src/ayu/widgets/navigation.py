@@ -65,6 +65,7 @@ class TestTree(Tree):
             self.update_tree(tree_data=collection_data["tree"])
 
     def update_tree(self, *, tree_data: dict[Any, Any]):
+        self.count_total = 0
         parent = self.root
 
         def add_children(child_list: list[dict[Any, Any]], parent_node: TreeNode):
