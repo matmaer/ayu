@@ -29,6 +29,7 @@ class TestTree(Tree):
     count_passed: reactive[int] = reactive(0)
     count_failed: reactive[int] = reactive(0)
     count_skipped: reactive[int] = reactive(0)
+    count_total: reactive[int] = reactive(0)
 
     def on_mount(self):
         self.app.dispatcher.register_handler(
@@ -44,9 +45,7 @@ class TestTree(Tree):
             handler=lambda data: self.update_test_outcome(data),
         )
         self.action_collect_tests()
-        self.border_title = Text.from_markup(
-            " :hourglass_not_done: 0 | :x: 0 | :white_check_mark: 0 | :next_track_button: 0 "
-        )
+        self.border_title = self.update_border_title()
 
         return super().on_mount()
 
@@ -77,6 +76,7 @@ class TestTree(Tree):
                     add_children(child_list=child["children"], parent_node=new_node)
                 else:
                     new_node = parent_node.add_leaf(label=child["name"], data=child)
+                    self.count_total += 1
 
         for key, value in tree_data.items():
             if isinstance(value, dict) and "children" in value and value["children"]:
@@ -164,29 +164,24 @@ class TestTree(Tree):
             self.tooltip = get_nice_tooltip(node_data=data)
 
     def watch_count_queue(self):
-        symbol = "hourglass_not_done" if self.count_queue > 0 else "hourglass_done"
-        self.border_title = Text.from_markup(
-            f" :{symbol}: {self.count_queue} | :x: {self.count_failed}"
-            + f"| :white_check_mark: {self.count_passed} | :next_track_button: {self.count_skipped} "
-        )
+        self.update_border_title()
 
     def watch_count_passed(self):
-        symbol = "hourglass_not_done" if self.count_queue > 0 else "hourglass_done"
-        self.border_title = Text.from_markup(
-            f" :{symbol}: {self.count_queue} | :x: {self.count_failed}"
-            + f"| :white_check_mark: {self.count_passed} | :next_track_button: {self.count_skipped} "
-        )
+        self.update_border_title()
 
     def watch_count_failed(self):
-        symbol = "hourglass_not_done" if self.count_queue > 0 else "hourglass_done"
-        self.border_title = Text.from_markup(
-            f" :{symbol}: {self.count_queue} | :x: {self.count_failed}"
-            + f"| :white_check_mark: {self.count_passed} | :next_track_button: {self.count_skipped} "
-        )
+        self.update_border_title()
 
     def watch_count_skipped(self):
+        self.update_border_title()
+
+    def watch_count_total(self):
+        self.update_border_title()
+
+    def update_border_title(self):
         symbol = "hourglass_not_done" if self.count_queue > 0 else "hourglass_done"
         self.border_title = Text.from_markup(
             f" :{symbol}: {self.count_queue} | :x: {self.count_failed}"
-            + f"| :white_check_mark: {self.count_passed} | :next_track_button: {self.count_skipped} "
+            + f" | :white_check_mark: {self.count_passed} | :next_track_button: {self.count_skipped}"
+            + f" | Tests to run {self.count_total} "
         )
