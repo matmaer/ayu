@@ -58,7 +58,7 @@ class EventDispatcher:
 
     # Start Websocket Server
     async def start(self):
-        asyncio.create_task(self.start_socket_server(), name="socket")
+        await self.start_socket_server()
 
     def stop(self):
         asyncio.get_running_loop().create_future()

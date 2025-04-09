@@ -62,6 +62,8 @@ class AyuApp(App):
     def on_key(self, event: Key):
         if event.key == "ctrl+j":
             self.run_test()
+        if event.key == "w":
+            self.notify(f"{self.workers}")
         if event.key == "c":
             for log in self.query(Log):
                 log.clear()
