@@ -3,6 +3,7 @@ from textual import work
 from textual.app import App
 from textual.events import Key
 from textual.widgets import Log, Header, Footer, Collapsible
+from textual.containers import Horizontal, Vertical
 
 from ayu.event_dispatcher import EventDispatcher
 from ayu.utils import EventType
@@ -20,19 +21,21 @@ class AyuApp(App):
     def compose(self):
         yield Header()
         yield Footer()
-        yield TestTree(label="Tests")
         outcome_log = Log(highlight=True, id="log_outcome")
         outcome_log.border_title = "Outcome"
         report_log = Log(highlight=True, id="log_report")
         report_log.border_title = "Report"
         collection_log = Log(highlight=True, id="log_collection")
         collection_log.border_title = "Collection"
-        with Collapsible(title="Outcome"):
-            yield outcome_log
-        with Collapsible(title="Report"):
-            yield report_log
-        with Collapsible(title="Collection", collapsed=False):
-            yield collection_log
+        with Horizontal():
+            yield TestTree(label="Tests")
+            with Vertical():
+                with Collapsible(title="Outcome", collapsed=False):
+                    yield outcome_log
+                with Collapsible(title="Report", collapsed=False):
+                    yield report_log
+                with Collapsible(title="Collection", collapsed=False):
+                    yield collection_log
 
     async def on_load(self):
         self.start_socket()
@@ -68,8 +71,8 @@ class AyuApp(App):
         import subprocess
 
         subprocess.run(
-            # ["python", "-m", "pytest"],
-            ["uv", "run", "--with", "../ayu", "pytest"],
+            ["python", "-m", "pytest"],
+            # ["uv", "run", "--with", "../ayu", "pytest"],
             capture_output=True,
             # executable=Path(sys.executable),
             # cwd=Path.cwd(),

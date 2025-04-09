@@ -4,17 +4,19 @@ Log {
     height:auto;
 }
 TestTree {
-    height: auto;
+    width:1fr;
+    height: 1fr;
+    border-top: white;
+
 }
+Vertical{
+    width:2fr;
+}
+
 Collapsible {
     height: auto;
 }
 
-*:focus {
+#adasd:focus {
     background: $error;
-}
-
-#aa {
-    margin:0;
-    padding:0;
 }

@@ -16,7 +16,8 @@ class EventType(str, Enum):
 
 
 def get_nice_tooltip(node_data: dict) -> str | None:
-    tooltip_str = f"{node_data['nodeid']:^20}\n".replace("[", "\[")
+    tooltip_str = f"{node_data['name']:^20}\n".replace("[", "\[")
+    tooltip_str += f"[red strike]{node_data['name'].replace('[', '\['):^20}[/]\n"
 
     status = node_data["status"].replace("[", "\[")
     tooltip_str += f"\n[yellow]{status}[/]\n\n"

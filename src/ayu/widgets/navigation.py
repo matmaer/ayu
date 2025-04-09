@@ -3,9 +3,11 @@ from typing import Any, TYPE_CHECKING
 if TYPE_CHECKING:
     from ayu.app import AyuApp
 from textual import work
+from textual.reactive import reactive
 from textual.binding import Binding
 from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
+from rich.text import Text
 
 from ayu.utils import EventType, get_nice_tooltip
 from ayu.constants import OUTCOME_SYMBOLS
@@ -14,7 +16,7 @@ from ayu.constants import OUTCOME_SYMBOLS
 class TestTree(Tree):
     app: "AyuApp"
     BINDINGS = [
-        Binding("r", "refresh_tree", "Refresh"),
+        Binding("r", "collect_tests", "Refresh"),
         Binding("j,down", "cursor_down"),
         Binding("k,up", "cursor_up"),
         Binding("f", "mark_test", "⭐ Mark"),
@@ -22,6 +24,11 @@ class TestTree(Tree):
     show_root = False
     auto_expand = True
     guide_depth = 2
+
+    count_queue: reactive[int] = reactive(0)
+    count_passed: reactive[int] = reactive(0)
+    count_failed: reactive[int] = reactive(0)
+    count_skipped: reactive[int] = reactive(0)
 
     def on_mount(self):
         self.app.dispatcher.register_handler(
@@ -36,12 +43,15 @@ class TestTree(Tree):
             event_type=EventType.OUTCOME,
             handler=lambda data: self.update_test_outcome(data),
         )
-        self.action_refresh_tree()
+        self.action_collect_tests()
+        self.border_title = Text.from_markup(
+            " :hourglass_not_done: 0 | :x: 0 | :white_check_mark: 0 | :next_track_button: 0 "
+        )
 
         return super().on_mount()
 
     @work(thread=True)
-    def action_refresh_tree(self):
+    def action_collect_tests(self):
         import subprocess
 
         subprocess.run(
@@ -49,11 +59,6 @@ class TestTree(Tree):
             # ["uv", "run", "--with", "../ayu", "-U", "pytest", "--co"],
             capture_output=True,
         )
-
-    def on_mouse_move(self):
-        if self.hover_line != -1:
-            data = self._tree_lines[self.hover_line].node.data
-            self.tooltip = get_nice_tooltip(node_data=data)
 
     def build_tree(self, collection_data: dict[Any, Any]):
         if collection_data:
@@ -75,7 +80,8 @@ class TestTree(Tree):
 
         for key, value in tree_data.items():
             if isinstance(value, dict) and "children" in value and value["children"]:
-                node: TreeNode = parent.add(key, expand=True, data=value)
+                node: TreeNode = parent.add(key, data=value)
+                self.select_node(node)
                 add_children(value["children"], node)
             else:
                 parent.add_leaf(key, data=key)
@@ -87,8 +93,20 @@ class TestTree(Tree):
                 # node.label = f"{node.label} {OUTCOME_SYMBOLS[outcome]}"
                 node.data["status"] = outcome
                 node.label = self.update_node_label(node=node)
+                self.count_queue -= 1
+                match outcome:
+                    case "passed":
+                        self.count_passed += 1
+                    case "failed":
+                        self.count_failed += 1
+                    case "skipped":
+                        self.count_skipped += 1
 
     def mark_tests_as_running(self, nodeids: list[str]) -> None:
+        self.count_queue = 0
+        self.count_passed = 0
+        self.count_skipped = 0
+        self.count_failed = 0
         for node in self._tree_nodes.values():
             if (
                 node.data
@@ -98,10 +116,13 @@ class TestTree(Tree):
                 # node.label = f"{node.data['name']} {OUTCOME_SYMBOLS['queued']}"
                 node.data["status"] = "queued"
                 node.label = self.update_node_label(node=node)
+                self.count_queue += 1
 
     def on_tree_node_selected(self, event: Tree.NodeSelected):
+        event.node.visible = False
         ...
         # self.notify(f"{event.node.data['name']}")
+        # self.scroll_to_node()
         # Run Test
 
     def action_mark_test(
@@ -136,3 +157,36 @@ class TestTree(Tree):
         )
 
         return f"{fav_substring}{node.data['name']}{status_substring}"
+
+    def on_mouse_move(self):
+        if self.hover_line != -1:
+            data = self._tree_lines[self.hover_line].node.data
+            self.tooltip = get_nice_tooltip(node_data=data)
+
+    def watch_count_queue(self):
+        symbol = "hourglass_not_done" if self.count_queue > 0 else "hourglass_done"
+        self.border_title = Text.from_markup(
+            f" :{symbol}: {self.count_queue} | :x: {self.count_failed}"
+            + f"| :white_check_mark: {self.count_passed} | :next_track_button: {self.count_skipped} "
+        )
+
+    def watch_count_passed(self):
+        symbol = "hourglass_not_done" if self.count_queue > 0 else "hourglass_done"
+        self.border_title = Text.from_markup(
+            f" :{symbol}: {self.count_queue} | :x: {self.count_failed}"
+            + f"| :white_check_mark: {self.count_passed} | :next_track_button: {self.count_skipped} "
+        )
+
+    def watch_count_failed(self):
+        symbol = "hourglass_not_done" if self.count_queue > 0 else "hourglass_done"
+        self.border_title = Text.from_markup(
+            f" :{symbol}: {self.count_queue} | :x: {self.count_failed}"
+            + f"| :white_check_mark: {self.count_passed} | :next_track_button: {self.count_skipped} "
+        )
+
+    def watch_count_skipped(self):
+        symbol = "hourglass_not_done" if self.count_queue > 0 else "hourglass_done"
+        self.border_title = Text.from_markup(
+            f" :{symbol}: {self.count_queue} | :x: {self.count_failed}"
+            + f"| :white_check_mark: {self.count_passed} | :next_track_button: {self.count_skipped} "
+        )
