@@ -1,21 +1,9 @@
-# general
-- has to be a pytest plugin?
-- install plugin on the fly?
-
-# pytest-plugin
-- intermediate test results for test tree update
-- Final report Infos for stats and overview
-
-# textual-app
-- Test Tree for overview
-    - test node: (refresh symbol) (marker) DIR/DIR::CLASS::TEST (status)
-        - status values: queued/running/passed/failed/skipped
-        - align test outcomes to right/left
-- Final Report Stats Table
-- Overview by failed/skipped/passed
-
-# file-watcher
-- on file change update app
-
-# event-forwarder
-- Socket vs Websocket?
+- align result Icons better on test tree
+- some form of test preview
+- some form of result viewer
+- search by name/tag functionality
+- dynamic collaps/expand if all tests on a module are run and passed
+- some more info on the module/dir path in tree e.g. 3/5 tests passed
+- test tree filtering
+- menu dynamic plugin installation+flags (needs uv)
+- using something like watchfiles to detect filechanges and update the test_tree accordingly (or just stick with a manual refresh)

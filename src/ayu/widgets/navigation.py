@@ -110,6 +110,11 @@ class TestTree(Tree):
                 node.label = self.update_node_label(node=node)
                 self.counter_queued += 1
 
+    def on_tree_node_highlighted(self, event: Tree.NodeHighlighted):
+        ...
+        # self.notify(f"{event.node.data.get("path")}")
+        # self.notify(f"{event.node.data.get("lineno")}")
+
     def on_tree_node_selected(self, event: Tree.NodeSelected):
         # self.notify(f"{event.node.data}")
         # self.notify('bla')

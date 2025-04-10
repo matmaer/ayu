@@ -2,7 +2,7 @@ import os
 import asyncio
 from typing import Any
 import pytest
-from pytest import Config, TestReport, Session, Item
+from pytest import Config, TestReport, Session, Item, Class, Function
 from _pytest.terminal import TerminalReporter
 from _pytest.nodes import Node
 
@@ -128,6 +128,9 @@ def build_dict_tree(items: list[Item]) -> dict:
             "nodeid": node.nodeid,
             "markers": [mark.name for mark in node.own_markers],
             "path": node.path.as_posix(),
+            "lineno": node.reportinfo()[1]
+            if isinstance(node, Class)
+            else (node.location[1] if isinstance(node, Function) else 0),
             "parent_name": parent_name,
             "parent_type": parent_type,
             "type": type(node).__name__.upper(),
