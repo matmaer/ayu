@@ -9,6 +9,10 @@ TestTree {
     border-top: white;
 
 }
+CodePreview {
+    border: white;
+}
+
 Vertical{
     width:1fr;
 }

@@ -5,10 +5,12 @@ from textual.reactive import reactive
 from textual.events import Key
 from textual.widgets import Log, Header, Footer, Collapsible
 from textual.containers import Horizontal, Vertical
+from textual_slidecontainer import SlideContainer
 
 from ayu.event_dispatcher import EventDispatcher
 from ayu.utils import EventType, run_all_tests
 from ayu.widgets.navigation import TestTree
+from ayu.widgets.code_preview import CodePreview
 
 
 class AyuApp(App):
@@ -34,6 +36,7 @@ class AyuApp(App):
         with Horizontal():
             yield TestTree(label="Tests")
             with Vertical():
+                yield CodePreview()
                 with Collapsible(title="Outcome", collapsed=False):
                     yield outcome_log
                 with Collapsible(title="Report", collapsed=False):
@@ -73,6 +76,8 @@ class AyuApp(App):
             self.run_test()
         if event.key == "w":
             self.notify(f"{self.workers}")
+        if event.key == "s":
+            self.query_one(SlideContainer).toggle()
         if event.key == "c":
             self.query_one(TestTree).reset_test_results()
             for log in self.query(Log):

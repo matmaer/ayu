@@ -111,9 +111,30 @@ class TestTree(Tree):
                 self.counter_queued += 1
 
     def on_tree_node_highlighted(self, event: Tree.NodeHighlighted):
-        ...
-        # self.notify(f"{event.node.data.get("path")}")
-        # self.notify(f"{event.node.data.get("lineno")}")
+        if event.node.data["type"] in [
+            NodeType.FUNCTION,
+            NodeType.COROUTINE,
+            NodeType.CLASS,
+        ]:
+            with open(event.node.data["path"], "r") as file:
+                start_idx = event.node.data["lineno"]
+                file_lines = file.readlines()
+                last_line_is_blank = False
+                end_idx = None
+                for idx, line in enumerate(file_lines[start_idx:], start=start_idx):
+                    if not line.strip():
+                        last_line_is_blank = True
+                        continue
+                    if (
+                        line.strip().startswith(("def ", "class ", "async ", "@"))
+                        and last_line_is_blank
+                    ):
+                        end_idx = idx - 1
+                        break
+                    last_line_is_blank = False
+                content = "\n".join(file_lines[start_idx:end_idx]).rstrip()
+            self.app.query_one("#textarea_preview").line_number_start = start_idx
+            self.app.query_one("#textarea_preview").text = content
 
     def on_tree_node_selected(self, event: Tree.NodeSelected):
         # self.notify(f"{event.node.data}")
