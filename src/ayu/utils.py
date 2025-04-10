@@ -8,6 +8,7 @@ class NodeType(str, Enum):
     MODULE = "MODULE"
     CLASS = "CLASS"
     FUNCTION = "FUNCTION"
+    COROUTINE = "COROUTINE"
 
 
 class EventType(str, Enum):
@@ -30,12 +31,16 @@ def run_test_collection():
     )
 
 
-def execute_all_tests():
+def run_all_tests(tests_to_run: list[str] | None = None):
     if Path.cwd().name == "ayu":
         command = "python -m pytest".split()
     else:
         command = "uv run --with ../ayu pytest".split()
         # command = "python -m pytest".split()
+
+    if tests_to_run:
+        command.extend(tests_to_run)
+
     subprocess.run(
         command,
         # ["pytest", "--co"],

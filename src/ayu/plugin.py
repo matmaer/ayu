@@ -67,7 +67,7 @@ class Ayu:
     # gather status updates during run
     # @pytest.hookimpl(trylast=True)
     def pytest_runtest_logreport(self, report: TestReport):
-        if self.config.pluginmanager.has_plugin("xdist") and (
+        if self.config.pluginmanager.hasplugin("xdist") and (
             "PYTEST_XDIST_WORKER" not in os.environ
         ):
             return

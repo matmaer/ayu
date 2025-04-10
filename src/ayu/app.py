@@ -7,7 +7,7 @@ from textual.widgets import Log, Header, Footer, Collapsible
 from textual.containers import Horizontal, Vertical
 
 from ayu.event_dispatcher import EventDispatcher
-from ayu.utils import EventType, execute_all_tests
+from ayu.utils import EventType, run_all_tests
 from ayu.widgets.navigation import TestTree
 
 
@@ -16,7 +16,7 @@ class AyuApp(App):
     TOOLTIP_DELAY = 0.5
 
     data_test_tree: reactive[dict] = reactive({}, init=False)
-    count_total_tests: reactive[int] = reactive(0, init=False)
+    counter_total_tests: reactive[int] = reactive(0, init=False)
 
     def __init__(self, *args, **kwargs):
         self.dispatcher = None
@@ -59,7 +59,7 @@ class AyuApp(App):
 
     def update_app_data(self, data):
         self.data_test_tree = data["tree"]
-        self.count_total_tests = data["meta"]["test_count"]
+        self.counter_total_tests = data["meta"]["test_count"]
         # self.mutate_reactive(self.data_test_tree)
 
     @work(exclusive=True)
@@ -74,12 +74,13 @@ class AyuApp(App):
         if event.key == "w":
             self.notify(f"{self.workers}")
         if event.key == "c":
+            self.query_one(TestTree).reset_test_results()
             for log in self.query(Log):
                 log.clear()
 
     @work(thread=True)
     def run_test(self):
-        execute_all_tests()
+        run_all_tests(tests_to_run=self.query_one(TestTree).marked_tests)
 
     def update_outcome_log(self, msg):
         self.query_one("#log_outcome", Log).write_line(f"{msg}")
