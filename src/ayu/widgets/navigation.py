@@ -9,7 +9,13 @@ from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
 from rich.text import Text
 
-from ayu.utils import EventType, NodeType, get_nice_tooltip, run_test_collection
+from ayu.utils import (
+    EventType,
+    NodeType,
+    get_nice_tooltip,
+    run_test_collection,
+    get_preview_test,
+)
 from ayu.constants import OUTCOME_SYMBOLS
 
 
@@ -116,31 +122,14 @@ class TestTree(Tree):
             NodeType.COROUTINE,
             NodeType.CLASS,
         ]:
-            with open(event.node.data["path"], "r") as file:
-                start_idx = event.node.data["lineno"]
-                file_lines = file.readlines()
-                last_line_is_blank = False
-                end_idx = None
-                for idx, line in enumerate(file_lines[start_idx:], start=start_idx):
-                    if not line.strip():
-                        last_line_is_blank = True
-                        continue
-                    if (
-                        line.strip().startswith(("def ", "class ", "async ", "@"))
-                        and last_line_is_blank
-                    ):
-                        end_idx = idx - 1
-                        break
-                    last_line_is_blank = False
-                content = "\n".join(file_lines[start_idx:end_idx]).rstrip()
-            self.app.query_one("#textarea_preview").line_number_start = start_idx
+            start_line_no = event.node.data["lineno"]
+            test_path = event.node.data["path"]
+            content = get_preview_test(file_path=test_path, start_line_no=start_line_no)
+            self.app.query_one("#textarea_preview").line_number_start = start_line_no
             self.app.query_one("#textarea_preview").text = content
 
     def on_tree_node_selected(self, event: Tree.NodeSelected):
-        # self.notify(f"{event.node.data}")
-        # self.notify('bla')
         ...
-        # self.scroll_to_node()
         # Run Test
 
     def action_mark_test_as_fav(

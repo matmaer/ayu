@@ -56,25 +56,23 @@ def get_nice_tooltip(node_data: dict) -> str | None:
     #
     # status = node_data["status"].replace("[", "\[")
     # tooltip_str += f"\n[yellow]{status}[/]\n\n"
-    # tooltip_str += f"Level needed: [blue]{node_data.level_needed:>6}[/]\n"
-    # tooltip_str += f"Damage: [blue]{node_data.damage:>12}[/]\n" if item.damage > 0 else ""
-    # tooltip_str += (
-    #     f"Attack Speed: [blue]{node_data.attack_speed:>6}[/]\n"
-    #     if node_data.attack_speed > 0
-    #     else ""
-    # )
-    # if sum([node_data.strength, item.intelligence, item.dexterity, item.luck]) > 0:
-    #     tooltip_str += f"\n[yellow]{'Bonus Stats':-^20}[/]\n\n"
-    #     tooltip_str += (
-    #         f"Strength: [blue]{node_data.strength:>10}[/]\n" if item.strength > 0 else ""
-    #     )
-    #     tooltip_str += (
-    #         f"Intelligence: [blue]{node_data.intelligence:>6}[/]\n"
-    #         if node_data.intelligence > 0
-    #         else ""
-    #     )
-    #     tooltip_str += (
-    #         f"Dexterity: [blue]{node_data.dexterity:>9}[/]\n" if item.dexterity > 0 else ""
-    #     )
-    #     tooltip_str += f"Luck: [blue]{node_data.luck:>14}[/]\n" if item.luck > 0 else ""
     return tooltip_str
+
+
+def get_preview_test(file_path: str, start_line_no: int) -> str:
+    with open(Path(file_path), "r") as file:
+        file_lines = file.readlines()
+        last_line_is_blank = False
+        end_line_no = None
+        for line_no, line in enumerate(file_lines[start_line_no:], start=start_line_no):
+            if not line.strip():
+                last_line_is_blank = True
+                continue
+            if (
+                line.strip().startswith(("def ", "class ", "async ", "@"))
+                and last_line_is_blank
+            ):
+                end_line_no = line_no - 1
+                break
+            last_line_is_blank = False
+        return "".join(file_lines[start_line_no:end_line_no]).rstrip()
