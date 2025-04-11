@@ -1,6 +1,6 @@
 Log {
     border: $primary;
-    max-height: 20;
+    max-height: 10;
     height:auto;
 }
 TestTree {
@@ -10,7 +10,12 @@ TestTree {
 
 }
 CodePreview {
+    height: auto;
     border: white;
+
+    TextArea {
+        height: auto;
+    }
 }
 
 Vertical{

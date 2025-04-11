@@ -37,11 +37,11 @@ class AyuApp(App):
             yield TestTree(label="Tests")
             with Vertical():
                 yield CodePreview()
-                with Collapsible(title="Outcome", collapsed=False):
+                with Collapsible(title="Outcome", collapsed=True):
                     yield outcome_log
-                with Collapsible(title="Report", collapsed=False):
+                with Collapsible(title="Report", collapsed=True):
                     yield report_log
-                with Collapsible(title="Collection", collapsed=False):
+                with Collapsible(title="Collection", collapsed=True):
                     yield collection_log
 
     async def on_load(self):

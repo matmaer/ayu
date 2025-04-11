@@ -63,7 +63,6 @@ class TestTree(Tree):
             self.reset_status_counters()
             self.counter_marked = 0
             self.update_tree(tree_data=self.app.data_test_tree)
-        # self.loading = False
 
     def update_tree(self, *, tree_data: dict[Any, Any]):
         parent = self.root
@@ -92,7 +91,7 @@ class TestTree(Tree):
                 outcome = test_result["outcome"]
                 # node.label = f"{node.label} {OUTCOME_SYMBOLS[outcome]}"
                 node.data["status"] = outcome
-                node.label = self.update_node_label(node=node)
+                node.label = self.update_test_node_label(node=node)
                 self.counter_queued -= 1
                 match outcome:
                     case "passed":
@@ -101,6 +100,24 @@ class TestTree(Tree):
                         self.counter_failed += 1
                     case "skipped":
                         self.counter_skipped += 1
+                if self.all_child_tests_passed(parent=node.parent):
+                    node.parent.collapse()
+                    node.parent.label = f"[green]{node.parent.label}[/]"
+                    # node.parent.label = self.update_mod_class_node_label(node=node.parent)
+                else:
+                    node.parent.expand_all()
+                    node.parent.label = f"[red]{node.parent.label}[/]"
+                    # node.parent.label = self.update_mod_class_node_label(node=node.parent)
+
+    def all_child_tests_passed(self, parent: TreeNode):
+        return all(
+            [
+                self.all_child_tests_passed(parent=child)
+                if child.data["type"] == NodeType.CLASS
+                else child.data["status"] in ["passed", "queued"]
+                for child in parent.children
+            ]
+        )
 
     def reset_status_counters(self) -> None:
         self.counter_queued = 0
@@ -111,9 +128,9 @@ class TestTree(Tree):
     def mark_tests_as_running(self, nodeids: list[str]) -> None:
         self.reset_status_counters()
         for node in self._tree_nodes.values():
-            if node.data and (node.data.get("nodeid") in nodeids):
+            if node.data and (node.data["nodeid"] in nodeids):
                 node.data["status"] = "queued"
-                node.label = self.update_node_label(node=node)
+                node.label = self.update_test_node_label(node=node)
                 self.counter_queued += 1
 
     def on_tree_node_highlighted(self, event: Tree.NodeHighlighted):
@@ -143,23 +160,31 @@ class TestTree(Tree):
 
         if node.children:
             node.data["favourite"] = parent_val
-            node.label = self.update_node_label(node=node)
+            node.label = self.update_test_node_label(node=node)
             for child in node.children:
                 self.action_mark_test_as_fav(node=child, parent_val=parent_val)
         else:
             if node.data["favourite"] != parent_val:
                 self.counter_marked += 1 if parent_val else -1
             node.data["favourite"] = parent_val
-            node.label = self.update_node_label(node=node)
+            node.label = self.update_test_node_label(node=node)
 
         if not node.data["favourite"]:
             parent_node = node.parent
             while parent_node.data is not None:
                 parent_node.data["favourite"] = node.data["favourite"]
-                parent_node.label = self.update_node_label(node=parent_node)
+                parent_node.label = self.update_test_node_label(node=parent_node)
                 parent_node = parent_node.parent
 
-    def update_node_label(self, node: TreeNode) -> str:
+    # def update_mod_class_node_label(self, node: TreeNode) -> str:
+    #     counter_childs_tests = len(node.children)
+    #     # Misses Class Case
+    #     counter_childs_test_passed = len([ child for child in node.children if child.data['status']=='passed'])
+    #     fav_substring = "⭐ " if node.data["favourite"] else ""
+    #
+    #     return f"{fav_substring}{node.data['name']} ({counter_childs_test_passed}/{counter_childs_tests})"
+
+    def update_test_node_label(self, node: TreeNode) -> str:
         fav_substring = "⭐ " if node.data["favourite"] else ""
         status_substring = (
             f" {OUTCOME_SYMBOLS[node.data['status']]}" if node.data["status"] else ""
@@ -168,6 +193,7 @@ class TestTree(Tree):
         return f"{fav_substring}{node.data['name']}{status_substring}"
 
     def on_mouse_move(self):
+        return
         if self.hover_line != -1:
             data = self._tree_lines[self.hover_line].node.data
             self.tooltip = get_nice_tooltip(node_data=data)
@@ -214,6 +240,7 @@ class TestTree(Tree):
         return marked_tests
 
     def reset_test_results(self):
+        self.reset_status_counters()
         for node in self._tree_nodes.values():
             if (
                 node.data
@@ -221,4 +248,6 @@ class TestTree(Tree):
                 and node.data["status"]
             ):
                 node.data["status"] = ""
-                node.label = self.update_node_label(node=node)
+                node.label = self.update_test_node_label(node=node)
+            elif node.data and (node.data["type"] in [NodeType.MODULE, NodeType.CLASS]):
+                node.label = self.update_test_node_label(node=node)
