@@ -100,14 +100,19 @@ class TestTree(Tree):
                         self.counter_failed += 1
                     case "skipped":
                         self.counter_skipped += 1
-                if self.all_child_tests_passed(parent=node.parent):
-                    node.parent.collapse()
-                    node.parent.label = f"[green]{node.parent.label}[/]"
                     # node.parent.label = self.update_mod_class_node_label(node=node.parent)
-                else:
-                    node.parent.expand_all()
-                    node.parent.label = f"[red]{node.parent.label}[/]"
-                    # node.parent.label = self.update_mod_class_node_label(node=node.parent)
+                self.update_collapse_state_on_test_run(node=node)
+
+    def update_collapse_state_on_test_run(self, node: TreeNode):
+        if node.parent.data["type"] == NodeType.CLASS:
+            self.update_collapse_state_on_test_run(node=node.parent)
+        if self.all_child_tests_passed(parent=node.parent):
+            node.parent.collapse()
+            node.parent.label = f"[green]{node.parent.label}[/]"
+            # node.parent.label = self.update_mod_class_node_label(node=node.parent)
+        else:
+            node.parent.expand_all()
+            node.parent.label = f"[red]{node.parent.label}[/]"
 
     def all_child_tests_passed(self, parent: TreeNode):
         return all(
