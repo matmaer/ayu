@@ -17,6 +17,19 @@ CodePreview {
         height: auto;
     }
 }
+TreeFilter {
+    height: auto;
+    border: white;
+
+    Horizontal{
+        height: auto;
+    }
+
+    Button {
+        width:1fr;
+    }
+
+}
 
 Vertical{
     width:1fr;
