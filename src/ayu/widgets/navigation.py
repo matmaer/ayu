@@ -126,6 +126,7 @@ class TestTree(Tree):
         self.counter_failed = 0
 
     def mark_tests_as_running(self, nodeids: list[str]) -> None:
+        self.root.expand_all()
         self.reset_status_counters()
         for node in self._tree_nodes.values():
             if node.data and (node.data["nodeid"] in nodeids):
