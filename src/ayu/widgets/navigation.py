@@ -14,7 +14,6 @@ from ayu.utils import (
     NodeType,
     get_nice_tooltip,
     run_test_collection,
-    get_preview_test,
 )
 from ayu.constants import OUTCOME_SYMBOLS
 
@@ -138,18 +137,6 @@ class TestTree(Tree):
                 node.data["status"] = "queued"
                 node.label = self.update_test_node_label(node=node)
                 self.counter_queued += 1
-
-    def on_tree_node_highlighted(self, event: Tree.NodeHighlighted):
-        if event.node.data["type"] in [
-            NodeType.FUNCTION,
-            NodeType.COROUTINE,
-            NodeType.CLASS,
-        ]:
-            start_line_no = event.node.data["lineno"]
-            test_path = event.node.data["path"]
-            content = get_preview_test(file_path=test_path, start_line_no=start_line_no)
-            self.app.query_one("#textarea_preview").line_number_start = start_line_no
-            self.app.query_one("#textarea_preview").text = content
 
     def on_tree_node_selected(self, event: Tree.NodeSelected):
         ...

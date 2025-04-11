@@ -1,14 +1,14 @@
 from pathlib import Path
-from textual import work
+from textual import work, on
 from textual.app import App
 from textual.reactive import reactive
 from textual.events import Key
-from textual.widgets import Log, Header, Footer, Collapsible
+from textual.widgets import Log, Header, Footer, Collapsible, Tree
 from textual.containers import Horizontal, Vertical
 from textual_slidecontainer import SlideContainer
 
 from ayu.event_dispatcher import EventDispatcher
-from ayu.utils import EventType, run_all_tests
+from ayu.utils import EventType, NodeType, run_all_tests
 from ayu.widgets.navigation import TestTree
 from ayu.widgets.code_preview import CodePreview
 
@@ -82,6 +82,18 @@ class AyuApp(App):
             self.query_one(TestTree).reset_test_results()
             for log in self.query(Log):
                 log.clear()
+
+    @on(Tree.NodeHighlighted)
+    def update_test_preview(self, event: Tree.NodeHighlighted):
+        self.query_one(CodePreview).file_path_to_preview = Path(event.node.data["path"])
+        if event.node.data["type"] in [
+            NodeType.FUNCTION,
+            NodeType.COROUTINE,
+            NodeType.CLASS,
+        ]:
+            self.query_one(CodePreview).test_start_line_no = event.node.data["lineno"]
+        else:
+            self.query_one(CodePreview).test_start_line_no = -1
 
     @work(thread=True)
     def run_test(self):

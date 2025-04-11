@@ -3,7 +3,7 @@ def test_sum():
 
 
 def test_fail():
-    assert True
+    assert False
 
 
 class TestClass:
@@ -11,4 +11,4 @@ class TestClass:
         assert 1 + 1 == 2
 
     def test_class_fail(self):
-        assert True
+        assert False
