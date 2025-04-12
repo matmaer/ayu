@@ -37,6 +37,18 @@ class TestTree(Tree):
     counter_skipped: reactive[int] = reactive(0)
     counter_marked: reactive[int] = reactive(0)
 
+    filtered_data_test_tree: reactive[dict] = reactive({}, init=False)
+    filtered_counter_total_tests: reactive[int] = reactive(0, init=False)
+    filter: reactive[dict] = reactive(
+        {
+            "show_favourite": True,
+            "show_failed": True,
+            "show_skipped": True,
+            "show_passed": True,
+        },
+        init=False,
+    )
+
     def on_mount(self):
         self.app.dispatcher.register_handler(
             event_type=EventType.SCHEDULED,
@@ -48,21 +60,28 @@ class TestTree(Tree):
         )
 
         self.action_collect_tests()
+        # self.filtered_data_test_tree = self.app.data_test_tree
+        # self.filtered_counter_total_tests = self.app.counter_total_tests
         self.watch(self.app, "counter_total_tests", self.update_border_title)
-        self.watch(self.app, "data_test_tree", self.build_tree)
 
         return super().on_mount()
+
+    def watch_filtered_counter_total_tests(self):
+        self.update_border_title()
+
+    def watch_filtered_data_test_tree(self):
+        if self.filtered_data_test_tree:
+            self.build_tree()
 
     @work(thread=True)
     def action_collect_tests(self):
         run_test_collection()
 
     def build_tree(self):
-        if self.app.data_test_tree:
-            self.clear()
-            self.reset_status_counters()
-            self.counter_marked = 0
-            self.update_tree(tree_data=self.app.data_test_tree)
+        self.clear()
+        self.reset_status_counters()
+        self.counter_marked = 0
+        self.update_tree(tree_data=self.filtered_data_test_tree)
 
     def update_tree(self, *, tree_data: dict[Any, Any]):
         parent = self.root
@@ -101,7 +120,7 @@ class TestTree(Tree):
                         self.counter_failed += 1
                     case TestOutcome.SKIPPED:
                         self.counter_skipped += 1
-                    # node.parent.label = self.update_mod_class_node_label(node=node.parent)
+
                 self.update_collapse_state_on_test_run(node=node)
 
     def update_collapse_state_on_test_run(self, node: TreeNode):

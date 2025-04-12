@@ -36,7 +36,10 @@ class AyuApp(App):
         collection_log.border_title = "Collection"
         with Horizontal():
             with Vertical():
-                yield TestTree(label="Tests")
+                yield TestTree(label="Tests").data_bind(
+                    filtered_data_test_tree=AyuApp.data_test_tree,
+                    filtered_counter_total_tests=AyuApp.counter_total_tests,
+                )
                 yield TreeFilter()
             with Vertical():
                 yield CodePreview()
@@ -66,7 +69,6 @@ class AyuApp(App):
     def update_app_data(self, data):
         self.data_test_tree = data["tree"]
         self.counter_total_tests = data["meta"]["test_count"]
-        # self.mutate_reactive(self.data_test_tree)
 
     @work(exclusive=True)
     async def start_socket(self):
