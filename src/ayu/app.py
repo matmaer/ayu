@@ -1,11 +1,11 @@
 from pathlib import Path
 from textual import work, on
 from textual.app import App
+from textual.binding import Binding
 from textual.reactive import reactive
 from textual.events import Key
 from textual.widgets import Log, Header, Footer, Collapsible, Tree
 from textual.containers import Horizontal, Vertical
-# from textual_slidecontainer import SlideContainer
 
 from ayu.event_dispatcher import EventDispatcher
 from ayu.utils import EventType, NodeType, run_all_tests
@@ -18,11 +18,17 @@ class AyuApp(App):
     CSS_PATH = Path("assets/ayu.tcss")
     TOOLTIP_DELAY = 0.5
 
+    BINDINGS = [
+        Binding("ctrl+j", "run_test", "Run Tests", show=True),
+        Binding("s", "show_details", "Detals", show=True),
+    ]
+
     data_test_tree: reactive[dict] = reactive({}, init=False)
     counter_total_tests: reactive[int] = reactive(0, init=False)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, test_path: Path | None = None, *args, **kwargs):
         self.dispatcher = None
+        self.test_path = test_path
         super().__init__(*args, **kwargs)
 
     def compose(self):
@@ -77,17 +83,16 @@ class AyuApp(App):
         await self.dispatcher.start()
 
     def on_key(self, event: Key):
-        if event.key == "ctrl+j":
-            self.run_test()
         if event.key == "w":
             self.notify(f"{self.workers}")
-        if event.key == "s":
-            self.query_one(CodePreview).toggle()
-            self.query_one(TreeFilter).toggle()
         if event.key == "c":
             self.query_one(TestTree).reset_test_results()
             for log in self.query(Log):
                 log.clear()
+
+    def action_show_details(self):
+        self.query_one(CodePreview).toggle()
+        self.query_one(TreeFilter).toggle()
 
     @on(Tree.NodeHighlighted)
     def update_test_preview(self, event: Tree.NodeHighlighted):
@@ -102,7 +107,7 @@ class AyuApp(App):
             self.query_one(CodePreview).test_start_line_no = -1
 
     @work(thread=True)
-    def run_test(self):
+    def action_run_test(self):
         run_all_tests(tests_to_run=self.query_one(TestTree).marked_tests)
 
     def update_outcome_log(self, msg):
