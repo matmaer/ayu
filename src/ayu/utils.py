@@ -18,6 +18,13 @@ class EventType(str, Enum):
     REPORT = "REPORT"
 
 
+class TestOutcome(str, Enum):
+    PASSED = "PASSED"
+    FAILED = "FAILED"
+    SKIPPED = "SKIPPED"
+    QUEUED = "QUEUED"
+
+
 def run_test_collection():
     if Path.cwd().name == "ayu":
         command = "pytest --co".split()
@@ -69,7 +76,7 @@ def get_preview_test(file_path: str, start_line_no: int) -> str:
                 last_line_is_blank = True
                 continue
             if (
-                line.strip().startswith(("def ", "class ", "async ", "@"))
+                line.strip().startswith(("def ", "class ", "async def ", "@"))
                 and last_line_is_blank
             ):
                 end_line_no = line_no - 1

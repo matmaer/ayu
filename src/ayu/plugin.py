@@ -8,7 +8,7 @@ from _pytest.nodes import Node
 
 from ayu.event_dispatcher import send_event, check_connection
 from ayu.classes.event import Event
-from ayu.utils import EventType
+from ayu.utils import EventType, TestOutcome
 
 
 def pytest_addoption(parser) -> None:
@@ -73,7 +73,8 @@ class Ayu:
             return
 
         is_relevant = (report.when == "call") or (
-            (report.when == "setup") and (report.outcome in ["failed", "skipped"])
+            (report.when == "setup")
+            and (report.outcome.upper() in [TestOutcome.FAILED, TestOutcome.SKIPPED])
         )
 
         if self.connected and is_relevant:
@@ -83,7 +84,7 @@ class Ayu:
                         event_type=EventType.OUTCOME,
                         event_payload={
                             "nodeid": report.nodeid,
-                            "outcome": report.outcome,
+                            "outcome": report.outcome.upper(),
                             "report": f"{report}",
                         },
                     )

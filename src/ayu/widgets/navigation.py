@@ -12,6 +12,7 @@ from rich.text import Text
 from ayu.utils import (
     EventType,
     NodeType,
+    TestOutcome,
     get_nice_tooltip,
     run_test_collection,
 )
@@ -94,11 +95,11 @@ class TestTree(Tree):
                 node.label = self.update_test_node_label(node=node)
                 self.counter_queued -= 1
                 match outcome:
-                    case "passed":
+                    case TestOutcome.PASSED:
                         self.counter_passed += 1
-                    case "failed":
+                    case TestOutcome.FAILED:
                         self.counter_failed += 1
-                    case "skipped":
+                    case TestOutcome.SKIPPED:
                         self.counter_skipped += 1
                     # node.parent.label = self.update_mod_class_node_label(node=node.parent)
                 self.update_collapse_state_on_test_run(node=node)
@@ -120,7 +121,7 @@ class TestTree(Tree):
             [
                 self.all_child_tests_passed(parent=child)
                 if child.data["type"] == NodeType.CLASS
-                else child.data["status"] in ["passed", "queued"]
+                else child.data["status"] in [TestOutcome.PASSED, TestOutcome.QUEUED]
                 for child in parent.children
             ]
         )
@@ -136,7 +137,7 @@ class TestTree(Tree):
         self.reset_status_counters()
         for node in self._tree_nodes.values():
             if node.data and (node.data["nodeid"] in nodeids):
-                node.data["status"] = "queued"
+                node.data["status"] = TestOutcome.QUEUED
                 node.label = self.update_test_node_label(node=node)
                 self.counter_queued += 1
 
@@ -186,7 +187,11 @@ class TestTree(Tree):
         )
         # Misses Class Case
         counter_childs_test_passed = len(
-            [child for child in node.children if child.data["status"] == "passed"]
+            [
+                child
+                for child in node.children
+                if child.data["status"] == TestOutcome.PASSED
+            ]
         )
         fav_substring = "⭐ " if node.data["favourite"] else ""
         if counter_childs_test_passed == counter_childs_tests:
