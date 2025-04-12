@@ -72,6 +72,7 @@ class TestTree(Tree):
                     new_node = parent_node.add(
                         label=child["name"], data=child, expand=True
                     )
+                    # Update labels?
                     add_children(child_list=child["children"], parent_node=new_node)
                 else:
                     new_node = parent_node.add_leaf(label=child["name"], data=child)
@@ -146,12 +147,17 @@ class TestTree(Tree):
     def action_mark_test_as_fav(
         self, node: TreeNode | None = None, parent_val: bool | None = None
     ):
+        # mark filtered tree as fav
+        # self.app.data_test_tree['ayu']["children"][0]["favourite"] = True
+
+        # if no node given, select node under cursor
         if node is None:
             node = self.cursor_node
 
         if parent_val is None:
             parent_val = not node.data["favourite"]
 
+        # mark all childs the same as parent
         if node.children:
             node.data["favourite"] = parent_val
             node.label = self.update_test_node_label(node=node)
