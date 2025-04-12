@@ -1,8 +1,6 @@
 - align result Icons better on test tree
-- some form of test preview
 - some form of result viewer
 - search by name/tag functionality
-- dynamic collaps/expand if all tests on a module are run and passed
 - some more info on the module/dir path in tree e.g. 3/5 tests passed
 - test tree filtering
 - menu dynamic plugin installation+flags (needs uv)

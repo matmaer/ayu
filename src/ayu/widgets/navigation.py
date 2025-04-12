@@ -106,11 +106,12 @@ class TestTree(Tree):
         if node.parent.data["type"] == NodeType.CLASS:
             self.update_collapse_state_on_test_run(node=node.parent)
         if self.all_child_tests_passed(parent=node.parent):
-            node.parent.collapse()
+            # node.parent.collapse()
+            node.parent.label = self.update_mod_class_node_label(node=node.parent)
             node.parent.label = f"[green]{node.parent.label}[/]"
-            # node.parent.label = self.update_mod_class_node_label(node=node.parent)
         else:
             node.parent.expand_all()
+            node.parent.label = self.update_mod_class_node_label(node=node.parent)
             node.parent.label = f"[red]{node.parent.label}[/]"
 
     def all_child_tests_passed(self, parent: TreeNode):
@@ -169,13 +170,23 @@ class TestTree(Tree):
                 parent_node.label = self.update_test_node_label(node=parent_node)
                 parent_node = parent_node.parent
 
-    # def update_mod_class_node_label(self, node: TreeNode) -> str:
-    #     counter_childs_tests = len(node.children)
-    #     # Misses Class Case
-    #     counter_childs_test_passed = len([ child for child in node.children if child.data['status']=='passed'])
-    #     fav_substring = "⭐ " if node.data["favourite"] else ""
-    #
-    #     return f"{fav_substring}{node.data['name']} ({counter_childs_test_passed}/{counter_childs_tests})"
+    def update_mod_class_node_label(self, node: TreeNode) -> str:
+        counter_childs_tests = len(
+            [
+                child
+                for child in node.children
+                if child.data["type"] in [NodeType.FUNCTION, NodeType.COROUTINE]
+            ]
+        )
+        # Misses Class Case
+        counter_childs_test_passed = len(
+            [child for child in node.children if child.data["status"] == "passed"]
+        )
+        fav_substring = "⭐ " if node.data["favourite"] else ""
+        if counter_childs_test_passed == counter_childs_tests:
+            node.collapse()
+
+        return f"{fav_substring}{node.data['name']} ({counter_childs_test_passed}/{counter_childs_tests})"
 
     def update_test_node_label(self, node: TreeNode) -> str:
         fav_substring = "⭐ " if node.data["favourite"] else ""
