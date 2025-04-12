@@ -60,9 +60,6 @@ class TestTree(Tree):
         )
 
         self.action_collect_tests()
-        # self.filtered_data_test_tree = self.app.data_test_tree
-        # self.filtered_counter_total_tests = self.app.counter_total_tests
-        self.watch(self.app, "counter_total_tests", self.update_border_title)
 
         return super().on_mount()
 

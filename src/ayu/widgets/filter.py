@@ -1,6 +1,7 @@
 from textual.containers import Horizontal
 from textual.widgets import Button
 
+from rich.text import Text
 from textual_slidecontainer import SlideContainer
 
 
@@ -20,6 +21,23 @@ class TreeFilter(SlideContainer):
 
     def compose(self):
         with Horizontal():
-            yield Button(variant="success")
-            yield Button(variant="success")
-            yield Button(variant="success")
+            yield Button(
+                label=Text.from_markup("Favourites: :star:"),
+                id="button_filter_favourites",
+                variant="success",
+            )
+            yield Button(
+                label=Text.from_markup("Passed: :white_check_mark:"),
+                id="button_filter_passed",
+                variant="success",
+            )
+            yield Button(
+                label=Text.from_markup("Failed: :x:"),
+                id="button_filter_failed",
+                variant="success",
+            )
+            yield Button(
+                label=Text.from_markup("Skipped: [on yellow]:next_track_button: [/]"),
+                id="button_filter_skipped",
+                variant="success",
+            )
