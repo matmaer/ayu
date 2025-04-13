@@ -41,7 +41,7 @@ class TestTree(Tree):
     filtered_counter_total_tests: reactive[int] = reactive(0, init=False)
     filter: reactive[dict] = reactive(
         {
-            "show_favourite": True,
+            "show_favourites": True,
             "show_failed": True,
             "show_skipped": True,
             "show_passed": True,
@@ -62,6 +62,9 @@ class TestTree(Tree):
         self.action_collect_tests()
 
         return super().on_mount()
+
+    def watch_filter(self):
+        self.notify(f"from tree: {self.filter}")
 
     def watch_filtered_counter_total_tests(self):
         self.update_border_title()

@@ -40,13 +40,15 @@ class AyuApp(App):
         report_log.border_title = "Report"
         collection_log = Log(highlight=True, id="log_collection")
         collection_log.border_title = "Collection"
+        tree_filter = TreeFilter()
         with Horizontal():
             with Vertical():
                 yield TestTree(label="Tests").data_bind(
+                    filter=tree_filter.filter,
                     filtered_data_test_tree=AyuApp.data_test_tree,
                     filtered_counter_total_tests=AyuApp.counter_total_tests,
                 )
-                yield TreeFilter()
+                yield tree_filter
             with Vertical():
                 yield CodePreview()
                 with Collapsible(title="Outcome", collapsed=True):
@@ -93,6 +95,11 @@ class AyuApp(App):
     def action_show_details(self):
         self.query_one(CodePreview).toggle()
         self.query_one(TreeFilter).toggle()
+
+    # @on(Button.Pressed)
+    # def update_test_tree_filter(self, event:Button.Pressed):
+    #     self.query_one(TestTree)
+    #     ...
 
     @on(Tree.NodeHighlighted)
     def update_test_preview(self, event: Tree.NodeHighlighted):
