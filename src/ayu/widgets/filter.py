@@ -27,15 +27,6 @@ class TreeFilter(SlideContainer):
             **kwargs,
         )
 
-    def on_button_pressed(self, event: Button.Pressed):
-        button_id_part = event.button.id.split("_")[-1]
-        filter_state = event.button.filter_is_active
-        self.filter[f"show_{button_id_part}"] = filter_state
-        self.mutate_reactive(TreeFilter.filter)
-
-    def watch_filter(self):
-        self.notify(f"from filter: {self.filter}")
-
     def compose(self):
         with Horizontal():
             yield FilterButton(
@@ -57,6 +48,8 @@ class TreeFilter(SlideContainer):
 
 
 class FilterButton(Button):
+    class Pressed(Button.Pressed): ...
+
     """Button for filtering the TestTree"""
 
     filter_is_active: reactive[bool] = reactive(True)

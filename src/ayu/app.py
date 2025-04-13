@@ -4,7 +4,7 @@ from textual.app import App
 from textual.binding import Binding
 from textual.reactive import reactive
 from textual.events import Key
-from textual.widgets import Log, Header, Footer, Collapsible, Tree
+from textual.widgets import Log, Header, Footer, Collapsible, Tree, Button
 from textual.containers import Horizontal, Vertical
 
 from ayu.event_dispatcher import EventDispatcher
@@ -26,6 +26,16 @@ class AyuApp(App):
     data_test_tree: reactive[dict] = reactive({}, init=False)
     counter_total_tests: reactive[int] = reactive(0, init=False)
 
+    filter: reactive[dict] = reactive(
+        {
+            "show_favourites": True,
+            "show_failed": True,
+            "show_skipped": True,
+            "show_passed": True,
+        },
+        init=False,
+    )
+
     def __init__(self, test_path: Path | None = None, *args, **kwargs):
         self.dispatcher = None
         self.test_path = test_path
@@ -40,15 +50,14 @@ class AyuApp(App):
         report_log.border_title = "Report"
         collection_log = Log(highlight=True, id="log_collection")
         collection_log.border_title = "Collection"
-        tree_filter = TreeFilter()
         with Horizontal():
             with Vertical():
                 yield TestTree(label="Tests").data_bind(
-                    filter=tree_filter.filter,
+                    filter=AyuApp.filter,
                     filtered_data_test_tree=AyuApp.data_test_tree,
                     filtered_counter_total_tests=AyuApp.counter_total_tests,
                 )
-                yield tree_filter
+                yield TreeFilter()
             with Vertical():
                 yield CodePreview()
                 with Collapsible(title="Outcome", collapsed=True):
@@ -96,10 +105,12 @@ class AyuApp(App):
         self.query_one(CodePreview).toggle()
         self.query_one(TreeFilter).toggle()
 
-    # @on(Button.Pressed)
-    # def update_test_tree_filter(self, event:Button.Pressed):
-    #     self.query_one(TestTree)
-    #     ...
+    @on(Button.Pressed)
+    def update_test_tree_filter(self, event: Button.Pressed):
+        button_id_part = event.button.id.split("_")[-1]
+        filter_state = event.button.filter_is_active
+        self.filter[f"show_{button_id_part}"] = filter_state
+        self.mutate_reactive(AyuApp.filter)
 
     @on(Tree.NodeHighlighted)
     def update_test_preview(self, event: Tree.NodeHighlighted):

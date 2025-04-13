@@ -64,7 +64,8 @@ class TestTree(Tree):
         return super().on_mount()
 
     def watch_filter(self):
-        self.notify(f"from tree: {self.filter}")
+        self.mutate_reactive(TestTree.filtered_data_test_tree)
+        # self.notify(f"from tree: {self.filter}")
 
     def watch_filtered_counter_total_tests(self):
         self.update_border_title()
@@ -93,9 +94,14 @@ class TestTree(Tree):
                         label=child["name"], data=child, expand=True
                     )
                     # Update labels?
+                    new_node.label = self.update_mod_class_node_label(node=new_node)
+
                     add_children(child_list=child["children"], parent_node=new_node)
                 else:
+                    if not self.filter["show_favourites"] and child["favourite"]:
+                        continue
                     new_node = parent_node.add_leaf(label=child["name"], data=child)
+                    new_node.label = self.update_test_node_label(node=new_node)
 
         for key, value in tree_data.items():
             if isinstance(value, dict) and "children" in value and value["children"]:
@@ -188,6 +194,12 @@ class TestTree(Tree):
                 self.counter_marked += 1 if parent_val else -1
             node.data["favourite"] = parent_val
             node.label = self.update_test_node_label(node=node)
+            self.update_filtered_data(
+                tree=self.filtered_data_test_tree,
+                nodeid=node.data["nodeid"],
+                is_fav=parent_val,
+            )
+            # self.mutate_reactive(TestTree.filtered_data_test_tree)
 
         if not node.data["favourite"]:
             parent_node = node.parent
@@ -195,6 +207,21 @@ class TestTree(Tree):
                 parent_node.data["favourite"] = node.data["favourite"]
                 parent_node.label = self.update_test_node_label(node=parent_node)
                 parent_node = parent_node.parent
+
+    def update_filtered_data(self, nodeid: str, is_fav: bool, tree: dict):
+        def update_filtered_node(child_list: list):
+            for child in child_list:
+                if child["nodeid"] == nodeid:
+                    return True
+                if child["children"]:
+                    update_filtered_node(child_list=child["children"])
+
+        for key, val in tree.items():
+            if val["nodeid"] == nodeid:
+                val["favourite"] = is_fav
+                return True
+            if val["children"]:
+                update_filtered_node(child_list=val["children"])
 
     def update_mod_class_node_label(self, node: TreeNode) -> str:
         counter_childs_tests = len(
@@ -213,10 +240,16 @@ class TestTree(Tree):
             ]
         )
         fav_substring = "⭐ " if node.data["favourite"] else ""
-        if counter_childs_test_passed == counter_childs_tests:
-            node.collapse()
+        count_substring = (
+            f"({counter_childs_test_passed}/{counter_childs_tests})"
+            if counter_childs_tests > 0
+            else ""
+        )
 
-        return f"{fav_substring}{node.data['name']} ({counter_childs_test_passed}/{counter_childs_tests})"
+        if counter_childs_test_passed != counter_childs_tests:
+            node.expand()
+
+        return f"{fav_substring}{node.data['name']} {count_substring}"
 
     def update_test_node_label(self, node: TreeNode) -> str:
         fav_substring = "⭐ " if node.data["favourite"] else ""
