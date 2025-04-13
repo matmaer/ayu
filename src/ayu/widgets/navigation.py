@@ -74,6 +74,21 @@ class TestTree(Tree):
         if self.filtered_data_test_tree:
             self.build_tree()
 
+    def watch_counter_queued(self):
+        self.update_border_title()
+
+    def watch_counter_passed(self):
+        self.update_border_title()
+
+    def watch_counter_failed(self):
+        self.update_border_title()
+
+    def watch_counter_skipped(self):
+        self.update_border_title()
+
+    def watch_counter_marked(self):
+        self.update_border_title()
+
     @work(thread=True)
     def action_collect_tests(self):
         run_test_collection()
@@ -90,6 +105,8 @@ class TestTree(Tree):
         def add_children(child_list: list[dict[Any, Any]], parent_node: TreeNode):
             for child in child_list:
                 if child["children"]:
+                    if not self.filter["show_favourites"] and child["favourite"]:
+                        continue
                     new_node = parent_node.add(
                         label=child["name"], data=child, expand=True
                     )
@@ -173,9 +190,6 @@ class TestTree(Tree):
     def action_mark_test_as_fav(
         self, node: TreeNode | None = None, parent_val: bool | None = None
     ):
-        # mark filtered tree as fav
-        # self.app.data_test_tree['ayu']["children"][0]["favourite"] = True
-
         # if no node given, select node under cursor
         if node is None:
             node = self.cursor_node
@@ -187,6 +201,10 @@ class TestTree(Tree):
         if node.children:
             node.data["favourite"] = parent_val
             node.label = self.update_test_node_label(node=node)
+            self.update_filtered_data_test_tree(
+                nodeid=node.data["nodeid"],
+                is_fav=parent_val,
+            )
             for child in node.children:
                 self.action_mark_test_as_fav(node=child, parent_val=parent_val)
         else:
@@ -194,8 +212,7 @@ class TestTree(Tree):
                 self.counter_marked += 1 if parent_val else -1
             node.data["favourite"] = parent_val
             node.label = self.update_test_node_label(node=node)
-            self.update_filtered_data(
-                tree=self.filtered_data_test_tree,
+            self.update_filtered_data_test_tree(
                 nodeid=node.data["nodeid"],
                 is_fav=parent_val,
             )
@@ -208,7 +225,12 @@ class TestTree(Tree):
                 parent_node.label = self.update_test_node_label(node=parent_node)
                 parent_node = parent_node.parent
 
-    def update_filtered_data(self, nodeid: str, is_fav: bool, tree: dict):
+    def update_filtered_data_test_tree(
+        self, nodeid: str, is_fav: bool, tree: dict | None = None
+    ):
+        if tree is None:
+            tree = self.filtered_data_test_tree
+
         def update_filtered_node(child_list: list):
             for child in child_list:
                 if child["nodeid"] == nodeid:
@@ -264,21 +286,6 @@ class TestTree(Tree):
         if self.hover_line != -1:
             data = self._tree_lines[self.hover_line].node.data
             self.tooltip = get_nice_tooltip(node_data=data)
-
-    def watch_counter_queued(self):
-        self.update_border_title()
-
-    def watch_counter_passed(self):
-        self.update_border_title()
-
-    def watch_counter_failed(self):
-        self.update_border_title()
-
-    def watch_counter_skipped(self):
-        self.update_border_title()
-
-    def watch_counter_marked(self):
-        self.update_border_title()
 
     def update_border_title(self):
         symbol = "hourglass_not_done" if self.counter_queued > 0 else "hourglass_done"
