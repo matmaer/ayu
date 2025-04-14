@@ -20,7 +20,7 @@ class AyuApp(App):
 
     BINDINGS = [
         Binding("ctrl+j", "run_test", "Run Tests", show=True),
-        Binding("s", "show_details", "Detals", show=True),
+        Binding("s", "show_details", "Details", show=True),
     ]
 
     data_test_tree: reactive[dict] = reactive({}, init=False)
@@ -112,6 +112,17 @@ class AyuApp(App):
         self.filter[f"show_{button_id_part}"] = filter_state
         self.mutate_reactive(AyuApp.filter)
 
+    def reset_filters(self):
+        for btn in self.query(".filter-button"):
+            btn.filter_is_active = True
+        self.filter = {
+            "show_favourites": True,
+            "show_failed": True,
+            "show_skipped": True,
+            "show_passed": True,
+        }
+        self.mutate_reactive(AyuApp.filter)
+
     @on(Tree.NodeHighlighted)
     def update_test_preview(self, event: Tree.NodeHighlighted):
         self.query_one(CodePreview).file_path_to_preview = Path(event.node.data["path"])
@@ -126,6 +137,7 @@ class AyuApp(App):
 
     @work(thread=True)
     def action_run_test(self):
+        self.reset_filters()
         run_all_tests(tests_to_run=self.query_one(TestTree).marked_tests)
 
     def update_outcome_log(self, msg):

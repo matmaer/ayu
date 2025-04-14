@@ -7,16 +7,6 @@ from textual_slidecontainer import SlideContainer
 
 
 class TreeFilter(SlideContainer):
-    filter: reactive[dict] = reactive(
-        {
-            "show_favourites": True,
-            "show_failed": True,
-            "show_skipped": True,
-            "show_passed": True,
-        },
-        init=False,
-    )
-
     def __init__(self, *args, **kwargs):
         super().__init__(
             slide_direction="down",
@@ -30,20 +20,24 @@ class TreeFilter(SlideContainer):
     def compose(self):
         with Horizontal():
             yield FilterButton(
-                label=Text.from_markup("Favourites: :star:"),
+                label=Text.from_markup("Marked: :star:"),
                 id="button_filter_favourites",
+                classes="filter-button",
             )
             yield FilterButton(
                 label=Text.from_markup("Passed: :white_check_mark:"),
                 id="button_filter_passed",
+                classes="filter-button",
             )
             yield FilterButton(
                 label=Text.from_markup("Failed: :x:"),
                 id="button_filter_failed",
+                classes="filter-button",
             )
             yield FilterButton(
                 label=Text.from_markup("Skipped: [on yellow]:next_track_button: [/]"),
                 id="button_filter_skipped",
+                classes="filter-button",
             )
 
 

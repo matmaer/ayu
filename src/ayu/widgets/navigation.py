@@ -152,11 +152,9 @@ class TestTree(Tree):
         if self.all_child_tests_passed(parent=node.parent):
             # node.parent.collapse()
             node.parent.label = self.update_mod_class_node_label(node=node.parent)
-            node.parent.label = f"[green]{node.parent.label}[/]"
         else:
-            node.parent.expand_all()
+            # node.parent.expand_all()
             node.parent.label = self.update_mod_class_node_label(node=node.parent)
-            node.parent.label = f"[red]{node.parent.label}[/]"
 
     def all_child_tests_passed(self, parent: TreeNode):
         return all(
@@ -250,7 +248,7 @@ class TestTree(Tree):
             [
                 child
                 for child in node.children
-                if child.data["type"] in [NodeType.FUNCTION, NodeType.COROUTINE]
+                if (child.data["type"] in [NodeType.FUNCTION, NodeType.COROUTINE])
             ]
         )
         # Misses Class Case
@@ -270,8 +268,16 @@ class TestTree(Tree):
 
         if counter_childs_test_passed != counter_childs_tests:
             node.expand()
+            color_style = "red"
+        else:
+            color_style = "green"
 
-        return f"{fav_substring}{node.data['name']} {count_substring}"
+        if all([child.data["status"] == "" for child in node.children]):
+            color_style = ""
+
+        return Text.from_markup(
+            f"{fav_substring}{node.data['name']} {count_substring}", style=color_style
+        )
 
     def update_test_node_label(self, node: TreeNode) -> str:
         fav_substring = "⭐ " if node.data["favourite"] else ""
