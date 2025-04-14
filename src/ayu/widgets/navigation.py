@@ -91,6 +91,7 @@ class TestTree(Tree):
 
     @work(thread=True)
     def action_collect_tests(self):
+        self.app.test_results_ready = False
         run_test_collection()
 
     def build_tree(self):
@@ -130,6 +131,8 @@ class TestTree(Tree):
                         continue
                     new_node = parent_node.add_leaf(label=child["name"], data=child)
                     new_node.label = self.update_test_node_label(node=new_node)
+                    if child["favourite"]:
+                        self.counter_marked += 1
 
         for key, value in tree_data.items():
             if isinstance(value, dict) and "children" in value and value["children"]:
@@ -160,22 +163,23 @@ class TestTree(Tree):
                 )
 
     def update_collapse_state_on_test_run(self, node: TreeNode):
+        def all_child_tests_passed(parent: TreeNode):
+            return all(
+                [
+                    all_child_tests_passed(parent=child)
+                    if child.data["type"] == NodeType.CLASS
+                    else child.data["status"]
+                    in [TestOutcome.PASSED, TestOutcome.QUEUED]
+                    for child in parent.children
+                ]
+            )
+
         if node.parent.data["type"] == NodeType.CLASS:
             self.update_collapse_state_on_test_run(node=node.parent)
-        if self.all_child_tests_passed(parent=node.parent):
+        if all_child_tests_passed(parent=node.parent):
             node.parent.label = self.update_mod_class_node_label(node=node.parent)
         else:
             node.parent.label = self.update_mod_class_node_label(node=node.parent)
-
-    def all_child_tests_passed(self, parent: TreeNode):
-        return all(
-            [
-                self.all_child_tests_passed(parent=child)
-                if child.data["type"] == NodeType.CLASS
-                else child.data["status"] in [TestOutcome.PASSED, TestOutcome.QUEUED]
-                for child in parent.children
-            ]
-        )
 
     def reset_status_counters(self) -> None:
         self.counter_queued = 0

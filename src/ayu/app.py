@@ -35,6 +35,7 @@ class AyuApp(App):
         },
         init=False,
     )
+    test_results_ready: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, test_path: Path | None = None, *args, **kwargs):
         self.dispatcher = None
@@ -57,7 +58,9 @@ class AyuApp(App):
                     filtered_data_test_tree=AyuApp.data_test_tree,
                     filtered_counter_total_tests=AyuApp.counter_total_tests,
                 )
-                yield TreeFilter()
+                yield TreeFilter().data_bind(
+                    test_results_ready=AyuApp.test_results_ready
+                )
             with Vertical():
                 yield CodePreview()
                 with Collapsible(title="Outcome", collapsed=True):
@@ -139,6 +142,7 @@ class AyuApp(App):
     def action_run_test(self):
         self.reset_filters()
         run_all_tests(tests_to_run=self.query_one(TestTree).marked_tests)
+        self.test_results_ready = True
 
     def update_outcome_log(self, msg):
         self.query_one("#log_outcome", Log).write_line(f"{msg}")

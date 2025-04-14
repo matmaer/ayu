@@ -42,3 +42,7 @@ Collapsible {
 #adasd:focus {
     background: $error;
 }
+
+.hidden {
+    display:None;
+}

@@ -7,6 +7,8 @@ from textual_slidecontainer import SlideContainer
 
 
 class TreeFilter(SlideContainer):
+    test_results_ready: reactive[bool] = reactive(False, init=False)
+
     def __init__(self, *args, **kwargs):
         super().__init__(
             slide_direction="down",
@@ -17,8 +19,21 @@ class TreeFilter(SlideContainer):
             **kwargs,
         )
 
+    def on_mount(self):
+        self.border_title = Text.from_markup(
+            ":magnifying_glass_tilted_right: Test Result Filter (click to toggle)"
+        )
+
+    def watch_test_results_ready(self):
+        self.query_one("#horizontal_filter_buttons").set_class(
+            not self.test_results_ready, "hidden"
+        )
+        self.query_one("#horizontal_filter_message").set_class(
+            self.test_results_ready, "hidden"
+        )
+
     def compose(self):
-        with Horizontal():
+        with Horizontal(id="horizontal_filter_buttons", classes="hidden"):
             yield FilterButton(
                 label=Text.from_markup("Marked: :star:"),
                 id="button_filter_favourites",
@@ -39,6 +54,8 @@ class TreeFilter(SlideContainer):
                 id="button_filter_skipped",
                 classes="filter-button",
             )
+        with Horizontal(id="horizontal_filter_message"):
+            yield Button()
 
 
 class FilterButton(Button):
