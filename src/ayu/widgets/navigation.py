@@ -293,9 +293,11 @@ class TestTree(Tree):
             color_style = "red"
         else:
             color_style = "green"
+            node.collapse()
 
         if all([child.data["status"] == "" for child in node.children]):
             color_style = ""
+            node.expand()
         return Text.from_markup(
             f"{fav_substring}{node.data['name']} {count_substring}", style=color_style
         )
