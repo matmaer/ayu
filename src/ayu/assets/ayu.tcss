@@ -19,14 +19,19 @@ CodePreview {
 }
 TreeFilter {
     height: auto;
+    width: 1fr;
     border: white;
 
     Horizontal{
         height: auto;
+        width: 1fr;
     }
 
     Button {
         width:1fr;
+        min-width:10;
+        margin:0 1;
+        padding:0;
     }
 
 }

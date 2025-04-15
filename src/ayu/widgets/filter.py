@@ -25,6 +25,12 @@ class TreeFilter(SlideContainer):
         )
 
     def watch_test_results_ready(self):
+        if not self.test_results_ready:
+            self.border_title = Text.from_markup("No Tests have been run yet")
+        else:
+            self.border_title = Text.from_markup(
+                ":magnifying_glass_tilted_right: Test Result Filter (click to toggle)"
+            )
         self.query_one("#horizontal_filter_buttons").set_class(
             not self.test_results_ready, "hidden"
         )
@@ -55,7 +61,9 @@ class TreeFilter(SlideContainer):
                 classes="filter-button",
             )
         with Horizontal(id="horizontal_filter_message"):
-            yield Button()
+            yield Button(
+                "Result Filter is available once tests are run", variant="primary"
+            )
 
 
 class FilterButton(Button):

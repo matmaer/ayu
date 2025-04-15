@@ -54,7 +54,7 @@ class AyuApp(App):
         collection_log = Log(highlight=True, id="log_collection")
         collection_log.border_title = "Collection"
         with Horizontal():
-            with Vertical():
+            with Vertical(id="vertical_test_tree"):
                 yield TestTree(label="Tests").data_bind(
                     filter=AyuApp.filter,
                     filtered_data_test_tree=AyuApp.data_test_tree,
