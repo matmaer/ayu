@@ -23,6 +23,7 @@ class AyuApp(App):
         Binding("ctrl+j", "run_tests", "Run Tests", show=True),
         Binding("ctrl+j", "run_marked_tests", "Run ⭐ Tests", show=True),
         Binding("s", "show_details", "Details", show=True),
+        Binding("c", "clear_test_results", "Clear Results", show=True),
     ]
 
     data_test_tree: reactive[dict] = reactive({}, init=False)
@@ -101,10 +102,6 @@ class AyuApp(App):
     def on_key(self, event: Key):
         if event.key == "w":
             self.notify(f"{self.workers}")
-        if event.key == "c":
-            self.query_one(TestTree).reset_test_results()
-            for log in self.query(Log):
-                log.clear()
 
     def action_show_details(self):
         self.query_one(CodePreview).toggle()
@@ -130,15 +127,21 @@ class AyuApp(App):
 
     @on(Tree.NodeHighlighted)
     def update_test_preview(self, event: Tree.NodeHighlighted):
-        self.query_one(CodePreview).file_path_to_preview = Path(event.node.data["path"])
+        code_preview = self.query_one(CodePreview)
+        code_preview.file_path_to_preview = Path(event.node.data["path"])
         if event.node.data["type"] in [
             NodeType.FUNCTION,
             NodeType.COROUTINE,
             NodeType.CLASS,
         ]:
-            self.query_one(CodePreview).test_start_line_no = event.node.data["lineno"]
+            code_preview.test_start_line_no = event.node.data["lineno"]
         else:
-            self.query_one(CodePreview).test_start_line_no = -1
+            code_preview.test_start_line_no = -1
+
+    @on(Tree.NodeHighlighted)
+    def update_test_result_preview(self, event: Tree.NodeHighlighted):
+        # TODO Result + Long Error text
+        ...
 
     @work(thread=True)
     def action_run_tests(self):
@@ -151,6 +154,12 @@ class AyuApp(App):
         self.reset_filters()
         run_all_tests(tests_to_run=self.query_one(TestTree).marked_tests)
         self.test_results_ready = True
+
+    def action_clear_test_results(self):
+        self.test_results_ready = False
+        self.query_one(TestTree).reset_test_results()
+        for log in self.query(Log):
+            log.clear()
 
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
         # on app startup widget is not mounted yet so

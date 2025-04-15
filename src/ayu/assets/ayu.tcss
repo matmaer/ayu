@@ -44,10 +44,6 @@ Collapsible {
     height: auto;
 }
 
-#adasd:focus {
-    background: $error;
-}
-
 .hidden {
     display:None;
 }

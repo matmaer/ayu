@@ -343,3 +343,16 @@ class TestTree(Tree):
             ):
                 marked_tests.append(node.data["nodeid"])
         return marked_tests
+
+    def reset_test_results(self):
+        self.reset_status_counters()
+        for node in self._tree_nodes.values():
+            if (
+                node.data
+                and (node.data["type"] in [NodeType.FUNCTION, NodeType.COROUTINE])
+                and node.data["status"]
+            ):
+                node.data["status"] = ""
+                node.label = self.update_test_node_label(node=node)
+            elif node.data and (node.data["type"] in [NodeType.MODULE, NodeType.CLASS]):
+                node.label = self.update_test_node_label(node=node)

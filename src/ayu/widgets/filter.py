@@ -19,10 +19,10 @@ class TreeFilter(SlideContainer):
             **kwargs,
         )
 
-    def on_mount(self):
-        self.border_title = Text.from_markup(
-            ":magnifying_glass_tilted_right: Test Result Filter (click to toggle)"
-        )
+    # def on_mount(self):
+    #     self.border_title = Text.from_markup(
+    #         ":magnifying_glass_tilted_right: Test Result Filter (click to toggle)"
+    #     )
 
     def watch_test_results_ready(self):
         if not self.test_results_ready:
