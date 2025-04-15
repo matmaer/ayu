@@ -9,12 +9,37 @@ TestTree {
     border-top: white;
 
 }
-CodePreview {
+DetailView {
     height: auto;
     border: white;
+    background:$surface;
 
-    TextArea {
+    CodePreview {
         height: auto;
+        border-bottom: none;
+        border-left: none;
+        border-right: none;
+    }
+
+
+    TestResultDetails {
+        height: auto;
+        border: none;
+    }
+}
+ToggleRule{
+    color:white;
+    padding:0;
+    margin:0;
+    content-align: center middle;
+    align: center middle;
+
+    Button{
+        text-align: center;
+        width:auto;
+        min-width:5;
+        border:none;
+        height:1;
     }
 }
 TreeFilter {

@@ -11,7 +11,7 @@ from textual.containers import Horizontal, Vertical
 from ayu.event_dispatcher import EventDispatcher
 from ayu.utils import EventType, NodeType, run_all_tests
 from ayu.widgets.navigation import TestTree
-from ayu.widgets.code_preview import CodePreview
+from ayu.widgets.detail_viewer import DetailView
 from ayu.widgets.filter import TreeFilter
 
 
@@ -65,7 +65,7 @@ class AyuApp(App):
                     test_results_ready=AyuApp.test_results_ready
                 )
             with Vertical():
-                yield CodePreview()
+                yield DetailView()
                 with Collapsible(title="Outcome", collapsed=True):
                     yield outcome_log
                 with Collapsible(title="Report", collapsed=True):
@@ -104,7 +104,7 @@ class AyuApp(App):
             self.notify(f"{self.workers}")
 
     def action_show_details(self):
-        self.query_one(CodePreview).toggle()
+        self.query_one(DetailView).toggle()
         self.query_one(TreeFilter).toggle()
 
     @on(Button.Pressed, ".filter-button")
@@ -127,16 +127,16 @@ class AyuApp(App):
 
     @on(Tree.NodeHighlighted)
     def update_test_preview(self, event: Tree.NodeHighlighted):
-        code_preview = self.query_one(CodePreview)
-        code_preview.file_path_to_preview = Path(event.node.data["path"])
+        detail_view = self.query_one(DetailView)
+        detail_view.file_path_to_preview = Path(event.node.data["path"])
         if event.node.data["type"] in [
             NodeType.FUNCTION,
             NodeType.COROUTINE,
             NodeType.CLASS,
         ]:
-            code_preview.test_start_line_no = event.node.data["lineno"]
+            detail_view.test_start_line_no = event.node.data["lineno"]
         else:
-            code_preview.test_start_line_no = -1
+            detail_view.test_start_line_no = -1
 
     @on(Tree.NodeHighlighted)
     def update_test_result_preview(self, event: Tree.NodeHighlighted):
