@@ -59,8 +59,6 @@ class TreeFilter(SlideContainer):
 
 
 class FilterButton(Button):
-    class Pressed(Button.Pressed): ...
-
     """Button for filtering the TestTree"""
 
     filter_is_active: reactive[bool] = reactive(True)

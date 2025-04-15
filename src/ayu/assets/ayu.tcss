@@ -1,6 +1,6 @@
 Log {
     border: $primary;
-    max-height: 10;
+    max-height: 15;
     height:auto;
 }
 TestTree {

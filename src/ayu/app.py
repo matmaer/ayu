@@ -2,6 +2,7 @@ from pathlib import Path
 from textual import work, on
 from textual.app import App
 from textual.binding import Binding
+from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.events import Key
 from textual.widgets import Log, Header, Footer, Collapsible, Tree, Button
@@ -19,7 +20,8 @@ class AyuApp(App):
     TOOLTIP_DELAY = 0.5
 
     BINDINGS = [
-        Binding("ctrl+j", "run_test", "Run Tests", show=True),
+        Binding("ctrl+j", "run_tests", "Run Tests", show=True),
+        Binding("ctrl+j", "run_marked_tests", "Run ⭐ Tests", show=True),
         Binding("s", "show_details", "Details", show=True),
     ]
 
@@ -108,7 +110,7 @@ class AyuApp(App):
         self.query_one(CodePreview).toggle()
         self.query_one(TreeFilter).toggle()
 
-    @on(Button.Pressed)
+    @on(Button.Pressed, ".filter-button")
     def update_test_tree_filter(self, event: Button.Pressed):
         button_id_part = event.button.id.split("_")[-1]
         filter_state = event.button.filter_is_active
@@ -139,10 +141,30 @@ class AyuApp(App):
             self.query_one(CodePreview).test_start_line_no = -1
 
     @work(thread=True)
-    def action_run_test(self):
+    def action_run_tests(self):
+        self.reset_filters()
+        run_all_tests()
+        self.test_results_ready = True
+
+    @work(thread=True)
+    def action_run_marked_tests(self):
         self.reset_filters()
         run_all_tests(tests_to_run=self.query_one(TestTree).marked_tests)
         self.test_results_ready = True
+
+    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
+        # on app startup widget is not mounted yet so
+        # try except is needed
+        try:
+            if action == "run_tests":
+                if self.query_one(TestTree).marked_tests:
+                    return False
+            if action == "run_marked_tests":
+                if not self.query_one(TestTree).marked_tests:
+                    return False
+        except NoMatches:
+            return True
+        return True
 
     def update_outcome_log(self, msg):
         self.query_one("#log_outcome", Log).write_line(f"{msg}")

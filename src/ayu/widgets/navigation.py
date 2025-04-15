@@ -88,6 +88,7 @@ class TestTree(Tree):
 
     def watch_counter_marked(self):
         self.update_border_title()
+        self.app.refresh_bindings()
 
     @work(thread=True)
     def action_collect_tests(self):

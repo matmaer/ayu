@@ -65,7 +65,6 @@ class Ayu:
         return
 
     # gather status updates during run
-    # @pytest.hookimpl(trylast=True)
     def pytest_runtest_logreport(self, report: TestReport):
         if self.config.pluginmanager.hasplugin("xdist") and (
             "PYTEST_XDIST_WORKER" not in os.environ
@@ -93,31 +92,42 @@ class Ayu:
 
     # summary after run for each tests
     @pytest.hookimpl(tryfirst=True)
-    def pytest_terminal_summary(self, terminalreporter: TerminalReporter):
+    def pytest_terminal_summary(self, terminalreporter: TerminalReporter, exitstatus):
+        if self.config.pluginmanager.hasplugin("xdist") and (
+            "PYTEST_XDIST_WORKER" not in os.environ
+        ):
+            return
+
+        report_dict = {}
+        for outcome, reports in terminalreporter.stats.items():
+            if outcome in ["", "deselected"]:
+                continue
+            for report in reports:
+                report_dict[f"{report.nodeid}-{report.when}"] = {
+                    "nodeid": report.nodeid,
+                    "when": report.when,
+                    "caplog": report.caplog,
+                    "longreprtext": report.longreprtext,
+                    "duration": report.duration,
+                    "outcome": report.outcome,
+                    "lineno": report.location[1],
+                    "otherloc": report.location[2],
+                }
+
+        # import json
+
         if self.connected:
             asyncio.run(
                 send_event(
                     event=Event(
                         event_type=EventType.REPORT,
+                        # event_payload=json.dumps(report_dict, indent=2),
                         event_payload={
-                            "report": f"{terminalreporter.stats.get('', [])}",
+                            "report": report_dict,
                         },
                     )
                 )
             )
-        return
-        for report in terminalreporter.stats.get("", []):
-            if report.when == "teardown":
-                print("## Summary ##")
-                print(f"when: {report.when}")
-                print(f"cap: {report.caplog}")
-                print(f"long: {report.longreprtext}")
-                print(f"dur: {report.duration}")
-                print(f"outcome: {report.outcome}")
-                print(f"err: {report.capstderr}")
-                print(f"line_no:{report.location[1]}")
-                print(f"test:{report.location[2]}")
-                print("## End ##")
 
 
 def build_dict_tree(items: list[Item]) -> dict:

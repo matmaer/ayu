@@ -1,7 +1,6 @@
 - align result Icons better on test tree
 - some form of result viewer
+    -
 - search by name/tag functionality
-- some more info on the module/dir path in tree e.g. 3/5 tests passed
-- test tree filtering
 - menu dynamic plugin installation+flags (needs uv)
 - using something like watchfiles to detect filechanges and update the test_tree accordingly (or just stick with a manual refresh)
