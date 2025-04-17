@@ -31,12 +31,11 @@ class TreeFilter(SlideContainer):
             self.border_title = Text.from_markup(
                 ":magnifying_glass_tilted_right: Test Result Filter (click to toggle)"
             )
-        self.query_one("#horizontal_filter_buttons").set_class(
-            not self.test_results_ready, "hidden"
-        )
-        self.query_one("#horizontal_filter_message").set_class(
-            self.test_results_ready, "hidden"
-        )
+        self.query_one("#horizontal_filter_buttons").display = self.test_results_ready
+
+        self.query_one(
+            "#horizontal_filter_message"
+        ).display = not self.test_results_ready
 
     def compose(self):
         with Horizontal(id="horizontal_filter_buttons", classes="hidden"):

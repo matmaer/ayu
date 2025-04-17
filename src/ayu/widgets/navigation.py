@@ -345,6 +345,8 @@ class TestTree(Tree):
         return marked_tests
 
     def reset_test_results(self):
+        # reset self.filtered_data_test_tree,
+        # to also reset results that were hidden by the filter
         self.reset_status_counters()
         for node in self._tree_nodes.values():
             if (

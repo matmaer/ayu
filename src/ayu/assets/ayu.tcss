@@ -68,7 +68,3 @@ Vertical{
 Collapsible {
     height: auto;
 }
-
-.hidden {
-    display:None;
-}
