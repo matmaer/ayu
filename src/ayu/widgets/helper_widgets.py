@@ -41,13 +41,13 @@ class ToggleRule(Rule):
         match self.test_result:
             case TestOutcome.PASSED:
                 color = "green"
-                result_string = TestOutcome.PASSED
+                result_string = self.test_result
             case TestOutcome.FAILED:
                 color = "red"
-                result_string = TestOutcome.FAILED
+                result_string = self.test_result
             case TestOutcome.SKIPPED:
                 color = "yellow"
-                result_string = TestOutcome.SKIPPED
+                result_string = self.test_result
             case _:
                 color = "white"
                 result_string = "Please run or select a test"
