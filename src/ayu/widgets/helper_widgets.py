@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+from textual.reactive import reactive
 from textual.widgets import Rule, Button
 from textual.message import Message
 
+from ayu.utils import TestOutcome
+
 
 class ToggleRule(Rule):
+    test_result: reactive[TestOutcome | None] = reactive(None)
+    widget_is_displayed: reactive[bool] = reactive(True)
+
     class Toggled(Message):
         def __init__(self, togglerule: ToggleRule) -> None:
             self.togglerule: ToggleRule = togglerule
@@ -22,4 +28,28 @@ class ToggleRule(Rule):
         yield Button("[green]Passed[/]")
 
     def on_button_pressed(self):
+        self.widget_is_displayed = not self.widget_is_displayed
         self.post_message(self.Toggled(self))
+        self.watch_test_result()
+
+    def watch_test_result(self):
+        if self.widget_is_displayed:
+            hint_string = "(click to collaps)"
+        else:
+            hint_string = "(click to open)"
+
+        match self.test_result:
+            case TestOutcome.PASSED:
+                color = "green"
+                result_string = TestOutcome.PASSED
+            case TestOutcome.FAILED:
+                color = "red"
+                result_string = TestOutcome.FAILED
+            case TestOutcome.SKIPPED:
+                color = "yellow"
+                result_string = TestOutcome.SKIPPED
+            case _:
+                color = "white"
+                result_string = "Please run or select a test"
+
+        self.query_one(Button).label = f"[{color}]{result_string} {hint_string}[/]"

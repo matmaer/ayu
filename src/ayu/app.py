@@ -13,6 +13,7 @@ from ayu.utils import EventType, NodeType, run_all_tests
 from ayu.widgets.navigation import TestTree
 from ayu.widgets.detail_viewer import DetailView
 from ayu.widgets.filter import TreeFilter
+from ayu.widgets.helper_widgets import ToggleRule
 
 
 class AyuApp(App):
@@ -137,6 +138,8 @@ class AyuApp(App):
             detail_view.test_start_line_no = event.node.data["lineno"]
         else:
             detail_view.test_start_line_no = -1
+
+        self.query_one(ToggleRule).test_result = event.node.data["status"]
 
     @on(Tree.NodeHighlighted)
     def update_test_result_preview(self, event: Tree.NodeHighlighted):

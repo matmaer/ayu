@@ -29,7 +29,7 @@ def run_test_collection():
     if Path.cwd().name == "ayu":
         command = "pytest --co".split()
     else:
-        command = "uv run --with ayu pytest --co".split()
+        command = "uv run --with ../ayu pytest --co".split()
     subprocess.run(
         command,
         # ["pytest", "--co"],
@@ -42,7 +42,7 @@ def run_all_tests(tests_to_run: list[str] | None = None):
     if Path.cwd().name == "ayu":
         command = "python -m pytest".split()
     else:
-        command = "uv run --with ayu pytest".split()
+        command = "uv run --with ../ayu pytest".split()
         # command = "python -m pytest".split()
 
     if tests_to_run:

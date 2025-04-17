@@ -143,6 +143,15 @@ class TestTree(Tree):
             else:
                 parent.add_leaf(key, data=key)
 
+        # TODO remove empty nodes after filtering
+        # for node in self._tree_nodes.values():
+        #     self.log(f'{node}')
+        #     if node:
+        #         if node.children:
+        #             continue
+        #         else:
+        #             node.remove()
+
     def update_test_outcome(self, test_result: dict):
         for node in self._tree_nodes.values():
             if node.data and (node.data["nodeid"] == test_result["nodeid"]):

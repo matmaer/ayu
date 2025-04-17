@@ -48,8 +48,8 @@ class DetailView(SlideContainer):
 
     @on(ToggleRule.Toggled)
     def toggle_code_result_visibility(self, event: ToggleRule.Toggled):
-        target_widget = event.togglerule.target_widget_id
-        self.query_one(f"#{target_widget}").toggle_class("hidden")
+        target_widget = self.query_one(f"#{event.togglerule.target_widget_id}")
+        target_widget.display = not target_widget.display
 
 
 class CodePreview(TextArea):
