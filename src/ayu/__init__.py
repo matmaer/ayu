@@ -7,8 +7,14 @@ import click
 )
 @click.version_option(prog_name="ayu")
 @click.pass_context
-def cli(ctx):
-    if ctx.invoked_subcommand is None:
+@click.argument(
+    "tests_path", type=click.Path(exists=True, file_okay=False), required=False
+)
+def cli(ctx, tests_path):
+    if tests_path:
+        app = AyuApp(test_path=tests_path)
+        app.run()
+    elif ctx.invoked_subcommand is None:
         app = AyuApp()
         app.run()
     else:

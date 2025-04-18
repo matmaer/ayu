@@ -32,7 +32,7 @@ def run_test_collection(tests_path: str | None = None):
         command = "uv run --with ../ayu pytest --co".split()
 
     if tests_path:
-        command.extend(tests_path)
+        command.extend([tests_path])
 
     subprocess.run(
         command,
