@@ -25,11 +25,15 @@ class TestOutcome(str, Enum):
     QUEUED = "QUEUED"
 
 
-def run_test_collection():
+def run_test_collection(tests_path: str | None = None):
     if Path.cwd().name == "ayu":
         command = "pytest --co".split()
     else:
         command = "uv run --with ../ayu pytest --co".split()
+
+    if tests_path:
+        command.extend(tests_path)
+
     subprocess.run(
         command,
         # ["pytest", "--co"],

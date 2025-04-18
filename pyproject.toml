@@ -12,13 +12,14 @@ dependencies = [
     "textual[syntax]>=3.0.0",
     "textual-slidecontainer>=0.2.5",
     "websockets>=15.0.1",
+    "click>=8.1.8",
 ]
 
 [project.entry-points.pytest11]
 ayu-plugin = "ayu.plugin"
 
 [project.scripts]
-ayu = "ayu:main"
+ayu = "ayu:cli"
 
 [build-system]
 requires = ["hatchling"]
