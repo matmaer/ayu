@@ -37,7 +37,6 @@ ToggleRule{
     Button{
         text-align: center;
         width:auto;
-        min-width:5;
         border:none;
         height:1;
     }

@@ -34,9 +34,9 @@ class ToggleRule(Rule):
 
     def watch_test_result(self):
         if self.widget_is_displayed:
-            hint_string = "(click to collaps)"
+            hint_string = " (click to collaps)"
         else:
-            hint_string = "(click to open)"
+            hint_string = " (click to open)"
 
         match self.test_result:
             case TestOutcome.PASSED:
@@ -50,6 +50,9 @@ class ToggleRule(Rule):
                 result_string = self.test_result
             case _:
                 color = "white"
+                hint_string = ""
                 result_string = "Please run or select a test"
 
-        self.query_one(Button).label = f"[{color}]{result_string} {hint_string}[/]"
+        self.query_one(
+            Button
+        ).label = f"[{color}]{result_string}[/][white]{hint_string}[/]"
