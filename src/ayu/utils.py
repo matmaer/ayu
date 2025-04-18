@@ -26,7 +26,7 @@ class TestOutcome(str, Enum):
 
 
 def run_test_collection(tests_path: str | None = None):
-    if Path.cwd().name == "ayu":
+    if Path.cwd().name == "ayua":
         command = "pytest --co".split()
     else:
         command = "uv run --with ../ayu pytest --co".split()
@@ -42,8 +42,8 @@ def run_test_collection(tests_path: str | None = None):
     )
 
 
-def run_all_tests(tests_to_run: list[str] | None = None):
-    if Path.cwd().name == "ayu":
+def run_all_tests(tests_path: str | None = None, tests_to_run: list[str] | None = None):
+    if Path.cwd().name == "ayua":
         command = "python -m pytest".split()
     else:
         command = "uv run --with ../ayu pytest".split()
@@ -51,6 +51,9 @@ def run_all_tests(tests_to_run: list[str] | None = None):
 
     if tests_to_run:
         command.extend(tests_to_run)
+    else:
+        if tests_path:
+            command.extend([tests_path])
 
     subprocess.run(
         command,

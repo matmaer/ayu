@@ -65,7 +65,6 @@ class EventDispatcher:
 
     async def start_socket_server(self):
         self.server = await serve(self.handler, self.host, self.port)
-        print("started")
         await self.server.wait_closed()
 
     def get_data(self):

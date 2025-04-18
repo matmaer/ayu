@@ -19,7 +19,7 @@ dependencies = [
 ayu-plugin = "ayu.plugin"
 
 [project.scripts]
-ayu = "ayu:cli"
+ayu = "ayu.__main__:cli"
 
 [build-system]
 requires = ["hatchling"]
@@ -36,5 +36,6 @@ dev = [
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-addopts = "--cov src/ayu --cov-report term-missing --verbose --color=yes" # --ignore=tests/test_cases"# -n auto --dist=worksteal"
+# addopts = "--cov src/ayu --cov-report term-missing --verbose --color=yes --ignore=tests/test_cases"# -n auto --dist=worksteal"
+addopts = "--verbose --color=yes --ignore=tests/test_cases"# -n auto --dist=worksteal"
 testpaths = ["tests"]

@@ -149,13 +149,16 @@ class AyuApp(App):
     @work(thread=True)
     def action_run_tests(self):
         self.reset_filters()
-        run_all_tests()
+        run_all_tests(tests_path=self.test_path)
         self.test_results_ready = True
 
     @work(thread=True)
     def action_run_marked_tests(self):
         self.reset_filters()
-        run_all_tests(tests_to_run=self.query_one(TestTree).marked_tests)
+        run_all_tests(
+            tests_path=self.test_path,
+            tests_to_run=self.query_one(TestTree).marked_tests,
+        )
         self.test_results_ready = True
 
     def action_clear_test_results(self):
