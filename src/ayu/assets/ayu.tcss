@@ -16,6 +16,7 @@ DetailView {
 
     CodePreview {
         height: auto;
+        max-height: 10 ;
         border-bottom: none;
         border-left: none;
         border-right: none;

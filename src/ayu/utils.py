@@ -1,3 +1,4 @@
+import re
 from enum import Enum
 from pathlib import Path
 import subprocess
@@ -26,27 +27,25 @@ class TestOutcome(str, Enum):
 
 
 def run_test_collection(tests_path: str | None = None):
-    if Path.cwd().name == "ayua":
+    if Path.cwd().name == "ayu":
         command = "pytest --co".split()
     else:
-        command = "uv run --with ../ayu pytest --co".split()
+        command = "uv run -U --with ../ayu pytest --co".split()
 
     if tests_path:
         command.extend([tests_path])
 
     subprocess.run(
         command,
-        # ["pytest", "--co"],
-        # ["uv", "run", "--with", "../ayu", "-U", "pytest", "--co"],
         capture_output=True,
     )
 
 
 def run_all_tests(tests_path: str | None = None, tests_to_run: list[str] | None = None):
-    if Path.cwd().name == "ayua":
+    if Path.cwd().name == "ayu":
         command = "python -m pytest".split()
     else:
-        command = "uv run --with ../ayu pytest".split()
+        command = "uv run -U --with ../ayu pytest".split()
         # command = "python -m pytest".split()
 
     if tests_to_run:
@@ -57,8 +56,6 @@ def run_all_tests(tests_path: str | None = None, tests_to_run: list[str] | None 
 
     subprocess.run(
         command,
-        # ["pytest", "--co"],
-        # ["uv", "run", "--with", "../ayu", "-U", "pytest", "--co"],
         capture_output=True,
     )
 
@@ -90,3 +87,8 @@ def get_preview_test(file_path: str, start_line_no: int) -> str:
                 break
             last_line_is_blank = False
         return "".join(file_lines[start_line_no:end_line_no]).rstrip()
+
+
+def remove_ansi_escapes(string_to_remove: str) -> str:
+    ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+    return ansi_escape.sub("", string_to_remove)

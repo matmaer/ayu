@@ -1,11 +1,15 @@
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ayu.app import AyuApp
 
 from textual import on
 from textual.reactive import reactive
 from textual.widgets import TextArea
 from textual_slidecontainer import SlideContainer
 
-from ayu.utils import get_preview_test
+from ayu.utils import EventType, get_preview_test
 from ayu.widgets.helper_widgets import ToggleRule
 
 
@@ -60,4 +64,26 @@ class CodePreview(TextArea):
         self.show_line_numbers = True
 
 
-class TestResultDetails(TextArea): ...
+class TestResultDetails(TextArea):
+    app: "AyuApp"
+    selected_node_id: reactive[str] = reactive("")
+    report_data: reactive[dict] = reactive({})
+
+    def on_mount(self):
+        self.language = "python"
+        self.read_only = True
+
+        self.app.dispatcher.register_handler(
+            event_type=EventType.REPORT,
+            handler=lambda msg: self.update_report_data(msg),
+        )
+
+    def update_report_data(self, data: dict):
+        if data["report"]:
+            self.report_data = data["report"]
+
+    def watch_selected_node_id(self):
+        if self.report_data.get(self.selected_node_id):
+            self.text = self.report_data[self.selected_node_id]["longreprtext"]
+        else:
+            self.text = ""

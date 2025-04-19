@@ -9,6 +9,10 @@ def test_fail():
     assert 1 + 1 == 3
 
 
+def test_dict_fail():
+    assert {} == {"test_key": "test_value"}
+
+
 @pytest.mark.skip
 def test_mark_skip():
     assert 1 + 1 == 3

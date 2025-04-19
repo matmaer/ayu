@@ -8,7 +8,7 @@ from _pytest.nodes import Node
 
 from ayu.event_dispatcher import send_event, check_connection
 from ayu.classes.event import Event
-from ayu.utils import EventType, TestOutcome
+from ayu.utils import EventType, TestOutcome, remove_ansi_escapes
 
 
 def pytest_addoption(parser) -> None:
@@ -97,17 +97,16 @@ class Ayu:
             "PYTEST_XDIST_WORKER" not in os.environ
         ):
             return
-
         report_dict = {}
         for outcome, reports in terminalreporter.stats.items():
             if outcome in ["", "deselected"]:
                 continue
             for report in reports:
-                report_dict[f"{report.nodeid}-{report.when}"] = {
+                report_dict[report.nodeid] = {
                     "nodeid": report.nodeid,
                     "when": report.when,
                     "caplog": report.caplog,
-                    "longreprtext": report.longreprtext,
+                    "longreprtext": remove_ansi_escapes(report.longreprtext),
                     "duration": report.duration,
                     "outcome": report.outcome,
                     "lineno": report.location[1],
@@ -121,7 +120,6 @@ class Ayu:
                 send_event(
                     event=Event(
                         event_type=EventType.REPORT,
-                        # event_payload=json.dumps(report_dict, indent=2),
                         event_payload={
                             "report": report_dict,
                         },
