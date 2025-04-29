@@ -13,6 +13,7 @@ dependencies = [
     "textual-slidecontainer>=0.2.5",
     "websockets>=15.0.1",
     "click>=8.1.8",
+    "textual-tags>=0.1.0",
 ]
 
 [project.entry-points.pytest11]

@@ -72,6 +72,7 @@ class TestResultDetails(TextArea):
     def on_mount(self):
         self.language = "python"
         self.read_only = True
+        # self.styles.color = 'red'
 
         self.app.dispatcher.register_handler(
             event_type=EventType.REPORT,

@@ -27,3 +27,11 @@ def test_mark_skip():
 )
 def test_mark(a, b, result):
     assert a + b == result
+
+
+@pytest.mark.parametrize(
+    "sequence",
+    ["red", "*", "[/]", "[]"],
+)
+def test_weird_fixtures(sequence):
+    assert True

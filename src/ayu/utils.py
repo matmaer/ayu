@@ -24,6 +24,10 @@ class TestOutcome(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
     QUEUED = "QUEUED"
+    # handle those
+    XFAILED = "XFAILED"
+    XPASSED = "XPASSED"
+    ERROR = "XPASSED"
 
 
 def run_test_collection(tests_path: str | None = None):

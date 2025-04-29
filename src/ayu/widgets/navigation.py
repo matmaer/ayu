@@ -7,6 +7,8 @@ from textual.reactive import reactive
 from textual.binding import Binding
 from textual.widgets import Tree
 from textual.widgets.tree import TreeNode
+
+# from textual.markup import escape
 from rich.text import Text
 
 from ayu.utils import (
@@ -130,6 +132,7 @@ class TestTree(Tree):
                         child["status"] == TestOutcome.FAILED
                     ):
                         continue
+                    # Fix Child Name, escape markup
                     new_node = parent_node.add_leaf(label=child["name"], data=child)
                     new_node.label = self.update_test_node_label(node=new_node)
                     if child["favourite"]:
@@ -317,7 +320,11 @@ class TestTree(Tree):
         status_substring = (
             f" {OUTCOME_SYMBOLS[node.data['status']]}" if node.data["status"] else ""
         )
-        return Text.from_markup(f"{fav_substring}{node.data['name']}{status_substring}")
+        escaped_node_substring = node.data["name"].replace("[", "\\[")
+
+        return Text.from_markup(
+            f"{fav_substring}{escaped_node_substring}{status_substring}"
+        )
 
     def on_mouse_move(self):
         return
