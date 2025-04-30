@@ -4,9 +4,10 @@ if TYPE_CHECKING:
     from ayu.app import AyuApp
 from textual import work
 from textual.reactive import reactive
+from rich.style import Style
 from textual.binding import Binding
 from textual.widgets import Tree
-from textual.widgets.tree import TreeNode
+from textual.widgets.tree import TreeNode, TreeDataType
 
 # from textual.markup import escape
 from rich.text import Text
@@ -19,6 +20,8 @@ from ayu.utils import (
     run_test_collection,
 )
 from ayu.constants import OUTCOME_SYMBOLS
+
+TOGGLE_STYLE = Style.from_meta({"toggle": True})
 
 
 class TestTree(Tree):
@@ -114,7 +117,6 @@ class TestTree(Tree):
                     new_node = parent_node.add(
                         label=child["name"], data=child, expand=True
                     )
-                    new_node.label = self.update_mod_class_node_label(node=new_node)
                     add_children(child_list=child["children"], parent_node=new_node)
                 else:
                     # TODO Make this cleaner, also check for MODULES to be not displayed
@@ -133,15 +135,14 @@ class TestTree(Tree):
                     ):
                         continue
                     # Fix Child Name, escape markup
-                    new_node = parent_node.add_leaf(label=child["name"], data=child)
-                    new_node.label = self.update_test_node_label(node=new_node)
+                    parent_node.add_leaf(label=child["name"], data=child)
                     if child["favourite"]:
                         self.counter_marked += 1
 
         for key, value in tree_data.items():
             if isinstance(value, dict) and "children" in value and value["children"]:
                 node: TreeNode = parent.add(key, data=value)
-                self.select_node(node)
+                node.expand()
                 add_children(value["children"], node)
             else:
                 parent.add_leaf(key, data=key)
@@ -160,7 +161,7 @@ class TestTree(Tree):
             if node.data and (node.data["nodeid"] == test_result["nodeid"]):
                 outcome = test_result["outcome"]
                 node.data["status"] = outcome
-                node.label = self.update_test_node_label(node=node)
+                node.refresh()
                 self.counter_queued -= 1
                 match outcome:
                     case TestOutcome.PASSED:
@@ -181,8 +182,7 @@ class TestTree(Tree):
                 [
                     all_child_tests_passed(parent=child)
                     if child.data["type"] == NodeType.CLASS
-                    else child.data["status"]
-                    in [TestOutcome.PASSED, TestOutcome.QUEUED]
+                    else child.data["status"] in [TestOutcome.PASSED]
                     for child in parent.children
                 ]
             )
@@ -190,9 +190,7 @@ class TestTree(Tree):
         if node.parent.data["type"] == NodeType.CLASS:
             self.update_collapse_state_on_test_run(node=node.parent)
         if all_child_tests_passed(parent=node.parent):
-            node.parent.label = self.update_mod_class_node_label(node=node.parent)
-        else:
-            node.parent.label = self.update_mod_class_node_label(node=node.parent)
+            node.parent.collapse()
 
     def reset_status_counters(self) -> None:
         self.counter_queued = 0
@@ -206,7 +204,7 @@ class TestTree(Tree):
         for node in self._tree_nodes.values():
             if node.data and (node.data["nodeid"] in nodeids):
                 node.data["status"] = TestOutcome.QUEUED
-                node.label = self.update_test_node_label(node=node)
+                # node.refresh()
                 self.counter_queued += 1
 
     def on_tree_node_selected(self, event: Tree.NodeSelected):
@@ -226,7 +224,7 @@ class TestTree(Tree):
         # mark all childs the same as parent
         if node.children:
             node.data["favourite"] = parent_val
-            node.label = self.update_test_node_label(node=node)
+            node.refresh()
             self.update_filtered_data_test_tree(
                 nodeid=node.data["nodeid"],
                 is_fav=parent_val,
@@ -237,7 +235,7 @@ class TestTree(Tree):
             if node.data["favourite"] != parent_val:
                 self.counter_marked += 1 if parent_val else -1
             node.data["favourite"] = parent_val
-            node.label = self.update_test_node_label(node=node)
+            node.refresh()
             self.update_filtered_data_test_tree(
                 nodeid=node.data["nodeid"],
                 is_fav=parent_val,
@@ -248,7 +246,7 @@ class TestTree(Tree):
             parent_node = node.parent
             while parent_node.data is not None:
                 parent_node.data["favourite"] = node.data["favourite"]
-                parent_node.label = self.update_test_node_label(node=parent_node)
+                parent_node.refresh()
                 parent_node = parent_node.parent
 
     def update_filtered_data_test_tree(
@@ -278,52 +276,65 @@ class TestTree(Tree):
             if val["children"]:
                 update_filtered_node(child_list=val["children"])
 
-    def update_mod_class_node_label(self, node: TreeNode) -> str:
-        counter_childs_tests = len(
+    def render_label(
+        self, node: TreeNode[TreeDataType], base_style: Style, style: Style
+    ) -> Text:
+        fav_substring = Text.from_markup("⭐ ") if node.data["favourite"] else Text()
+        escaped_name_substring = Text(node.data["name"], style)
+        # Render Classes, Modules and Folders
+        if node._allow_expand:
+            prefix = (
+                self.ICON_NODE_EXPANDED if node.is_expanded else self.ICON_NODE,
+                base_style + TOGGLE_STYLE,
+            )
+            amount_tests = self.get_number_of_tests_of_node(node=node)
+            amount_tests_passed = self.get_number_of_passed_tests_of_node(node=node)
+            if (self.app.test_results_ready or self.app.tests_running) and amount_tests:
+                run_status_label = Text(f" {amount_tests_passed}/{amount_tests}")
+                run_label_color = (
+                    "green" if amount_tests_passed == amount_tests else "red"
+                )
+                # if run_label_color == 'green':
+                #     node.collapse()
+            else:
+                run_status_label = ""
+                run_label_color = None
+
+            module_label = Text.assemble(
+                prefix,
+                fav_substring,
+                escaped_name_substring,
+                run_status_label,
+                style=Style(color=run_label_color),
+            )
+            module_label.stylize(style)
+            return module_label
+
+        # Render Test Labels
+        status_substring = Text.from_markup(
+            f" {OUTCOME_SYMBOLS[node.data['status']]}" if node.data["status"] else ""
+        )
+        test_label = Text.assemble(
+            fav_substring, escaped_name_substring, status_substring
+        )
+        return test_label
+
+    def get_number_of_tests_of_node(self, node: TreeNode) -> int:
+        return len(
             [
                 child
                 for child in node.children
                 if (child.data["type"] in [NodeType.FUNCTION, NodeType.COROUTINE])
             ]
         )
-        # Misses Class Case
-        counter_childs_test_passed = len(
+
+    def get_number_of_passed_tests_of_node(self, node: TreeNode) -> int:
+        return len(
             [
                 child
                 for child in node.children
                 if child.data["status"] == TestOutcome.PASSED
             ]
-        )
-        fav_substring = "⭐ " if node.data["favourite"] else ""
-        count_substring = (
-            f"({counter_childs_test_passed}/{counter_childs_tests})"
-            if counter_childs_tests > 0
-            else ""
-        )
-
-        if counter_childs_test_passed != counter_childs_tests:
-            node.expand()
-            color_style = "red"
-        else:
-            color_style = "green"
-            node.collapse()
-
-        if all([child.data["status"] == "" for child in node.children]):
-            color_style = ""
-            node.expand()
-        return Text.from_markup(
-            f"{fav_substring}{node.data['name']} {count_substring}", style=color_style
-        )
-
-    def update_test_node_label(self, node: TreeNode) -> str:
-        fav_substring = "⭐ " if node.data["favourite"] else ""
-        status_substring = (
-            f" {OUTCOME_SYMBOLS[node.data['status']]}" if node.data["status"] else ""
-        )
-        escaped_node_substring = node.data["name"].replace("[", "\\[")
-
-        return Text.from_markup(
-            f"{fav_substring}{escaped_node_substring}{status_substring}"
         )
 
     def on_mouse_move(self):
@@ -365,12 +376,6 @@ class TestTree(Tree):
         # to also reset results that were hidden by the filter
         self.reset_status_counters()
         for node in self._tree_nodes.values():
-            if (
-                node.data
-                and (node.data["type"] in [NodeType.FUNCTION, NodeType.COROUTINE])
-                and node.data["status"]
-            ):
+            if node.data:
                 node.data["status"] = ""
-                node.label = self.update_test_node_label(node=node)
-            elif node.data and (node.data["type"] in [NodeType.MODULE, NodeType.CLASS]):
-                node.label = self.update_test_node_label(node=node)
+                node.refresh()

@@ -42,6 +42,7 @@ class AyuApp(App):
         init=False,
     )
     test_results_ready: reactive[bool] = reactive(False, init=False)
+    tests_running: reactive[bool] = reactive(False, init=False)
 
     def __init__(self, test_path: Path | None = None, *args, **kwargs):
         self.dispatcher = None
@@ -147,18 +148,22 @@ class AyuApp(App):
 
     @work(thread=True)
     def action_run_tests(self):
+        self.tests_running = True
         self.reset_filters()
         run_all_tests(tests_path=self.test_path)
         self.test_results_ready = True
+        self.tests_running = False
 
     @work(thread=True)
     def action_run_marked_tests(self):
+        self.tests_running = True
         self.reset_filters()
         run_all_tests(
             tests_path=self.test_path,
             tests_to_run=self.query_one(TestTree).marked_tests,
         )
         self.test_results_ready = True
+        self.tests_running = False
 
     def action_clear_test_results(self):
         self.test_results_ready = False

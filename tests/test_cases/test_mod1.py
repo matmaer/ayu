@@ -31,7 +31,7 @@ def test_mark(a, b, result):
 
 @pytest.mark.parametrize(
     "sequence",
-    ["red", "*", "[/]", "[]"],
+    ["red", "*", "[+]", "[]"],
 )
 def test_weird_fixtures(sequence):
     assert True
