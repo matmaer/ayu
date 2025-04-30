@@ -162,6 +162,7 @@ class TestTree(Tree):
                 outcome = test_result["outcome"]
                 node.data["status"] = outcome
                 node.refresh()
+                node.parent.refresh()
                 self.counter_queued -= 1
                 match outcome:
                     case TestOutcome.PASSED:
@@ -204,7 +205,6 @@ class TestTree(Tree):
         for node in self._tree_nodes.values():
             if node.data and (node.data["nodeid"] in nodeids):
                 node.data["status"] = TestOutcome.QUEUED
-                # node.refresh()
                 self.counter_queued += 1
 
     def on_tree_node_selected(self, event: Tree.NodeSelected):
@@ -287,15 +287,16 @@ class TestTree(Tree):
                 self.ICON_NODE_EXPANDED if node.is_expanded else self.ICON_NODE,
                 base_style + TOGGLE_STYLE,
             )
-            amount_tests = self.get_number_of_tests_of_node(node=node)
+            amount_test_results = self.get_number_of_tests_queued_of_node(node=node)
             amount_tests_passed = self.get_number_of_passed_tests_of_node(node=node)
-            if (self.app.test_results_ready or self.app.tests_running) and amount_tests:
-                run_status_label = Text(f" {amount_tests_passed}/{amount_tests}")
+            if (
+                node.data["type"] in [NodeType.CLASS, NodeType.MODULE]
+                and amount_test_results
+            ):
+                run_status_label = Text(f" {amount_tests_passed}/{amount_test_results}")
                 run_label_color = (
-                    "green" if amount_tests_passed == amount_tests else "red"
+                    "green" if amount_tests_passed == amount_test_results else "red"
                 )
-                # if run_label_color == 'green':
-                #     node.collapse()
             else:
                 run_status_label = ""
                 run_label_color = None
@@ -319,12 +320,13 @@ class TestTree(Tree):
         )
         return test_label
 
-    def get_number_of_tests_of_node(self, node: TreeNode) -> int:
+    def get_number_of_tests_queued_of_node(self, node: TreeNode) -> int:
         return len(
             [
                 child
                 for child in node.children
                 if (child.data["type"] in [NodeType.FUNCTION, NodeType.COROUTINE])
+                if child.data["status"]
             ]
         )
 
