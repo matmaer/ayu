@@ -320,19 +320,11 @@ class TestTree(Tree):
             return module_label
 
         # Render Test Labels
-        # hover marker part
-        mark_substring = (
-            Text.from_markup("⭐ ") if node.data.get("hovered", False) else Text()
-        )
-
         status_substring = Text.from_markup(
             f" {OUTCOME_SYMBOLS[node.data['status']]}" if node.data["status"] else ""
         )
         test_label = Text.assemble(
-            mark_substring,
-            fav_substring,
-            escaped_name_substring,
-            status_substring,  # style=self.hover_style
+            fav_substring, escaped_name_substring, status_substring
         )
         return test_label
 
