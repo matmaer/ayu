@@ -9,8 +9,7 @@ from textual.binding import Binding
 from textual.widgets import Tree
 from textual.widgets.tree import TreeNode, TreeDataType
 
-# from textual.markup import escape
-from rich.text import Text
+from rich.text import Text, TextType
 
 from ayu.utils import (
     EventType,
@@ -105,6 +104,8 @@ class TestTree(Tree):
         self.reset_status_counters()
         self.counter_marked = 0
         self.update_tree(tree_data=self.filtered_data_test_tree)
+
+    def filter_tests(self, tests): ...
 
     def update_tree(self, *, tree_data: dict[Any, Any]):
         parent = self.root
@@ -275,6 +276,12 @@ class TestTree(Tree):
                 return True
             if val["children"]:
                 update_filtered_node(child_list=val["children"])
+
+    def process_label(self, label: TextType) -> Text:
+        """Subclassed to handle [/] sequences, e.g. in parametrized tests"""
+        text_label = label
+        first_line = text_label.split()[0]
+        return first_line
 
     def render_label(
         self, node: TreeNode[TreeDataType], base_style: Style, style: Style
