@@ -129,9 +129,13 @@ class Ayu:
 
 
 def build_dict_tree(items: list[Item]) -> dict:
+    markers = set()
+
     def create_node(
         node: Node, parent_name: Node | None = None, parent_type: Node | None = None
     ) -> dict[Any, Any]:
+        markers.update([mark.name for mark in node.own_markers])
+
         return {
             "name": node.name,
             "nodeid": node.nodeid,
@@ -187,4 +191,4 @@ def build_dict_tree(items: list[Item]) -> dict:
         parts_to_collect = item.listchain()[1:]
         add_node(node_list=parts_to_collect[1:], sub_tree=tree[root.name])
 
-    return {"tree": tree, "meta": {"test_count": len(items)}}
+    return {"tree": tree, "meta": {"test_count": len(items), "markers": list(markers)}}

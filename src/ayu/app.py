@@ -36,11 +36,13 @@ class AyuApp(App):
             "show_failed": True,
             "show_skipped": True,
             "show_passed": True,
+            "excluded_markers": {},
         },
         init=False,
     )
     test_results_ready: reactive[bool] = reactive(False, init=False)
     tests_running: reactive[bool] = reactive(False, init=False)
+    markers: reactive[list[str]] = reactive([])
 
     def __init__(self, test_path: Path | None = None, *args, **kwargs):
         self.dispatcher = None
@@ -64,7 +66,7 @@ class AyuApp(App):
                     filtered_counter_total_tests=AyuApp.counter_total_tests,
                 )
                 yield TreeFilter().data_bind(
-                    test_results_ready=AyuApp.test_results_ready
+                    test_results_ready=AyuApp.test_results_ready, markers=AyuApp.markers
                 )
             with Vertical():
                 yield DetailView()
@@ -94,6 +96,7 @@ class AyuApp(App):
     def update_app_data(self, data):
         self.data_test_tree = data["tree"]
         self.counter_total_tests = data["meta"]["test_count"]
+        self.markers = data["meta"]["markers"]
 
     @work(exclusive=True)
     async def start_socket(self):

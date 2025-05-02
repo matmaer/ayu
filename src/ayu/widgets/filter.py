@@ -9,6 +9,7 @@ from textual_tags import Tags
 
 class TreeFilter(SlideContainer):
     test_results_ready: reactive[bool] = reactive(False, init=False)
+    markers: reactive[list[str]] = reactive([])
 
     def __init__(self, *args, **kwargs):
         super().__init__(
@@ -20,8 +21,23 @@ class TreeFilter(SlideContainer):
             **kwargs,
         )
 
+    async def watch_markers(self):
+        if self.markers:
+            markers_filter = MarkersFilter(tag_values=self.markers, id="markers_filter")
+
+            await self.mount(markers_filter, before="#horizontal_result_filter")
+
+    # async def watch_markers(self):
+    #     if self.markers:
+    #         markers_filter = self.query_one(MarkersFilter)
+    #         for marker in self.markers:
+    #             await markers_filter.add_new_tag(marker)
+    # self.query_one(MarkersFilter).tag_values = set(self.markers)
+    # await self.query_one(MarkersFilter)._populate_with_tags()
+    # self.notify(f'{self.markers}')
+
     def compose(self):
-        yield TagFilter(tag_values=["bla", "bli", "blo"], id="tags_filter")
+        # yield MarkersFilter(tag_values=self.markers, id="markers_filter")
         yield ResultFilter(id="horizontal_result_filter").data_bind(
             test_results_ready=TreeFilter.test_results_ready
         )
@@ -81,4 +97,4 @@ class FilterButton(Button):
         self.variant = "success" if self.filter_is_active else "error"
 
 
-class TagFilter(Tags): ...
+class MarkersFilter(Tags): ...

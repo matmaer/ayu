@@ -13,6 +13,17 @@ def test_dict_fail():
     assert {} == {"test_key": "test_value"}
 
 
+@pytest.mark.custom
+def test_mark_custom():
+    assert True
+
+
+@pytest.mark.custom
+@pytest.mark.custom_two
+def test_mark_custom_two():
+    assert True
+
+
 @pytest.mark.skip
 def test_mark_skip():
     assert 1 + 1 == 3

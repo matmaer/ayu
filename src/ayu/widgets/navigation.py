@@ -209,6 +209,7 @@ class TestTree(Tree):
                 self.counter_queued += 1
 
     def on_tree_node_selected(self, event: Tree.NodeSelected):
+        self.notify(f"{','.join(event.node.data['markers'])}")
         ...
         # Run Test
 
