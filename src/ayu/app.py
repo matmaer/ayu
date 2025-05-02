@@ -15,6 +15,8 @@ from ayu.widgets.detail_viewer import DetailView, TestResultDetails
 from ayu.widgets.filter import TreeFilter
 from ayu.widgets.helper_widgets import ToggleRule
 
+from textual_tags import Tag
+
 
 class AyuApp(App):
     CSS_PATH = Path("assets/ayu.tcss")
@@ -129,6 +131,10 @@ class AyuApp(App):
             "show_passed": True,
         }
         self.mutate_reactive(AyuApp.filter)
+
+    @on(Tag.Hovered)
+    def hightlight_test_tree(self, event: Tag.Hovered):
+        self.query_one(TestTree).highlight_marker_rows(marker=event.tag.value)
 
     @on(Tree.NodeHighlighted)
     def update_test_preview(self, event: Tree.NodeHighlighted):

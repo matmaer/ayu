@@ -320,11 +320,19 @@ class TestTree(Tree):
             return module_label
 
         # Render Test Labels
+        # hover marker part
+        mark_substring = (
+            Text.from_markup("⭐ ") if node.data.get("hovered", False) else Text()
+        )
+
         status_substring = Text.from_markup(
             f" {OUTCOME_SYMBOLS[node.data['status']]}" if node.data["status"] else ""
         )
         test_label = Text.assemble(
-            fav_substring, escaped_name_substring, status_substring
+            mark_substring,
+            fav_substring,
+            escaped_name_substring,
+            status_substring,  # style=self.hover_style
         )
         return test_label
 
@@ -352,6 +360,17 @@ class TestTree(Tree):
         if self.hover_line != -1:
             data = self._tree_lines[self.hover_line].node.data
             self.tooltip = get_nice_tooltip(node_data=data)
+
+    def highlight_marker_rows(self, marker: str):
+        self.notify(f"{marker}")
+
+        for node in self._tree_nodes.values():
+            node._hover = False
+            if node.data and (marker in node.data["markers"]):
+                node._hover = True
+                last_true_line = node.line
+                self.refresh()
+        self.hover_line = last_true_line
 
     def update_border_title(self):
         symbol = "hourglass_not_done" if self.counter_queued > 0 else "hourglass_done"

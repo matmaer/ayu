@@ -4,7 +4,7 @@ from textual.widgets import Button
 
 from rich.text import Text
 from textual_slidecontainer import SlideContainer
-from textual_tags import Tags
+from textual_tags import Tags, Tag, TagInput
 
 
 class TreeFilter(SlideContainer):
@@ -21,23 +21,8 @@ class TreeFilter(SlideContainer):
             **kwargs,
         )
 
-    async def watch_markers(self):
-        if self.markers:
-            markers_filter = MarkersFilter(tag_values=self.markers, id="markers_filter")
-
-            await self.mount(markers_filter, before="#horizontal_result_filter")
-
-    # async def watch_markers(self):
-    #     if self.markers:
-    #         markers_filter = self.query_one(MarkersFilter)
-    #         for marker in self.markers:
-    #             await markers_filter.add_new_tag(marker)
-    # self.query_one(MarkersFilter).tag_values = set(self.markers)
-    # await self.query_one(MarkersFilter)._populate_with_tags()
-    # self.notify(f'{self.markers}')
-
     def compose(self):
-        # yield MarkersFilter(tag_values=self.markers, id="markers_filter")
+        yield MarkersFilter(tag_values=self.markers).data_bind(TreeFilter.markers)
         yield ResultFilter(id="horizontal_result_filter").data_bind(
             test_results_ready=TreeFilter.test_results_ready
         )
@@ -97,4 +82,16 @@ class FilterButton(Button):
         self.variant = "success" if self.filter_is_active else "error"
 
 
-class MarkersFilter(Tags): ...
+class MarkersFilter(Tags):
+    markers: reactive[list[str]] = reactive([])
+
+    async def watch_markers(self):
+        self.query_one("#input_tag", TagInput).placeholder = "Select markers..."
+        self.tag_values = set(self.markers)
+        await self.query(Tag).remove()
+        self.call_later(self._populate_with_tags)
+
+        # self.notify(f'unselected: {self.unselected_tags}')
+        # self.selected_tags = set(self.markers)
+        # await super().watch_tag_values()
+        # super().watch_allow_new_tags()

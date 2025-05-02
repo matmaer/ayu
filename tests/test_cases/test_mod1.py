@@ -13,7 +13,7 @@ def test_dict_fail():
     assert {} == {"test_key": "test_value"}
 
 
-@pytest.mark.custom
+@pytest.mark.custom1
 def test_mark_custom():
     assert True
 
