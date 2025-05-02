@@ -15,8 +15,6 @@ from ayu.widgets.detail_viewer import DetailView, TestResultDetails
 from ayu.widgets.filter import TreeFilter
 from ayu.widgets.helper_widgets import ToggleRule
 
-from textual_tags import Tags
-
 
 class AyuApp(App):
     CSS_PATH = Path("assets/ayu.tcss")
@@ -76,7 +74,6 @@ class AyuApp(App):
                     yield report_log
                 with Collapsible(title="Collection", collapsed=True):
                     yield collection_log
-                yield Tags(tag_values=[], allow_new_tags=True)
 
     async def on_load(self):
         self.start_socket()
