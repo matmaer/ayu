@@ -1,3 +1,5 @@
+from textual.binding import Binding
+from textual.message import Message
 from textual.containers import Horizontal
 from textual.reactive import reactive
 from textual.widgets import Button
@@ -84,12 +86,26 @@ class FilterButton(Button):
 
 class MarkersFilter(Tags):
     markers: reactive[list[str]] = reactive([])
+    BINDINGS = [Binding("f", "mark_tests_with_markers", "⭐ Mark")]
+
+    class Marked(Message):
+        def __init__(self, current_tag: Tag) -> None:
+            self.current_tag = current_tag
+            super().__init__()
+
+        @property
+        def control(self):
+            return self.current_tag
 
     async def watch_markers(self):
         self.query_one("#input_tag", TagInput).placeholder = "Select markers..."
         self.tag_values = set(self.markers)
         await self.query(Tag).remove()
         self.call_later(self._populate_with_tags)
+
+    def action_mark_tests_with_markers(self):
+        current_tag = self.app.focused.value
+        self.post_message(self.Marked(current_tag=current_tag))
 
         # self.notify(f'unselected: {self.unselected_tags}')
         # self.selected_tags = set(self.markers)

@@ -12,7 +12,7 @@ from ayu.event_dispatcher import EventDispatcher
 from ayu.utils import EventType, NodeType, run_all_tests
 from ayu.widgets.navigation import TestTree
 from ayu.widgets.detail_viewer import DetailView, TestResultDetails
-from ayu.widgets.filter import TreeFilter
+from ayu.widgets.filter import TreeFilter, MarkersFilter
 from ayu.widgets.helper_widgets import ToggleRule
 
 from textual_tags import Tag
@@ -133,8 +133,13 @@ class AyuApp(App):
         self.mutate_reactive(AyuApp.filter)
 
     @on(Tag.Hovered)
-    def hightlight_test_tree(self, event: Tag.Hovered):
+    @on(Tag.Focused)
+    def hightlight_test_tree(self, event: Tag.Hovered | Tag.Focused):
         self.query_one(TestTree).highlight_marker_rows(marker=event.tag.value)
+
+    @on(MarkersFilter.Marked)
+    def favourite_tests_with_markers(self, event: MarkersFilter.Marked):
+        self.query_one(TestTree).mark_test_as_fav_from_markers(marker=event.current_tag)
 
     @on(Tree.NodeHighlighted)
     def update_test_preview(self, event: Tree.NodeHighlighted):

@@ -213,6 +213,12 @@ class TestTree(Tree):
         ...
         # Run Test
 
+    def mark_test_as_fav_from_markers(self, marker: str):
+        for node in self._tree_nodes.values():
+            if node.data and marker in node.data["markers"]:
+                self.notify(marker)
+                self.action_mark_test_as_fav(node=node)
+
     def action_mark_test_as_fav(
         self, node: TreeNode | None = None, parent_val: bool | None = None
     ):
@@ -354,8 +360,6 @@ class TestTree(Tree):
             self.tooltip = get_nice_tooltip(node_data=data)
 
     def highlight_marker_rows(self, marker: str):
-        self.notify(f"{marker}")
-
         for node in self._tree_nodes.values():
             node._hover = False
             if node.data and (marker in node.data["markers"]):
