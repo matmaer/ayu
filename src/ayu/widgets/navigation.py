@@ -26,7 +26,6 @@ TOGGLE_STYLE = Style.from_meta({"toggle": True})
 class TestTree(Tree):
     app: "AyuApp"
     BINDINGS = [
-        Binding("r", "collect_tests", "Refresh"),
         Binding("j,down", "cursor_down"),
         Binding("k,up", "cursor_up"),
         Binding("f", "mark_test_as_fav", "⭐ Mark"),
@@ -135,7 +134,7 @@ class TestTree(Tree):
                         child["status"] == TestOutcome.FAILED
                     ):
                         continue
-                    # Fix Child Name, escape markup
+
                     parent_node.add_leaf(label=child["name"], data=child)
                     if child["favourite"]:
                         self.counter_marked += 1
@@ -147,6 +146,9 @@ class TestTree(Tree):
                 add_children(value["children"], node)
             else:
                 parent.add_leaf(key, data=key)
+
+        # set initial cursor line
+        self.cursor_line: int = 0 if self.cursor_line < 0 else self.cursor_line
 
         # TODO remove empty nodes after filtering
         # for node in self._tree_nodes.values():
@@ -250,6 +252,7 @@ class TestTree(Tree):
             )
             # self.mutate_reactive(TestTree.filtered_data_test_tree)
 
+        # Repeat unselecting for parents
         if not node.data["favourite"]:
             parent_node = node.parent
             while parent_node.data is not None:

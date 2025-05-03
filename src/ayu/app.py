@@ -23,10 +23,11 @@ class AyuApp(App):
     TOOLTIP_DELAY = 0.5
 
     BINDINGS = [
-        Binding("ctrl+j", "run_tests", "Run Tests", show=True),
-        Binding("ctrl+j", "run_marked_tests", "Run ⭐ Tests", show=True),
+        Binding("ctrl+j", "run_tests", "Run Tests", show=True, priority=True),
+        Binding("ctrl+j", "run_marked_tests", "Run ⭐ Tests", show=True, priority=True),
         Binding("s", "show_details", "Details", show=True),
-        Binding("c", "clear_test_results", "Clear Results", show=True),
+        Binding("c", "clear_test_results", "Clear Results", show=True, priority=True),
+        Binding("r", "refresh", "Refresh", show=True, priority=True),
     ]
 
     data_test_tree: reactive[dict] = reactive({}, init=False)
@@ -175,6 +176,9 @@ class AyuApp(App):
         )
         self.test_results_ready = True
         self.tests_running = False
+
+    def action_refresh(self):
+        self.query_one(TestTree).action_collect_tests()
 
     def action_clear_test_results(self):
         self.test_results_ready = False

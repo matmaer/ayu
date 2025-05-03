@@ -2,7 +2,7 @@ from textual.binding import Binding
 from textual.message import Message
 from textual.containers import Horizontal
 from textual.reactive import reactive
-from textual.widgets import Button
+from textual.widgets import Button, Rule
 
 from rich.text import Text
 from textual_slidecontainer import SlideContainer
@@ -25,6 +25,7 @@ class TreeFilter(SlideContainer):
 
     def compose(self):
         yield MarkersFilter(tag_values=self.markers).data_bind(TreeFilter.markers)
+        yield Rule()
         yield ResultFilter(id="horizontal_result_filter").data_bind(
             test_results_ready=TreeFilter.test_results_ready
         )

@@ -28,6 +28,11 @@ DetailView {
         border: none;
     }
 }
+Rule{
+    color:white;
+    padding:0;
+    margin:0;
+}
 ToggleRule{
     color:white;
     padding:0;
