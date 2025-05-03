@@ -73,3 +73,7 @@ Vertical{
 Collapsible {
     height: auto;
 }
+* {
+scrollbar-size-vertical:1;
+
+}

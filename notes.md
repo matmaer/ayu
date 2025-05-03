@@ -1,12 +1,15 @@
 # features
+- search by name/tag functionality
 - some form of result viewer
     - for plugins
     - general overview
 - menu dynamic plugin installation+flags (needs uv)
-- search by name/tag functionality
-- check if uv is available and project is uv managed (pyproject.toml)
 - log preview
 - command preview
+- tox-like multi python-version testing
+
+# generals
+- test strategy
 
 # optionals
 - align result Icons better on test tree

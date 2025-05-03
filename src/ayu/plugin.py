@@ -98,6 +98,7 @@ class Ayu:
         ):
             return
         report_dict = {}
+        # warning report has no report.when
         for outcome, reports in terminalreporter.stats.items():
             if outcome in ["", "deselected"]:
                 continue
