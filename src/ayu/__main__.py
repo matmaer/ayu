@@ -1,5 +1,7 @@
-from ayu.app import AyuApp
 import click
+
+from ayu.app import AyuApp
+from ayu.utils import uv_is_installed, project_is_uv_managed, ayu_is_run_as_tool
 
 
 @click.group(
@@ -11,6 +13,19 @@ import click
     "tests_path", type=click.Path(exists=True, file_okay=False), required=False
 )
 def cli(ctx, tests_path):
+    if ayu_is_run_as_tool():
+        print("ayu as tool")
+    else:
+        print("ayu as dependency")
+    # return
+    if not uv_is_installed():
+        print("uv_not_installed, please install uv to use ayu")
+        return
+    if not project_is_uv_managed():
+        print("Your project is not a valid python project")
+        print("no pyproject.toml file detected")
+        return
+
     if tests_path:
         app = AyuApp(test_path=tests_path)
         app.run()

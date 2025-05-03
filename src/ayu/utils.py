@@ -1,3 +1,4 @@
+import shutil
 import re
 from enum import Enum
 from pathlib import Path
@@ -31,10 +32,11 @@ class TestOutcome(str, Enum):
 
 
 def run_test_collection(tests_path: str | None = None):
-    if Path.cwd().name == "ayu":
-        command = "pytest --co".split()
+    """Collect All Tests without running them"""
+    if not ayu_is_run_as_tool():
+        command = "uv run pytest --co".split()
     else:
-        command = "uv run -U --with ../ayu pytest --co".split()
+        command = "uv run --with ../ayu --with pytest pytest --co".split()
 
     if tests_path:
         command.extend([tests_path])
@@ -46,8 +48,9 @@ def run_test_collection(tests_path: str | None = None):
 
 
 def run_all_tests(tests_path: str | None = None, tests_to_run: list[str] | None = None):
-    if Path.cwd().name == "ayu":
-        command = "python -m pytest".split()
+    """Run all selected tests"""
+    if not ayu_is_run_as_tool():
+        command = "uv run python -m pytest".split()
     else:
         command = "uv run -U --with ../ayu pytest".split()
         # command = "python -m pytest".split()
@@ -75,6 +78,8 @@ def get_nice_tooltip(node_data: dict) -> str | None:
 
 
 def get_preview_test(file_path: str, start_line_no: int) -> str:
+    """Read the test file from nodeid and use the linenumber
+    and some rules to display the test function"""
     with open(Path(file_path), "r") as file:
         file_lines = file.readlines()
         last_line_is_blank = False
@@ -94,5 +99,26 @@ def get_preview_test(file_path: str, start_line_no: int) -> str:
 
 
 def remove_ansi_escapes(string_to_remove: str) -> str:
+    """Remove ansi escaped strings from colored pytest output"""
     ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
     return ansi_escape.sub("", string_to_remove)
+
+
+def uv_is_installed():
+    if shutil.which("uv"):
+        return True
+    return False
+
+
+def project_is_uv_managed():
+    toml_path = Path.cwd() / "pyproject.toml"
+    return toml_path.exists()
+
+
+def ayu_is_run_as_tool():
+    result = subprocess.run(
+        "uv tree --package ayu".split(), capture_output=True, text=True
+    )
+    if result.stdout:
+        return False
+    return True

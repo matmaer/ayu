@@ -218,7 +218,6 @@ class TestTree(Tree):
     def mark_test_as_fav_from_markers(self, marker: str):
         for node in self._tree_nodes.values():
             if node.data and marker in node.data["markers"]:
-                self.notify(marker)
                 self.action_mark_test_as_fav(node=node)
 
     def action_mark_test_as_fav(
