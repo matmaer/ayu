@@ -23,8 +23,8 @@ class AyuApp(App):
     TOOLTIP_DELAY = 0.5
 
     BINDINGS = [
-        Binding("ctrl+j", "run_tests", "Run Tests", show=True, priority=True),
-        Binding("ctrl+j", "run_marked_tests", "Run ⭐ Tests", show=True, priority=True),
+        Binding("ctrl+l", "run_tests", "Run Tests", show=True, priority=True),
+        Binding("ctrl+l", "run_marked_tests", "Run ⭐ Tests", show=True, priority=True),
         Binding("s", "show_details", "Details", show=True),
         Binding("c", "clear_test_results", "Clear Results", show=True, priority=True),
         Binding("r", "refresh", "Refresh", show=True, priority=True),
@@ -135,7 +135,8 @@ class AyuApp(App):
 
     @on(Tag.Hovered)
     @on(Tag.Focused)
-    def hightlight_test_tree(self, event: Tag.Hovered | Tag.Focused):
+    @on(Tag.Selected)
+    def hightlight_test_tree(self, event: Tag.Hovered | Tag.Focused | Tag.Selected):
         self.query_one(TestTree).highlight_marker_rows(marker=event.tag.value)
 
     @on(MarkersFilter.Marked)

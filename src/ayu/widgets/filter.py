@@ -24,7 +24,9 @@ class TreeFilter(SlideContainer):
         )
 
     def compose(self):
-        yield MarkersFilter(tag_values=self.markers).data_bind(TreeFilter.markers)
+        yield MarkersFilter(tag_values=self.markers, show_x=True).data_bind(
+            TreeFilter.markers
+        )
         yield Rule()
         yield ResultFilter(id="horizontal_result_filter").data_bind(
             test_results_ready=TreeFilter.test_results_ready

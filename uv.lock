@@ -792,15 +792,15 @@ wheels = [
 
 [[package]]
 name = "textual-tags"
-version = "0.2.1"
+version = "0.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "textual" },
     { name = "textual-autocomplete" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/eb/36/a0e0b3438585b7b6edf1e35a3fd05e94e8cb777d5819debd5e3e906a8ce3/textual_tags-0.2.1.tar.gz", hash = "sha256:6c0ae9bf52b393771878bc2da492536fd38d575ee8e3389aebc44a2d68646735", size = 102545, upload-time = "2025-05-03T13:00:41.816Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b2/56/790a1358c8dd67fecc6cf124bd398b0c4fc325cac7b009d04c9245edae86/textual_tags-0.3.0.tar.gz", hash = "sha256:f6d683c56dae9c8e300c667556d4002e2f2c72d41644eb9592147e8ffd920ddb", size = 102959, upload-time = "2025-05-03T15:35:52.987Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a0/c2/be4fa3253334005dc708056b94b0a8cb67cca6fc49cb24a456d9b4ef92e6/textual_tags-0.2.1-py3-none-any.whl", hash = "sha256:20aab90312acac96c191070d12b8ebc9dbe1fd650649b32175c133493f057ba9", size = 9737, upload-time = "2025-05-03T13:00:40.143Z" },
+    { url = "https://files.pythonhosted.org/packages/7a/da/89adb1037e880ce105a1ff2638ddc265d0ba77eee6cd8d16ad66471c270c/textual_tags-0.3.0-py3-none-any.whl", hash = "sha256:73aea70aa633b746ab3cd72f38869067b0005a1923716e2e1c55b765836475ee", size = 10033, upload-time = "2025-05-03T15:35:51.45Z" },
 ]
 
 [[package]]
