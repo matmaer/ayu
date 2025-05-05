@@ -14,6 +14,7 @@ from ayu.widgets.navigation import TestTree
 from ayu.widgets.detail_viewer import DetailView, TestResultDetails
 from ayu.widgets.filter import TreeFilter, MarkersFilter
 from ayu.widgets.helper_widgets import ToggleRule
+from ayu.widgets.modals.search import ModalSearch
 
 from textual_tags import Tag
 
@@ -28,6 +29,7 @@ class AyuApp(App):
         Binding("s", "show_details", "Details", show=True),
         Binding("c", "clear_test_results", "Clear Results", show=True, priority=True),
         Binding("r", "refresh", "Refresh", show=True, priority=True),
+        Binding("O", "open_search", "Search", show=True, priority=True),
     ]
 
     data_test_tree: reactive[dict] = reactive({}, init=False)
@@ -63,7 +65,7 @@ class AyuApp(App):
         collection_log.border_title = "Collection"
         with Horizontal():
             with Vertical(id="vertical_test_tree"):
-                yield TestTree(label="Tests").data_bind(
+                yield TestTree(label="Tests", id="testtree").data_bind(
                     filter=AyuApp.filter,
                     filtered_data_test_tree=AyuApp.data_test_tree,
                     filtered_counter_total_tests=AyuApp.counter_total_tests,
@@ -111,10 +113,6 @@ class AyuApp(App):
         if event.key == "w":
             self.notify(f"{self.workers}")
 
-    def action_show_details(self):
-        self.query_one(DetailView).toggle()
-        self.query_one(TreeFilter).toggle()
-
     @on(Button.Pressed, ".filter-button")
     def update_test_tree_filter(self, event: Button.Pressed):
         button_id_part = event.button.id.split("_")[-1]
@@ -159,6 +157,10 @@ class AyuApp(App):
         self.query_one(ToggleRule).test_result = event.node.data["status"]
         self.query_one(TestResultDetails).selected_node_id = event.node.data["nodeid"]
 
+    def action_show_details(self):
+        self.query_one(DetailView).toggle()
+        self.query_one(TreeFilter).toggle()
+
     @work(thread=True)
     def action_run_tests(self):
         self.tests_running = True
@@ -186,6 +188,10 @@ class AyuApp(App):
         self.query_one(TestTree).reset_test_results()
         for log in self.query(Log):
             log.clear()
+
+    def action_open_search(self):
+        self.notify("Search")
+        self.push_screen(ModalSearch())
 
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
         # on app startup widget is not mounted yet so

@@ -398,6 +398,14 @@ class TestTree(Tree):
                 marked_tests.append(node.data["nodeid"])
         return marked_tests
 
+    @property
+    def test_nodes(self) -> list[TreeNode]:
+        test_nodes = []
+        for node in self._tree_nodes.values():
+            if node.data:
+                test_nodes.append(node)
+        return test_nodes
+
     def reset_test_results(self):
         # reset self.filtered_data_test_tree,
         # to also reset results that were hidden by the filter

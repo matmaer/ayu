@@ -65,6 +65,24 @@ TreeFilter {
     }
 
 }
+ModalSearch{
+    align-horizontal:right;
+    background:$background 30%;
+
+    Input{
+        offset-y:5vw;
+        width:0.5fr;
+        height:1;
+        border:none;
+    }
+}
+SearchAutoComplete {
+    offset-y:5vw;
+    & AutoCompleteList {
+        width: 50vw;
+        max-height: 6;
+        }
+}
 
 Vertical{
     width:1fr;

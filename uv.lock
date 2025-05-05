@@ -780,14 +780,14 @@ wheels = [
 
 [[package]]
 name = "textual-slidecontainer"
-version = "0.3.4"
+version = "0.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "textual" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/53/08/94914915a5788a6f485ab4d7843155c20aca850cccb4a2c534643c48753e/textual_slidecontainer-0.3.4.tar.gz", hash = "sha256:dccd304b29695d106708dcb564d92006feec386cc7ea290c9d6dfe94f982eb06", size = 106400, upload-time = "2025-04-19T20:30:10.844Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/1c/00/0bff4f5839208d31c871ad9d045c46451071e4844b16c6d7f442db8fb60a/textual_slidecontainer-0.4.0.tar.gz", hash = "sha256:d572e1d700e44d24f0f82fcccf990540acc81f8c751f05c93f1f6354b2007e21", size = 147742, upload-time = "2025-05-05T07:20:39.35Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/57/f5/cec73fd1beb6378c6ff6c1f395bf8bbf62bbfeb53f0e2a9885139dbc067d/textual_slidecontainer-0.3.4-py3-none-any.whl", hash = "sha256:a3a5a3ee6cf182b6f1ccc7b5191456a3ac8fbb0e31227b20f2814c202fc7f302", size = 8477, upload-time = "2025-04-19T20:30:09.525Z" },
+    { url = "https://files.pythonhosted.org/packages/91/e7/693f5068bec0f9c1dedb5fda18913e48987d9008dba1d0e28e822a76b27a/textual_slidecontainer-0.4.0-py3-none-any.whl", hash = "sha256:35f58ae680b760cb7bea0325d9c73ed73d76f66da5fc8479b56a34f4c0333adc", size = 10692, upload-time = "2025-05-05T07:20:37.918Z" },
 ]
 
 [[package]]
