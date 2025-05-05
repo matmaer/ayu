@@ -66,26 +66,40 @@ TreeFilter {
 
 }
 ModalSearch{
-    align-horizontal:right;
+    align:center middle;
+    width:60%;
     background:$background 30%;
 
+    Center{
+        offset-y:-130%;
+        width:60%;
+        background:transparent;
+    }
+
+    Footer{
+        layout:horizontal;
+        dock:top;
+
+    }
     Label{
-        offset-y:5vw;
     }
     Input{
         padding:0;
-        offset-y:5vw;
-        width:0.5fr;
-        height:1;
+        height:2;
         border:none;
-    }
-}
-SearchAutoComplete {
-    offset-y:5vw;
-    & AutoCompleteList {
-        width: 50vw;
-        max-height: 6;
+        &:focus {
+            border:none;
+
         }
+    }
+    SearchAutoComplete {
+        display:block;
+        & AutoCompleteList {
+            width: 1fr;
+            max-height: 6;
+            height:6;
+            }
+    }
 }
 
 Vertical{

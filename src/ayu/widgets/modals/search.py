@@ -7,6 +7,7 @@ from textual.screen import ModalScreen
 from textual.binding import Binding
 from textual.widgets import Input, Footer, Label
 from textual.content import Content
+from textual.containers import Center
 
 from textual_autocomplete import AutoComplete, DropdownItem, TargetState
 
@@ -74,12 +75,13 @@ class ModalSearch(ModalScreen):
             return self.nodeid
 
     def compose(self):
-        yield Label("Search for tests")
-        yield Input(id="input_search")
-        yield Footer()
-        yield SearchAutoComplete(
-            target="#input_search",
-        )
+        with Center():
+            yield Label("Search for tests")
+            yield Input(id="input_search")
+            yield Footer()
+            yield SearchAutoComplete(
+                target="#input_search",
+            )
 
     def action_navigate_highlight(self, direction: Literal["up", "down"]):
         """go to next hightlight in completion option list"""

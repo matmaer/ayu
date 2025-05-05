@@ -28,7 +28,7 @@ class AyuApp(App):
         Binding("ctrl+l", "run_marked_tests", "Run ⭐ Tests", show=True, priority=True),
         Binding("s", "show_details", "Details", show=True),
         Binding("c", "clear_test_results", "Clear Results", show=True, priority=True),
-        Binding("r", "refresh", "Refresh", show=True, priority=True),
+        Binding("ctrl+r", "refresh", "Refresh", show=True, priority=True),
         Binding("O", "open_search", "Search", show=True, priority=True),
     ]
 
