@@ -220,6 +220,10 @@ class TestTree(Tree):
             if node.data and marker in node.data["markers"]:
                 self.action_mark_test_as_fav(node=node)
 
+    def action_mark_test_as_fav_from_search(self, nodeid: str):
+        node_to_mark = self.get_node_by_nodeid(nodeid=nodeid)
+        self.action_mark_test_as_fav(node=node_to_mark)
+
     def action_mark_test_as_fav(
         self, node: TreeNode | None = None, parent_val: bool | None = None
     ):
@@ -383,6 +387,12 @@ class TestTree(Tree):
             + f" | :white_check_mark: {self.counter_passed} | :next_track_button: {self.counter_skipped}"
             + f" | Tests to run {tests_to_run} "
         )
+
+    def get_node_by_nodeid(self, nodeid: str) -> TreeNode | None:
+        for node in self._tree_nodes.values():
+            if node.data and (node.data["nodeid"] == nodeid):
+                return node
+        return None
 
     @property
     def marked_tests(self):

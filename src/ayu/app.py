@@ -138,8 +138,14 @@ class AyuApp(App):
         self.query_one(TestTree).highlight_marker_rows(marker=event.tag.value)
 
     @on(MarkersFilter.Marked)
-    def favourite_tests_with_markers(self, event: MarkersFilter.Marked):
+    def favourite_tests_from_tags(self, event: MarkersFilter.Marked):
         self.query_one(TestTree).mark_test_as_fav_from_markers(marker=event.current_tag)
+
+    @on(ModalSearch.Marked)
+    def favourite_tests_from_search(self, event: ModalSearch.Marked):
+        self.query_one(TestTree).action_mark_test_as_fav_from_search(
+            nodeid=event.nodeid
+        )
 
     @on(Tree.NodeHighlighted)
     def update_test_preview(self, event: Tree.NodeHighlighted):

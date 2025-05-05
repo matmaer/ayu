@@ -69,7 +69,11 @@ ModalSearch{
     align-horizontal:right;
     background:$background 30%;
 
+    Label{
+        offset-y:5vw;
+    }
     Input{
+        padding:0;
         offset-y:5vw;
         width:0.5fr;
         height:1;
