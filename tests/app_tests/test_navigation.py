@@ -5,7 +5,7 @@ from ayu.app import AyuApp
 
 # async def test_port_and_host(test_app: AyuApp, test_host, test_port) :
 #     async with test_app.run_test() as pilot:
-#         assert await check_connection(host=pilot.app.host, port=pilot.app.port)
+#         assert check_connection()
 #         assert pilot.app.host == test_host
 #         assert pilot.app.port == test_port
 

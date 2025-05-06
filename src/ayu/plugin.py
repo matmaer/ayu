@@ -42,8 +42,8 @@ class Ayu:
 
     # build test tree
     def pytest_collection_finish(self, session: Session):
-        print("Connected to Ayu")
         if self.connected:
+            print("Connected to Ayu")
             if session.config.getoption("--collect-only"):
                 tree = build_dict_tree(items=session.items)
                 asyncio.run(

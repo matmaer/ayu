@@ -3,12 +3,12 @@ from collections import defaultdict
 
 from websockets.asyncio.server import serve
 from websockets.asyncio.client import connect
-from websockets.exceptions import ConnectionClosedOK
+from websockets.exceptions import ConnectionClosedOK, WebSocketException
 import asyncio
 
 from ayu.constants import WEB_SOCKET_HOST, WEB_SOCKET_PORT
 from ayu.classes.event import Event
-from ayu.utils import EventType  # , get_ayu_websocket_host_port
+from ayu.utils import EventType, get_ayu_websocket_host_port
 
 
 class EventDispatcher:
@@ -82,21 +82,15 @@ async def send_event(
         await websocket.send(message=event.serialize())
 
 
-async def check_connection(
-    host: str | None = WEB_SOCKET_HOST, port: int = WEB_SOCKET_PORT
-):
-    host
+async def is_websocket_connected():
+    host, port = get_ayu_websocket_host_port()
     uri = f"ws://{host}:{port}"
-
-    async def inner():
-        async with connect(uri) as websocket:
-            await websocket.send('{"type": "OUTCOME", "payload": ["TestPayload"]}')
-
     try:
-        asyncio.create_task(inner())
-        return True
-    except Exception as e:
-        raise e
+        async with connect(uri) as _websocket:
+            return True
+    except (WebSocketException, ConnectionRefusedError):
         return False
-    # async with connect(uri) as websocket:
-    #     await websocket.close()
+
+
+def check_connection():
+    return asyncio.run(is_websocket_connected())
