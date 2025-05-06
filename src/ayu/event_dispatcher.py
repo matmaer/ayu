@@ -8,7 +8,7 @@ import asyncio
 
 from ayu.constants import WEB_SOCKET_HOST, WEB_SOCKET_PORT
 from ayu.classes.event import Event
-from ayu.utils import EventType
+from ayu.utils import EventType  # , get_ayu_websocket_host_port
 
 
 class EventDispatcher:
@@ -75,13 +75,28 @@ class EventDispatcher:
 async def send_event(
     event: Event, host: str = WEB_SOCKET_HOST, port: int = WEB_SOCKET_PORT
 ):
+    # host, port = get_ayu_websocket_host_port()
     uri = f"ws://{host}:{port}"
 
     async with connect(uri) as websocket:
         await websocket.send(message=event.serialize())
 
 
-async def check_connection(host: str = WEB_SOCKET_HOST, port: int = WEB_SOCKET_PORT):
+async def check_connection(
+    host: str | None = WEB_SOCKET_HOST, port: int = WEB_SOCKET_PORT
+):
+    host
     uri = f"ws://{host}:{port}"
-    async with connect(uri) as websocket:
-        await websocket.close()
+
+    async def inner():
+        async with connect(uri) as websocket:
+            await websocket.send('{"type": "OUTCOME", "payload": ["TestPayload"]}')
+
+    try:
+        asyncio.create_task(inner())
+        return True
+    except Exception as e:
+        raise e
+        return False
+    # async with connect(uri) as websocket:
+    #     await websocket.close()

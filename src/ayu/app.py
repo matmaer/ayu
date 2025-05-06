@@ -9,6 +9,7 @@ from textual.widgets import Log, Header, Footer, Collapsible, Tree, Button
 from textual.containers import Horizontal, Vertical
 
 from ayu.event_dispatcher import EventDispatcher
+from ayu.constants import WEB_SOCKET_HOST, WEB_SOCKET_PORT
 from ayu.utils import EventType, NodeType, run_all_tests
 from ayu.widgets.navigation import TestTree
 from ayu.widgets.detail_viewer import DetailView, TestResultDetails
@@ -49,7 +50,16 @@ class AyuApp(App):
     tests_running: reactive[bool] = reactive(False, init=False)
     markers: reactive[list[str]] = reactive([])
 
-    def __init__(self, test_path: Path | None = None, *args, **kwargs):
+    def __init__(
+        self,
+        test_path: Path | None = None,
+        host: str | None = WEB_SOCKET_HOST,
+        port: int | None = WEB_SOCKET_PORT,
+        *args,
+        **kwargs,
+    ):
+        self.host = host
+        self.port = port
         self.dispatcher = None
         self.test_path = test_path
         super().__init__(*args, **kwargs)
@@ -105,7 +115,7 @@ class AyuApp(App):
 
     @work(exclusive=True)
     async def start_socket(self):
-        self.dispatcher = EventDispatcher()
+        self.dispatcher = EventDispatcher(host=self.host, port=self.port)
         self.notify("Websocket Started", timeout=1)
         await self.dispatcher.start()
 

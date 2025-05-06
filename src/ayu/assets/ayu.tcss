@@ -25,6 +25,7 @@ DetailView {
 
     TestResultDetails {
         height: auto;
+        max-height: 15;
         border: none;
     }
 }

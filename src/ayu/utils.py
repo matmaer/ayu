@@ -1,8 +1,11 @@
+import os
 import shutil
 import re
 from enum import Enum
 from pathlib import Path
 import subprocess
+
+from ayu.constants import WEB_SOCKET_PORT, WEB_SOCKET_HOST
 
 
 class NodeType(str, Enum):
@@ -96,6 +99,12 @@ def get_preview_test(file_path: str, start_line_no: int) -> str:
                 break
             last_line_is_blank = False
         return "".join(file_lines[start_line_no:end_line_no]).rstrip()
+
+
+def get_ayu_websocket_host_port() -> tuple[str, int]:
+    host: str = os.environ.get("AYU_HOST", WEB_SOCKET_HOST)
+    port: int = int(os.environ.get("AYU_PORT", WEB_SOCKET_PORT))
+    return host, port
 
 
 def remove_ansi_escapes(string_to_remove: str) -> str:

@@ -32,7 +32,7 @@ class DetailView(SlideContainer):
             "Please select a test",
         )
         yield ToggleRule(target_widget_id="textarea_test_result_details")
-        yield TestResultDetails("Lorem Uiasd", id="textarea_test_result_details")
+        yield TestResultDetails(id="textarea_test_result_details")
 
     def watch_file_path_to_preview(self):
         self.border_title = self.file_path_to_preview.as_posix()
@@ -70,7 +70,7 @@ class TestResultDetails(TextArea):
     report_data: reactive[dict] = reactive({})
 
     def on_mount(self):
-        self.language = "python"
+        # self.language = "python"
         self.read_only = True
         # self.styles.color = 'red'
 

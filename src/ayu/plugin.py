@@ -31,11 +31,12 @@ class Ayu:
     def __init__(self, config: Config):
         self.config = config
         self.connected = False
-        try:
-            asyncio.run(check_connection())
+        # try:
+        if check_connection():
             print("connected")
             self.connected = True
-        except OSError:
+        # except OSError:
+        else:
             self.connected = False
             print("Websocket not connected")
 
@@ -105,6 +106,7 @@ class Ayu:
             for report in reports:
                 report_dict[report.nodeid] = {
                     "nodeid": report.nodeid,
+                    # Not in warning report
                     "when": report.when,
                     "caplog": report.caplog,
                     "longreprtext": remove_ansi_escapes(report.longreprtext),
