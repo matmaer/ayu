@@ -196,7 +196,6 @@ class AyuApp(App):
             log.clear()
 
     def action_open_search(self):
-        self.notify("Search")
         self.push_screen(ModalSearch())
 
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:

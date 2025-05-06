@@ -83,7 +83,7 @@ ModalSearch{
     }
     Label{
     }
-    Input{
+    SearchInput{
         padding:0;
         height:2;
         border:none;
