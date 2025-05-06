@@ -38,6 +38,6 @@ dev = [
 asyncio_mode = "auto"
 markers = ["custom", "custom_two", "custom1"]
 asyncio_default_fixture_loop_scope = "function"
-addopts = "--cov src/ayu  --color=yes --ignore=tests/test_cases --no-cov --verbose"# --cov-report term-missing --verbose"# -n auto --dist=worksteal"
+addopts = "--cov src/ayu  --color=yes --ignore=tests/test_cases --verbose --cov-report term-missing"# -n auto --dist=worksteal"
 # addopts = "--verbose --color=yes --ignore=tests/test_cases"# -n auto --dist=worksteal"
 testpaths = ["tests"]
