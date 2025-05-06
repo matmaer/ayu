@@ -196,7 +196,12 @@ class AyuApp(App):
             log.clear()
 
     def action_open_search(self):
-        self.push_screen(ModalSearch())
+        def select_searched_nodeid(nodeid: str | None):
+            if nodeid:
+                node = self.query_one(TestTree).get_node_by_nodeid(nodeid=nodeid)
+                self.query_one(TestTree).select_node(node=node)
+
+        self.push_screen(ModalSearch(), callback=select_searched_nodeid)
 
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
         # on app startup widget is not mounted yet so

@@ -78,6 +78,7 @@ ModalSearch{
 
     Footer{
         layout:horizontal;
+        background:$success-darken-2;
         dock:top;
 
     }

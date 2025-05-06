@@ -32,8 +32,16 @@ class SearchInput(Input):
                 f"(press `backspace` to remove {self.filtered_node_types[-1]})"
             )
             self.placeholder = f"Search only for tests of type {', '.join(self.filtered_node_types)} {hint_substring}"
+            self.styles.border_bottom = ("tall", self.styles.background)
+            self.border_subtitle = Content.from_markup(
+                "[white]active filters: [/]"
+                + f"[$success-darken-2]{', '.join(self.filtered_node_types)}[/]"
+            )
         else:
-            self.placeholder = "Press ':' to filter for different NodeTypes"
+            self.placeholder = (
+                "Type to search for test or press ':' to filter for different NodeTypes"
+            )
+            self.styles.border_bottom = None
 
 
 class SearchAutoComplete(AutoComplete):
@@ -178,5 +186,4 @@ class ModalSearch(ModalScreen):
         return True
 
     def on_input_submitted(self, event: Input.Submitted):
-        # self.notify(f'{event.input.value}')
         self.dismiss(result=self.query_one(SearchInput).value)
