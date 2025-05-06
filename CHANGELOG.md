@@ -1,3 +1,6 @@
+# 0.1.4
+- Fix runner command
+
 # 0.1.3
 - Add `textual-tags` to filter based on test markers
 - Add SearchModal to search for tests also add favourite function
