@@ -85,6 +85,14 @@ class SearchAutoComplete(AutoComplete):
     def _align_to_target(self) -> None:
         return
 
+    def action_show(self) -> None:
+        super().action_show()
+        self.refresh_bindings()
+
+    def action_hide(self) -> None:
+        self.refresh_bindings()
+        return super().action_hide()
+
 
 class ModalSearch(ModalScreen):
     app: "AyuApp"
@@ -128,7 +136,7 @@ class ModalSearch(ModalScreen):
         if displayed:
             highlighted = (highlighted + int_direction) % option_list.option_count
         else:
-            self.query_one(SearchAutoComplete).display = True
+            self.query_one(SearchAutoComplete).action_show()
             highlighted = 0
 
         option_list.highlighted = highlighted
@@ -162,8 +170,12 @@ class ModalSearch(ModalScreen):
             ),
         )
 
-    # def check_action(self):
-    #     ...
+    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
+        if action == "mark_as_fav":
+            return self.query_one(SearchAutoComplete).display and not self.query_one(
+                SearchInput
+            ).value.startswith(":")
+        return True
 
     def on_input_submitted(self, event: Input.Submitted):
         # self.notify(f'{event.input.value}')
