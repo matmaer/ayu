@@ -5,6 +5,7 @@ def test_sum():
     assert 1 + 1 == 2
 
 
+# @pytest.mark.xfail
 def test_fail():
     assert 1 + 1 == 3
 
