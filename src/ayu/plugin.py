@@ -1,14 +1,12 @@
 import os
 import asyncio
-from typing import Any
 import pytest
-from pytest import Config, TestReport, Session, Item, Class, Function
+from pytest import Config, TestReport, Session
 from _pytest.terminal import TerminalReporter
-from _pytest.nodes import Node
 
 from ayu.event_dispatcher import send_event, check_connection
 from ayu.classes.event import Event
-from ayu.utils import EventType, TestOutcome, remove_ansi_escapes
+from ayu.utils import EventType, TestOutcome, remove_ansi_escapes, build_dict_tree
 
 
 def pytest_addoption(parser) -> None:
@@ -31,17 +29,27 @@ class Ayu:
     def __init__(self, config: Config):
         self.config = config
         self.connected = False
-        # try:
         if check_connection():
-            print("connected")
+            print("Websocket connected")
             self.connected = True
-        # except OSError:
         else:
             self.connected = False
             print("Websocket not connected")
 
+    # @pytest.hookimpl(trylast=True)
+    def pytest_runtestloop(self, session: Session):
+        if session.config.getoption("--collect-only"):
+            print("collectonly")
+            print(session.testscollected)
+            print(session.items)
+
     # build test tree
     def pytest_collection_finish(self, session: Session):
+        # event = Event(
+        #     event_type=EventType.COLLECTION,
+        #     event_payload=
+        #     [test_node_to_dict(node) for node in session.items]
+        # ).serialize()
         if self.connected:
             print("Connected to Ayu")
             if session.config.getoption("--collect-only"):
@@ -51,8 +59,9 @@ class Ayu:
                         event=Event(
                             event_type=EventType.COLLECTION,
                             event_payload=tree,
+                            # event_payload={"items":session.items},
                         )
-                    )
+                    ),
                 )
             else:
                 asyncio.run(
@@ -101,6 +110,7 @@ class Ayu:
         report_dict = {}
         # warning report has no report.when
         for outcome, reports in terminalreporter.stats.items():
+            # raise Exception(terminalreporter.stats.keys())
             if outcome in ["", "deselected"]:
                 continue
             for report in reports:
@@ -129,69 +139,3 @@ class Ayu:
                     )
                 )
             )
-
-
-def build_dict_tree(items: list[Item]) -> dict:
-    markers = set()
-
-    def create_node(
-        node: Node, parent_name: Node | None = None, parent_type: Node | None = None
-    ) -> dict[Any, Any]:
-        markers.update([mark.name for mark in node.own_markers])
-
-        return {
-            "name": node.name,
-            "nodeid": node.nodeid,
-            "markers": [mark.name for mark in node.own_markers],
-            "path": node.path.as_posix(),
-            "lineno": node.reportinfo()[1]
-            if isinstance(node, Class)
-            else (node.location[1] if isinstance(node, Function) else 0),
-            "parent_name": parent_name,
-            "parent_type": parent_type,
-            "type": type(node).__name__.upper(),
-            "favourite": False,
-            "status": "",
-            "children": [],
-        }
-
-    def add_node(node_list: list[Node], sub_tree: dict):
-        if not node_list:
-            return
-
-        # take root node
-        current_node = node_list.pop(0)
-        node_dict = create_node(
-            node=current_node,
-            parent_name=current_node.parent.name,
-            parent_type=type(current_node.parent).__name__.upper(),
-        )
-
-        existing_node = next(
-            (
-                node
-                for node in sub_tree["children"]
-                if node["nodeid"] == current_node.nodeid
-            ),
-            None,
-        )
-
-        if existing_node is None:
-            sub_tree["children"].append(node_dict)
-            existing_node = node_dict
-
-        add_node(
-            node_list=node_list,
-            sub_tree=existing_node,
-        )
-
-    tree: dict[Any, Any] = {}
-    root = items[0].listchain()[1]
-    tree[root.name] = create_node(node=root)
-
-    for item in items:
-        # gets all parents except session
-        parts_to_collect = item.listchain()[1:]
-        add_node(node_list=parts_to_collect[1:], sub_tree=tree[root.name])
-
-    return {"tree": tree, "meta": {"test_count": len(items), "markers": list(markers)}}

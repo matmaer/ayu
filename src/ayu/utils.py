@@ -1,9 +1,13 @@
+from typing import Any
 import os
 import shutil
 import re
 from enum import Enum
 from pathlib import Path
 import subprocess
+
+from pytest import Item, Class, Function
+from _pytest.nodes import Node
 
 from ayu.constants import WEB_SOCKET_PORT, WEB_SOCKET_HOST
 
@@ -36,10 +40,10 @@ class TestOutcome(str, Enum):
 
 def run_test_collection(tests_path: str | None = None):
     """Collect All Tests without running them"""
-    if not ayu_is_run_as_tool():
-        command = "uv run pytest --co".split()
-    else:
+    if ayu_is_run_as_tool():
         command = "uv run --with ayu pytest --co".split()
+    else:
+        command = "pytest --co".split()
 
     if tests_path:
         command.extend([tests_path])
@@ -52,10 +56,10 @@ def run_test_collection(tests_path: str | None = None):
 
 def run_all_tests(tests_path: str | None = None, tests_to_run: list[str] | None = None):
     """Run all selected tests"""
-    if not ayu_is_run_as_tool():
-        command = "uv run python -m pytest".split()
-    else:
+    if ayu_is_run_as_tool():
         command = "uv run --with ayu pytest".split()
+    else:
+        command = "python -m pytest".split()
         # command = "python -m pytest".split()
 
     if tests_to_run:
@@ -131,3 +135,66 @@ def ayu_is_run_as_tool():
     if result.stdout:
         return False
     return True
+
+
+def build_dict_tree(items: list[Item]) -> dict:
+    markers = set()
+
+    def create_node(node: Node) -> dict[Any, Any]:
+        markers.update([mark.name for mark in node.own_markers])
+        return test_node_to_dict(node=node)
+
+    def add_node(node_list: list[Node], sub_tree: dict):
+        if not node_list:
+            return
+
+        # take root node
+        current_node = node_list.pop(0)
+        node_dict = create_node(node=current_node)
+
+        existing_node = next(
+            (
+                node
+                for node in sub_tree["children"]
+                if node["nodeid"] == current_node.nodeid
+            ),
+            None,
+        )
+
+        if existing_node is None:
+            sub_tree["children"].append(node_dict)
+            existing_node = node_dict
+
+        add_node(
+            node_list=node_list,
+            sub_tree=existing_node,
+        )
+
+    tree: dict[Any, Any] = {}
+    root = items[0].listchain()[1]
+    tree[root.name] = create_node(node=root)
+
+    for item in items:
+        # gets all parents except session
+        parts_to_collect = item.listchain()[1:]
+        add_node(node_list=parts_to_collect[1:], sub_tree=tree[root.name])
+
+    return {"tree": tree, "meta": {"test_count": len(items), "markers": list(markers)}}
+
+
+def test_node_to_dict(node: Node) -> dict[str, Any]:
+    return {
+        "name": node.name,
+        "nodeid": node.nodeid,
+        "markers": [mark.name for mark in node.own_markers],
+        "path": node.path.as_posix(),
+        "lineno": node.reportinfo()[1]
+        if isinstance(node, Class)
+        else (node.location[1] if isinstance(node, Function) else 0),
+        "parent_name": node.parent.name if node.parent else None,
+        "parent_type": type(node.parent).__name__.upper() if node.parent else None,
+        "type": type(node).__name__.upper(),
+        "favourite": False,
+        "status": "",
+        "children": [],
+    }

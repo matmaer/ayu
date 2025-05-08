@@ -88,7 +88,7 @@ async def is_websocket_connected():
     try:
         async with connect(uri) as _websocket:
             return True
-    except (WebSocketException, ConnectionRefusedError):
+    except (WebSocketException, ConnectionRefusedError, OSError):
         return False
 
 
