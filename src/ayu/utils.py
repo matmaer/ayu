@@ -42,9 +42,9 @@ class TestOutcome(str, Enum):
 def run_test_collection(tests_path: str | None = None):
     """Collect All Tests without running them"""
     if ayu_is_run_as_tool():
-        command = "uv run --with ../ayu pytest --co".split()
+        command = "uv run --with ayu pytest --co".split()
     else:
-        command = "pytest --co".split()
+        command = "uv run pytest --co".split()
 
     if tests_path:
         command.extend([tests_path])
@@ -58,9 +58,9 @@ def run_test_collection(tests_path: str | None = None):
 def run_all_tests(tests_path: str | None = None, tests_to_run: list[str] | None = None):
     """Run all selected tests"""
     if ayu_is_run_as_tool():
-        command = "uv run --with ../ayu pytest".split()
+        command = "uv run --with ayu pytest".split()
     else:
-        command = "python -m pytest".split()
+        command = "uv run python -m pytest".split()
         # command = "python -m pytest".split()
 
     if tests_to_run:

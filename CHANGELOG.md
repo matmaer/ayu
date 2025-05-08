@@ -1,3 +1,6 @@
+# 0.1.5
+- Increase `MAX_EVENT_SIZE` to send via websocket
+
 # 0.1.4
 - Fix runner command
 
