@@ -118,6 +118,10 @@ class TestTree(Tree):
                         label=child["name"], data=child, expand=True
                     )
                     add_children(child_list=child["children"], parent_node=new_node)
+
+                    # if all children were filtered out, remove this node
+                    if not new_node.children:
+                        new_node.remove()
                 else:
                     # TODO Make this cleaner, also check for MODULES to be not displayed
                     if not self.filter["show_favourites"] and child["favourite"]:
@@ -224,6 +228,7 @@ class TestTree(Tree):
         node_to_mark = self.get_node_by_nodeid(nodeid=nodeid)
         self.action_mark_test_as_fav(node=node_to_mark)
 
+    @work(thread=True)
     def action_mark_test_as_fav(
         self, node: TreeNode | None = None, parent_val: bool | None = None
     ):
@@ -238,10 +243,10 @@ class TestTree(Tree):
         if node.children:
             node.data["favourite"] = parent_val
             node.refresh()
-            self.update_filtered_data_test_tree(
-                nodeid=node.data["nodeid"],
-                is_fav=parent_val,
-            )
+            # self.update_filtered_data_test_tree(
+            #     nodeid=node.data["nodeid"],
+            #     is_fav=parent_val,
+            # )
             for child in node.children:
                 self.action_mark_test_as_fav(node=child, parent_val=parent_val)
         else:
@@ -249,13 +254,13 @@ class TestTree(Tree):
                 self.counter_marked += 1 if parent_val else -1
             node.data["favourite"] = parent_val
             node.refresh()
-            self.update_filtered_data_test_tree(
-                nodeid=node.data["nodeid"],
-                is_fav=parent_val,
-            )
+            # self.update_filtered_data_test_tree(
+            #     nodeid=node.data["nodeid"],
+            #     is_fav=parent_val,
+            # )
             # self.mutate_reactive(TestTree.filtered_data_test_tree)
 
-        # Repeat unselecting for parents
+        # Unfavourite all parents, if a single child not is not favourited
         if not node.data["favourite"]:
             parent_node = node.parent
             while parent_node.data is not None:
