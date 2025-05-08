@@ -73,6 +73,8 @@ class AyuApp(App):
         report_log.border_title = "Report"
         collection_log = Log(highlight=True, id="log_collection")
         collection_log.border_title = "Collection"
+        debug_log = Log(highlight=True, id="log_debug")
+        debug_log.border_title = "Debug"
         with Horizontal():
             with Vertical(id="vertical_test_tree"):
                 yield TestTree(label="Tests", id="testtree").data_bind(
@@ -91,6 +93,8 @@ class AyuApp(App):
                     yield report_log
                 with Collapsible(title="Collection", collapsed=True):
                     yield collection_log
+                with Collapsible(title="Debug", collapsed=True):
+                    yield debug_log
 
     async def on_load(self):
         self.start_socket()
@@ -99,6 +103,10 @@ class AyuApp(App):
         self.dispatcher.register_handler(
             event_type=EventType.OUTCOME,
             handler=lambda msg: self.update_outcome_log(msg),
+        )
+        self.dispatcher.register_handler(
+            event_type=EventType.DEBUG,
+            handler=lambda msg: self.update_debug_log(msg),
         )
         self.dispatcher.register_handler(
             event_type=EventType.REPORT, handler=lambda msg: self.update_report_log(msg)
@@ -235,6 +243,9 @@ class AyuApp(App):
 
     def update_report_log(self, msg):
         self.query_one("#log_report", Log).write_line(f"{msg}")
+
+    def update_debug_log(self, msg):
+        self.query_one("#log_debug", Log).write_line(f"{msg}")
 
     def watch_data_test_tree(self):
         self.query_one("#log_collection", Log).write_line(f"{self.data_test_tree}")

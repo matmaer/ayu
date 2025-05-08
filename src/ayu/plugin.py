@@ -8,6 +8,9 @@ from ayu.event_dispatcher import send_event, check_connection
 from ayu.classes.event import Event
 from ayu.utils import EventType, TestOutcome, remove_ansi_escapes, build_dict_tree
 
+# import logging
+# logging.basicConfig(level=logging.DEBUG)
+
 
 def pytest_addoption(parser) -> None:
     parser.addoption(
@@ -36,20 +39,23 @@ class Ayu:
             self.connected = False
             print("Websocket not connected")
 
-    # @pytest.hookimpl(trylast=True)
+    # must tryfirst, otherwise collection-only is returning
+    @pytest.hookimpl(tryfirst=True)
     def pytest_runtestloop(self, session: Session):
-        if session.config.getoption("--collect-only"):
-            print("collectonly")
-            print(session.testscollected)
-            print(session.items)
+        if self.connected and session.config.getoption("--collect-only"):
+            asyncio.run(
+                send_event(
+                    event=Event(
+                        event_type=EventType.DEBUG,
+                        event_payload={"test": "test"},
+                        # event_payload={"no_items":session.testscollected,"items":f"{session.items}"},
+                    )
+                )
+                # ,debug_mode=True
+            )
 
     # build test tree
     def pytest_collection_finish(self, session: Session):
-        # event = Event(
-        #     event_type=EventType.COLLECTION,
-        #     event_payload=
-        #     [test_node_to_dict(node) for node in session.items]
-        # ).serialize()
         if self.connected:
             print("Connected to Ayu")
             if session.config.getoption("--collect-only"):
@@ -94,7 +100,6 @@ class Ayu:
                         event_payload={
                             "nodeid": report.nodeid,
                             "outcome": report.outcome.upper(),
-                            "report": f"{report}",
                         },
                     )
                 )

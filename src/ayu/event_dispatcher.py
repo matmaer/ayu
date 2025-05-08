@@ -6,7 +6,7 @@ from websockets.asyncio.client import connect
 from websockets.exceptions import ConnectionClosedOK, WebSocketException
 import asyncio
 
-from ayu.constants import WEB_SOCKET_HOST, WEB_SOCKET_PORT
+from ayu.constants import MAX_EVENT_SIZE, WEB_SOCKET_HOST, WEB_SOCKET_PORT
 from ayu.classes.event import Event
 from ayu.utils import EventType, get_ayu_websocket_host_port
 
@@ -42,6 +42,8 @@ class EventDispatcher:
                         handlers = self.event_handler[EventType.REPORT]
                     case EventType.SCHEDULED:
                         handlers = self.event_handler[EventType.SCHEDULED]
+                    case EventType.DEBUG:
+                        handlers = self.event_handler[EventType.DEBUG]
 
             if handlers:
                 for handler in handlers:
@@ -64,7 +66,9 @@ class EventDispatcher:
         asyncio.get_running_loop().create_future()
 
     async def start_socket_server(self):
-        self.server = await serve(self.handler, self.host, self.port)
+        self.server = await serve(
+            self.handler, self.host, self.port, max_size=MAX_EVENT_SIZE
+        )
         await self.server.wait_closed()
 
     def get_data(self):
