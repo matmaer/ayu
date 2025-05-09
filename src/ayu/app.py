@@ -117,9 +117,6 @@ class AyuApp(App):
         )
 
     def update_app_data(self, data):
-        # {"tree": tree, "meta": {"test_count": len(items), "markers": list(markers)}}
-        # self.notify(data["items"])
-
         self.data_test_tree = data["tree"]
         self.counter_total_tests = data["meta"]["test_count"]
         self.markers = data["meta"]["markers"]

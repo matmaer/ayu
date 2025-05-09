@@ -32,12 +32,20 @@ class Ayu:
     def __init__(self, config: Config):
         self.config = config
         self.connected = False
+
         if check_connection():
             print("Websocket connected")
             self.connected = True
         else:
             self.connected = False
             print("Websocket not connected")
+
+        # if self.config.pluginmanager.hasplugin("pytest_cov"):
+        #     from pytest_cov.plugin import CovPlugin
+        #     self.cov_plugin: CovPlugin = self.config.pluginmanager.get_plugin("pytest_cov").CovPlugin(
+        #         options = self.config.option,
+        #         pluginmanager = self.config.pluginmanager,
+        #     )
 
     # must tryfirst, otherwise collection-only is returning
     @pytest.hookimpl(tryfirst=True)
@@ -106,12 +114,13 @@ class Ayu:
             )
 
     # summary after run for each tests
-    @pytest.hookimpl(tryfirst=True)
-    def pytest_terminal_summary(self, terminalreporter: TerminalReporter, exitstatus):
+    @pytest.hookimpl(trylast=True)
+    def pytest_terminal_summary(self, terminalreporter: TerminalReporter):
         if self.config.pluginmanager.hasplugin("xdist") and (
             "PYTEST_XDIST_WORKER" not in os.environ
         ):
             return
+
         report_dict = {}
         # warning report has no report.when
         for outcome, reports in terminalreporter.stats.items():

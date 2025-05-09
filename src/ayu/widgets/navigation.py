@@ -49,7 +49,7 @@ class TestTree(Tree):
             "show_skipped": True,
             "show_passed": True,
         },
-        init=False,
+        # init=False,
     )
 
     def on_mount(self):
@@ -67,8 +67,9 @@ class TestTree(Tree):
         return super().on_mount()
 
     def watch_filter(self):
-        self.mutate_reactive(TestTree.filtered_data_test_tree)
-        # self.notify(f"from tree: {self.filter}")
+        if self.filtered_data_test_tree:
+            self.build_tree()
+            self.notify("watch filter")
 
     def watch_filtered_counter_total_tests(self):
         self.update_border_title()
@@ -125,23 +126,36 @@ class TestTree(Tree):
                 else:
                     # TODO Make this cleaner, also check for MODULES to be not displayed
                     if not self.filter["show_favourites"] and child["favourite"]:
+                        self.filtered_counter_total_tests -= 1
                         continue
                     if not self.filter["show_passed"] and (
                         child["status"] == TestOutcome.PASSED
                     ):
+                        self.filtered_counter_total_tests -= 1
                         continue
                     if not self.filter["show_skipped"] and (
                         child["status"] == TestOutcome.SKIPPED
                     ):
+                        self.filtered_counter_total_tests -= 1
                         continue
                     if not self.filter["show_failed"] and (
                         child["status"] == TestOutcome.FAILED
                     ):
+                        self.filtered_counter_total_tests -= 1
                         continue
 
                     parent_node.add_leaf(label=child["name"], data=child)
+
                     if child["favourite"]:
                         self.counter_marked += 1
+
+                    match child["status"]:
+                        case TestOutcome.PASSED:
+                            self.counter_passed += 1
+                        case TestOutcome.SKIPPED:
+                            self.counter_skipped += 1
+                        case TestOutcome.FAILED:
+                            self.counter_failed += 1
 
         for key, value in tree_data.items():
             if isinstance(value, dict) and "children" in value and value["children"]:
@@ -205,6 +219,7 @@ class TestTree(Tree):
         self.counter_passed = 0
         self.counter_skipped = 0
         self.counter_failed = 0
+        self.filtered_counter_total_tests = self.app.counter_total_tests
 
     def mark_tests_as_running(self, nodeids: list[str]) -> None:
         self.root.expand_all()
@@ -382,9 +397,9 @@ class TestTree(Tree):
     def update_border_title(self):
         symbol = "hourglass_not_done" if self.counter_queued > 0 else "hourglass_done"
         tests_to_run = (
-            self.app.counter_total_tests
+            self.filtered_counter_total_tests
             if not self.counter_marked
-            else f":star: {self.counter_marked}/{self.app.counter_total_tests}"
+            else f":star: {self.counter_marked}/{self.filtered_counter_total_tests}"
         )
 
         self.border_title = Text.from_markup(

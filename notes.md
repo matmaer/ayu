@@ -6,6 +6,7 @@
 - log preview
 - command preview
 - tox-like multi python-version testing
+- Improve Filtering/numbers
 
 # generals
 - test strategy
