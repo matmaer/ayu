@@ -6,7 +6,13 @@ from _pytest.terminal import TerminalReporter
 
 from ayu.event_dispatcher import send_event, check_connection
 from ayu.classes.event import Event
-from ayu.utils import EventType, TestOutcome, remove_ansi_escapes, build_dict_tree
+from ayu.utils import (
+    EventType,
+    TestOutcome,
+    remove_ansi_escapes,
+    build_dict_tree,
+    extract_coverage_report,
+)
 
 # import logging
 # logging.basicConfig(level=logging.DEBUG)
@@ -120,6 +126,25 @@ class Ayu:
             "PYTEST_XDIST_WORKER" not in os.environ
         ):
             return
+
+        if self.config.pluginmanager.hasplugin("_cov"):
+            coverage_str = self.config.pluginmanager.getplugin(
+                "_cov"
+            ).cov_report.getvalue()
+            cov_dict = extract_coverage_report(coverage_report_str=coverage_str)
+            print(cov_dict)
+
+            if self.connected:
+                asyncio.run(
+                    send_event(
+                        event=Event(
+                            event_type=EventType.COVERAGE,
+                            event_payload={
+                                "coverate_dict": cov_dict,
+                            },
+                        )
+                    )
+                )
 
         report_dict = {}
         # warning report has no report.when

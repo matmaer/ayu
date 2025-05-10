@@ -26,6 +26,7 @@ class EventType(str, Enum):
     SCHEDULED = "SCHEDULED"
     OUTCOME = "OUTCOME"
     REPORT = "REPORT"
+    COVERAGE = "COVERAGE"
     DEBUG = "DEBUG"
 
 
@@ -190,6 +191,47 @@ def build_dict_tree(items: list[Item]) -> dict:
         add_node(node_list=parts_to_collect[1:], sub_tree=tree[root.name])
 
     return {"tree": tree, "meta": {"test_count": len(items), "markers": list(markers)}}
+
+
+def extract_coverage_report(coverage_report_str: str) -> dict[str, list]:
+    report_dict: dict[str, list] = {
+        "module_names": [],
+        "n_statements": [],
+        "n_missed": [],
+        "percent_covered": [],
+        "lines_missing": [],
+    }
+
+    lines = coverage_report_str.strip().split("\n")
+    module_names = []
+    n_statements = []
+    n_missed = []
+    percent_coverered = []
+    lines_missing = []
+    for line in lines[5:-2]:
+        parts = line.split()
+
+        module_names.append(parts[0])
+        n_statements.append(int(parts[1]))
+        n_missed.append(int(parts[2]))
+        percent_coverered.append(int(parts[3].replace("%", "")))
+
+        raw_lines_missing = [line_part.replace(",", "") for line_part in parts[4:]]
+        int_lines_missing = []
+        for line_range in raw_lines_missing:
+            int_lines = [int(line) for line in line_range.split("-")]
+            int_lines_missing.append(int_lines)
+        lines_missing.append(int_lines_missing)
+
+    report_dict["module_names"] = module_names
+    report_dict["n_statements"] = n_statements
+    report_dict["n_missed"] = n_missed
+    report_dict["percent_covered"] = percent_coverered
+    report_dict["lines_missing"] = lines_missing
+    # report_dict["total_statements"] = sum(n_statements)
+    # report_dict["total_missed"] = sum(n_missed)
+    # report_dict["total_covered"] = sum(percent_coverered) / len(module_names)
+    return report_dict
 
 
 def test_node_to_dict(node: Node) -> dict[str, Any]:

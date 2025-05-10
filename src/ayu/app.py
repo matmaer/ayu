@@ -95,7 +95,7 @@ class AyuApp(App):
                     yield report_log
                 with Collapsible(title="Collection", collapsed=True):
                     yield collection_log
-                with Collapsible(title="Debug", collapsed=True):
+                with Collapsible(title="Debug", collapsed=False):
                     yield debug_log
 
     async def on_load(self):
@@ -107,7 +107,7 @@ class AyuApp(App):
             handler=lambda msg: self.update_outcome_log(msg),
         )
         self.dispatcher.register_handler(
-            event_type=EventType.DEBUG,
+            event_type=EventType.COVERAGE,
             handler=lambda msg: self.update_debug_log(msg),
         )
         self.dispatcher.register_handler(
@@ -210,9 +210,9 @@ class AyuApp(App):
             if "tests coverage" in decoded_line:
                 loggi = True
             if True:
-                self.call_from_thread(
-                    self.query_one("#log_debug", Log).write_line, decoded_line
-                )
+                # self.call_from_thread(
+                #     self.query_one("#log_debug", Log).write_line, decoded_line
+                # )
                 self.call_from_thread(
                     self.query_one(OutputLog).write_line, decoded_line
                 )

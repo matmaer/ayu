@@ -42,6 +42,8 @@ class EventDispatcher:
                         handlers = self.event_handler[EventType.REPORT]
                     case EventType.SCHEDULED:
                         handlers = self.event_handler[EventType.SCHEDULED]
+                    case EventType.COVERAGE:
+                        handlers = self.event_handler[EventType.COVERAGE]
                     case EventType.DEBUG:
                         handlers = self.event_handler[EventType.DEBUG]
 

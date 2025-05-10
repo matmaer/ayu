@@ -1,6 +1,6 @@
 # features
 - some form of result viewer
-    - for plugins
+    - for plugins (https://github.com/pytest-dev/pytest/blob/main/scripts/update-plugin-list.py)
     - general overview
 - menu dynamic plugin installation+flags (needs uv)
 - log preview
