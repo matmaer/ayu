@@ -1,5 +1,23 @@
+LogContainer {
+    layer:above;
+    width:95%;
+    offset-y:5;
+    offset-x:2.5%;
+
+    LogLabel {
+        text-align:center;
+        width:1fr;
+    }
+    OutputLog {
+        background:$background;
+        width:1fr;
+        min-height:5;
+        max-height: 25;
+        height:auto;
+    }
+}
+
 Log {
-    border: $primary;
     max-height: 15;
     height:auto;
 }

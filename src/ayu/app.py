@@ -6,7 +6,8 @@ from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.events import Key
 from textual.widgets import Log, Header, Footer, Collapsible, Tree, Button
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal, Vertical, Center
+from textual_tags import Tag
 
 from ayu.event_dispatcher import EventDispatcher
 from ayu.constants import WEB_SOCKET_HOST, WEB_SOCKET_PORT
@@ -16,8 +17,7 @@ from ayu.widgets.detail_viewer import DetailView, TestResultDetails
 from ayu.widgets.filter import TreeFilter, MarkersFilter
 from ayu.widgets.helper_widgets import ToggleRule
 from ayu.widgets.modals.search import ModalSearch
-
-from textual_tags import Tag
+from ayu.widgets.log import OutputLog, LogContainer
 
 
 class AyuApp(App):
@@ -31,6 +31,7 @@ class AyuApp(App):
         Binding("c", "clear_test_results", "Clear Results", show=True, priority=True),
         Binding("ctrl+r", "refresh", "Refresh", show=True, priority=True),
         Binding("O", "open_search", "Search", show=True, priority=True),
+        Binding("L", "open_log", "Log", show=True),
     ]
 
     data_test_tree: reactive[dict] = reactive({}, init=False)
@@ -67,14 +68,15 @@ class AyuApp(App):
     def compose(self):
         yield Header()
         yield Footer()
-        outcome_log = Log(highlight=True, id="log_outcome")
+        outcome_log = Log(id="log_outcome")
         outcome_log.border_title = "Outcome"
-        report_log = Log(highlight=True, id="log_report")
+        report_log = Log(id="log_report")
         report_log.border_title = "Report"
-        collection_log = Log(highlight=True, id="log_collection")
+        collection_log = Log(id="log_collection")
         collection_log.border_title = "Collection"
-        debug_log = Log(highlight=True, id="log_debug")
+        debug_log = Log(id="log_debug")
         debug_log.border_title = "Debug"
+        yield LogContainer()
         with Horizontal():
             with Vertical(id="vertical_test_tree"):
                 yield TestTree(label="Tests", id="testtree").data_bind(
@@ -185,11 +187,39 @@ class AyuApp(App):
         self.query_one(DetailView).toggle()
         self.query_one(TreeFilter).toggle()
 
+    def action_open_log(self):
+        self.query_one(Center).display = not self.query_one(Center).display
+
     @work(thread=True)
-    def action_run_tests(self):
+    async def action_run_tests(self):
         self.tests_running = True
         self.reset_filters()
-        run_all_tests(tests_path=self.test_path)
+        # Log Runner Output
+        runner = await run_all_tests(tests_path=self.test_path)
+        loggi = False
+        from ayu.utils import remove_ansi_escapes
+
+        while True:
+            if runner.returncode is not None:
+                break
+            if runner.stdout is None:
+                break
+            output_line = await runner.stdout.readline()
+            decoded_line = remove_ansi_escapes(output_line.decode())
+
+            if "tests coverage" in decoded_line:
+                loggi = True
+            if True:
+                self.call_from_thread(
+                    self.query_one("#log_debug", Log).write_line, decoded_line
+                )
+                self.call_from_thread(
+                    self.query_one(OutputLog).write_line, decoded_line
+                )
+            if decoded_line.startswith("TOTAL"):
+                loggi = False
+                print(loggi)
+        # Log Runner End
         self.test_results_ready = True
         self.tests_running = False
 

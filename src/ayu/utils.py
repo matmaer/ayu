@@ -6,6 +6,7 @@ from enum import Enum
 from pathlib import Path
 import subprocess
 
+import asyncio
 from pytest import Item, Class, Function
 from _pytest.nodes import Node
 
@@ -49,29 +50,37 @@ def run_test_collection(tests_path: str | None = None):
     if tests_path:
         command.extend([tests_path])
 
-    subprocess.run(
+    return subprocess.run(
         command,
         capture_output=True,
     )
 
 
-def run_all_tests(tests_path: str | None = None, tests_to_run: list[str] | None = None):
+async def run_all_tests(
+    tests_path: str | None = None, tests_to_run: list[str] | None = None
+):
     """Run all selected tests"""
     if ayu_is_run_as_tool():
-        command = "uv run --with ayu pytest".split()
+        command = "uv run --with ayu pytest "
     else:
-        command = "uv run python -m pytest".split()
+        command = "uv run python -m pytest "
         # command = "python -m pytest".split()
 
     if tests_to_run:
-        command.extend(tests_to_run)
+        command += " ".join(tests_to_run)
     else:
         if tests_path:
-            command.extend([tests_path])
+            command += tests_path
+            # command.extend([tests_path])
 
-    subprocess.run(
+    # return subprocess.run(
+    #     command,
+    #     capture_output=True,
+    # )
+    return await asyncio.create_subprocess_shell(
         command,
-        capture_output=True,
+        # capture_output=True,
+        stdout=asyncio.subprocess.PIPE,
     )
 
 
