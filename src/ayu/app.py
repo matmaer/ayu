@@ -111,9 +111,14 @@ class AyuApp(App):
             handler=lambda msg: self.update_debug_log(msg),
         )
         self.dispatcher.register_handler(
+            event_type=EventType.DEBUG,
+            handler=lambda msg: self.update_debug_log(msg),
+        )
+
+        self.dispatcher.register_handler(
             event_type=EventType.REPORT, handler=lambda msg: self.update_report_log(msg)
         )
-        self.app.dispatcher.register_handler(
+        self.dispatcher.register_handler(
             event_type=EventType.COLLECTION,
             handler=lambda data: self.update_app_data(data),
         )

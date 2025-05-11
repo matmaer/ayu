@@ -132,15 +132,15 @@ class Ayu:
                 "_cov"
             ).cov_report.getvalue()
             cov_dict = extract_coverage_report(coverage_report_str=coverage_str)
-            print(cov_dict)
 
             if self.connected:
                 asyncio.run(
                     send_event(
                         event=Event(
                             event_type=EventType.COVERAGE,
+                            # event_type=EventType.DEBUG,
                             event_payload={
-                                "coverate_dict": cov_dict,
+                                "coverage_dict": cov_dict,
                             },
                         )
                     )

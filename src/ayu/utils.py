@@ -82,6 +82,7 @@ async def run_all_tests(
         command,
         # capture_output=True,
         stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
     )
 
 
