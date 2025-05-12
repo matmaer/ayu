@@ -189,6 +189,7 @@ class AyuApp(App):
         self.query_one(ToggleRule).test_result = event.node.data["status"]
         self.query_one(TestResultDetails).selected_node_id = event.node.data["nodeid"]
 
+    # Actions
     def action_show_details(self):
         self.query_one(DetailView).toggle()
         self.query_one(TreeFilter).toggle()
@@ -196,7 +197,7 @@ class AyuApp(App):
     def action_open_log(self):
         self.query_one(Center).display = not self.query_one(Center).display
 
-    @work(thread=True)
+    @work(thread=True, group="runner", description="run all tests")
     async def action_run_tests(self):
         self.tests_running = True
         self.reset_filters()
@@ -213,7 +214,7 @@ class AyuApp(App):
         self.tests_running = False
         self.test_results_ready = True
 
-    @work(thread=True)
+    @work(thread=True, group="runner", description="run marked tests")
     async def action_run_marked_tests(self):
         self.tests_running = True
         self.reset_filters()
@@ -263,6 +264,7 @@ class AyuApp(App):
             return True
         return True
 
+    # Watchers
     def update_outcome_log(self, msg):
         self.query_one("#log_outcome", Log).write_line(f"{msg}")
 

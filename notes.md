@@ -7,6 +7,7 @@
 - command preview
 - tox-like multi python-version testing
 - Improve Filtering/numbers
+- Make buttons functional to start/stop test runs
 
 # generals
 - test strategy
