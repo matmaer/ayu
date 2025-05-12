@@ -15,7 +15,7 @@ from ayu.utils import EventType, NodeType, run_all_tests, remove_ansi_escapes
 from ayu.widgets.navigation import TestTree
 from ayu.widgets.detail_viewer import DetailView, TestResultDetails
 from ayu.widgets.filter import TreeFilter, MarkersFilter
-from ayu.widgets.helper_widgets import ToggleRule
+from ayu.widgets.helper_widgets import ToggleRule, RunCancelButtons
 from ayu.widgets.modals.search import ModalSearch
 from ayu.widgets.log import OutputLog, LogContainer
 
@@ -97,6 +97,7 @@ class AyuApp(App):
                     yield collection_log
                 with Collapsible(title="Debug", collapsed=False):
                     yield debug_log
+                yield RunCancelButtons().data_bind(tests_running=AyuApp.tests_running)
 
     async def on_load(self):
         self.start_socket()
@@ -202,13 +203,15 @@ class AyuApp(App):
         # Log Runner Output
         runner = await run_all_tests(tests_path=self.test_path)
 
-        while (runner.returncode is None) or (runner.stdout is not None):
+        while True:
+            if (runner.returncode is not None) or (runner.stdout is None):
+                break
             output_line = await runner.stdout.readline()
             decoded_line = remove_ansi_escapes(output_line.decode())
             self.call_from_thread(self.query_one(OutputLog).write_line, decoded_line)
         # Log Runner End
-        self.test_results_ready = True
         self.tests_running = False
+        self.test_results_ready = True
 
     @work(thread=True)
     async def action_run_marked_tests(self):
@@ -219,13 +222,15 @@ class AyuApp(App):
             tests_to_run=self.query_one(TestTree).marked_tests,
         )
 
-        while (runner.returncode is None) or (runner.stdout is not None):
+        while True:
+            if (runner.returncode is not None) or (runner.stdout is None):
+                break
             output_line = await runner.stdout.readline()
             decoded_line = remove_ansi_escapes(output_line.decode())
             self.call_from_thread(self.query_one(OutputLog).write_line, decoded_line)
 
-        self.test_results_ready = True
         self.tests_running = False
+        self.test_results_ready = True
 
     def action_refresh(self):
         self.query_one(TestTree).action_collect_tests()

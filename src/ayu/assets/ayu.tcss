@@ -1,8 +1,8 @@
 LogContainer {
-    layer:above;
-    width:95%;
-    offset-y:5;
-    offset-x:2.5%;
+    layer: above;
+    width: 95%;
+    offset-y: 5;
+    offset-x: 2.5%;
 
     LogLabel {
         text-align:center;
@@ -17,6 +17,7 @@ LogContainer {
     }
 }
 
+# can be deleted
 Log {
     max-height: 15;
     height:auto;
@@ -84,12 +85,12 @@ TreeFilter {
     }
 
 }
-ModalSearch{
-    align:center middle;
+ModalSearch {
+    align: center middle;
     width:60%;
     background:$background 30%;
 
-    Center{
+    Center {
         offset-y:-130%;
         width:60%;
         background:transparent;
@@ -121,6 +122,15 @@ ModalSearch{
             }
     }
 }
+RunCancelButtons{
+    width:1fr;
+    height:auto;
+    dock:bottom;
+
+    Button {
+      width:1fr;
+    }
+}
 
 Vertical{
     width:1fr;
@@ -131,5 +141,4 @@ Collapsible {
 }
 * {
 scrollbar-size-vertical:1;
-
 }

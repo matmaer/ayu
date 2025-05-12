@@ -3,6 +3,7 @@ from __future__ import annotations
 from textual.reactive import reactive
 from textual.widgets import Rule, Button
 from textual.message import Message
+from textual.containers import Horizontal
 
 from ayu.utils import TestOutcome
 
@@ -56,3 +57,15 @@ class ToggleRule(Rule):
         self.query_one(
             Button
         ).label = f"[{color}]{result_string}[/][white]{hint_string}[/]"
+
+
+class RunCancelButtons(Horizontal):
+    tests_running: reactive[bool] = reactive(False, init=False)
+
+    def compose(self):
+        yield Button(label="Run tests", id="button_run", variant="success")
+        yield Button(label="Cancel Run", id="button_cancel", variant="error")
+
+    def watch_tests_running(self):
+        self.query_one("#button_run", Button).disabled = self.tests_running
+        self.query_one("#button_cancel", Button).disabled = not self.tests_running

@@ -69,7 +69,6 @@ class TestTree(Tree):
     def watch_filter(self):
         if self.filtered_data_test_tree:
             self.build_tree()
-            self.notify("watch filter")
 
     def watch_filtered_counter_total_tests(self):
         self.update_border_title()
