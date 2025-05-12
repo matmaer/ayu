@@ -1,5 +1,43 @@
-LogContainer {
-    layer: above;
+* {
+  layers: coverage log;
+}
+CoverageExplorer {
+    layer: coverage;
+    width: 95%;
+    height: 80%;
+    offset-y: 5;
+    offset-x: 2.5%;
+    border: $success-darken-2 thick;
+    background:$success-darken-2;
+
+    CoverageLabel {
+        text-align:center;
+        width:1fr;
+        background:$success-darken-2;
+    }
+    Horizontal {
+      height:1fr;
+      width: 1fr;
+    }
+    Vertical {
+      height:1fr;
+      width:2fr;
+    }
+    CoverageTable {
+        width:1fr;
+        height:1fr;
+    }
+    CoverageFilePreview {
+        width:1fr;
+        height:1fr;
+    }
+    MissingLinesTable {
+        width:1fr;
+        height:1fr;
+    }
+}
+LogViewer {
+    layer: log;
     width: 95%;
     offset-y: 5;
     offset-x: 2.5%;
@@ -106,6 +144,9 @@ ModalSearch {
 
     }
     Label{
+        background:$success-darken-2;
+        text-align:center;
+        width:1fr;
     }
     SearchInput{
         padding:0;
@@ -138,11 +179,6 @@ ButtonPanel{
     Button {
       width:1fr;
     }
-}
-
-# Can be Deleted maybe?
-Vertical{
-    width:1fr;
 }
 
 # Can be Deleted

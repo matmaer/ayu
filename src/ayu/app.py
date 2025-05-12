@@ -6,7 +6,7 @@ from textual.css.query import NoMatches
 from textual.reactive import reactive
 from textual.events import Key
 from textual.widgets import Log, Header, Footer, Collapsible, Tree, Button
-from textual.containers import Horizontal, Vertical, Center
+from textual.containers import Horizontal, Vertical
 from textual_tags import Tag
 
 from ayu.event_dispatcher import EventDispatcher
@@ -17,7 +17,8 @@ from ayu.widgets.detail_viewer import DetailView, TestResultDetails
 from ayu.widgets.filter import TreeFilter, MarkersFilter
 from ayu.widgets.helper_widgets import ToggleRule, ButtonPanel
 from ayu.widgets.modals.search import ModalSearch
-from ayu.widgets.log import OutputLog, LogContainer
+from ayu.widgets.coverage_explorer import CoverageExplorer
+from ayu.widgets.log import OutputLog, LogViewer
 
 
 class AyuApp(App):
@@ -32,6 +33,7 @@ class AyuApp(App):
         Binding("ctrl+r", "refresh", "Refresh", show=True, priority=True),
         Binding("O", "open_search", "Search", show=True, priority=True),
         Binding("L", "open_log", "Log", show=True),
+        Binding("C", "open_coverage", "Coverage", show=True),
     ]
 
     data_test_tree: reactive[dict] = reactive({}, init=False)
@@ -76,7 +78,8 @@ class AyuApp(App):
         collection_log.border_title = "Collection"
         debug_log = Log(id="log_debug")
         debug_log.border_title = "Debug"
-        yield LogContainer()
+        yield LogViewer()
+        yield CoverageExplorer()
         with Horizontal():
             with Vertical(id="vertical_test_tree"):
                 yield TestTree(label="Tests", id="testtree").data_bind(
@@ -189,13 +192,33 @@ class AyuApp(App):
         self.query_one(ToggleRule).test_result = event.node.data["status"]
         self.query_one(TestResultDetails).selected_node_id = event.node.data["nodeid"]
 
+    @on(Button.Pressed, "#button_coverage")
+    def toggle_coverage_explorer(self, event: Button.Pressed):
+        self.action_open_coverage()
+
+    @on(Button.Pressed, "#button_log")
+    def toggle_log_viewer(self, event: Button.Pressed):
+        self.action_open_log()
+
+    @on(Button.Pressed, "#button_run")
+    def toggle_test_run(self, event: Button.Pressed):
+        if self.query_one(TestTree).marked_tests:
+            self.action_run_marked_tests()
+        else:
+            self.action_run_tests()
+
     # Actions
     def action_show_details(self):
         self.query_one(DetailView).toggle()
         self.query_one(TreeFilter).toggle()
 
     def action_open_log(self):
-        self.query_one(Center).display = not self.query_one(Center).display
+        self.query_one(LogViewer).display = not self.query_one(LogViewer).display
+
+    def action_open_coverage(self):
+        self.query_one(CoverageExplorer).display = not self.query_one(
+            CoverageExplorer
+        ).display
 
     @work(thread=True, group="runner", description="run all tests")
     async def action_run_tests(self):

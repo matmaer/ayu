@@ -2,7 +2,7 @@ from textual.containers import Center
 from textual.widgets import Log, Label
 
 
-class LogContainer(Center):
+class LogViewer(Center):
     def on_mount(self):
         self.display = False
 
