@@ -201,17 +201,10 @@ class AyuApp(App):
         self.reset_filters()
         # Log Runner Output
         runner = await run_all_tests(tests_path=self.test_path)
-        from ayu.utils import remove_ansi_escapes
 
-        while True:
-            if (runner.returncode is not None) or (runner.stdout is None):
-                break
+        while (runner.returncode is None) or (runner.stdout is not None):
             output_line = await runner.stdout.readline()
             decoded_line = remove_ansi_escapes(output_line.decode())
-
-            # self.call_from_thread(
-            #     self.query_one("#log_debug", Log).write_line, decoded_line
-            # )
             self.call_from_thread(self.query_one(OutputLog).write_line, decoded_line)
         # Log Runner End
         self.test_results_ready = True
@@ -226,13 +219,11 @@ class AyuApp(App):
             tests_to_run=self.query_one(TestTree).marked_tests,
         )
 
-        while True:
-            if (runner.returncode is not None) or (runner.stdout is None):
-                break
+        while (runner.returncode is None) or (runner.stdout is not None):
             output_line = await runner.stdout.readline()
             decoded_line = remove_ansi_escapes(output_line.decode())
-
             self.call_from_thread(self.query_one(OutputLog).write_line, decoded_line)
+
         self.test_results_ready = True
         self.tests_running = False
 

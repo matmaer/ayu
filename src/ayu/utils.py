@@ -65,7 +65,6 @@ async def run_all_tests(
         command = "uv run --with ayu pytest "
     else:
         command = "uv run python -m pytest "
-        # command = "python -m pytest".split()
 
     if tests_to_run:
         command += " ".join(tests_to_run)
@@ -74,7 +73,6 @@ async def run_all_tests(
             command += tests_path
     return await asyncio.create_subprocess_shell(
         command,
-        # capture_output=True,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT,
     )
