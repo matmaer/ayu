@@ -72,17 +72,11 @@ async def run_all_tests(
     else:
         if tests_path:
             command += tests_path
-            # command.extend([tests_path])
-
-    # return subprocess.run(
-    #     command,
-    #     capture_output=True,
-    # )
     return await asyncio.create_subprocess_shell(
         command,
         # capture_output=True,
         stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT,
     )
 
 

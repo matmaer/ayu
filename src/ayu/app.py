@@ -11,7 +11,7 @@ from textual_tags import Tag
 
 from ayu.event_dispatcher import EventDispatcher
 from ayu.constants import WEB_SOCKET_HOST, WEB_SOCKET_PORT
-from ayu.utils import EventType, NodeType, run_all_tests
+from ayu.utils import EventType, NodeType, run_all_tests, remove_ansi_escapes
 from ayu.widgets.navigation import TestTree
 from ayu.widgets.detail_viewer import DetailView, TestResultDetails
 from ayu.widgets.filter import TreeFilter, MarkersFilter
@@ -201,41 +201,38 @@ class AyuApp(App):
         self.reset_filters()
         # Log Runner Output
         runner = await run_all_tests(tests_path=self.test_path)
-        loggi = False
         from ayu.utils import remove_ansi_escapes
 
         while True:
-            if runner.returncode is not None:
-                break
-            if runner.stdout is None:
+            if (runner.returncode is not None) or (runner.stdout is None):
                 break
             output_line = await runner.stdout.readline()
             decoded_line = remove_ansi_escapes(output_line.decode())
 
-            if "tests coverage" in decoded_line:
-                loggi = True
-            if True:
-                # self.call_from_thread(
-                #     self.query_one("#log_debug", Log).write_line, decoded_line
-                # )
-                self.call_from_thread(
-                    self.query_one(OutputLog).write_line, decoded_line
-                )
-            if decoded_line.startswith("TOTAL"):
-                loggi = False
-                print(loggi)
+            # self.call_from_thread(
+            #     self.query_one("#log_debug", Log).write_line, decoded_line
+            # )
+            self.call_from_thread(self.query_one(OutputLog).write_line, decoded_line)
         # Log Runner End
         self.test_results_ready = True
         self.tests_running = False
 
     @work(thread=True)
-    def action_run_marked_tests(self):
+    async def action_run_marked_tests(self):
         self.tests_running = True
         self.reset_filters()
-        run_all_tests(
+        runner = await run_all_tests(
             tests_path=self.test_path,
             tests_to_run=self.query_one(TestTree).marked_tests,
         )
+
+        while True:
+            if (runner.returncode is not None) or (runner.stdout is None):
+                break
+            output_line = await runner.stdout.readline()
+            decoded_line = remove_ansi_escapes(output_line.decode())
+
+            self.call_from_thread(self.query_one(OutputLog).write_line, decoded_line)
         self.test_results_ready = True
         self.tests_running = False
 
