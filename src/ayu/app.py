@@ -15,7 +15,7 @@ from ayu.utils import EventType, NodeType, run_all_tests, remove_ansi_escapes
 from ayu.widgets.navigation import TestTree
 from ayu.widgets.detail_viewer import DetailView, TestResultDetails
 from ayu.widgets.filter import TreeFilter, MarkersFilter
-from ayu.widgets.helper_widgets import ToggleRule, RunCancelButtons
+from ayu.widgets.helper_widgets import ToggleRule, ButtonPanel
 from ayu.widgets.modals.search import ModalSearch
 from ayu.widgets.log import OutputLog, LogContainer
 
@@ -97,7 +97,7 @@ class AyuApp(App):
                     yield collection_log
                 with Collapsible(title="Debug", collapsed=False):
                     yield debug_log
-                yield RunCancelButtons().data_bind(tests_running=AyuApp.tests_running)
+                yield ButtonPanel().data_bind(tests_running=AyuApp.tests_running)
 
     async def on_load(self):
         self.start_socket()

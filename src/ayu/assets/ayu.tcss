@@ -3,10 +3,13 @@ LogContainer {
     width: 95%;
     offset-y: 5;
     offset-x: 2.5%;
+    border: $success-darken-2 thick;
+    background:$success-darken-2;
 
     LogLabel {
         text-align:center;
         width:1fr;
+        background:$success-darken-2;
     }
     OutputLog {
         background:$background;
@@ -122,23 +125,32 @@ ModalSearch {
             }
     }
 }
-RunCancelButtons{
+ButtonPanel{
     width:1fr;
     height:auto;
     dock:bottom;
+
+    Horizontal {
+      height:auto;
+      width:1fr;
+    }
 
     Button {
       width:1fr;
     }
 }
 
+# Can be Deleted maybe?
 Vertical{
     width:1fr;
 }
 
+# Can be Deleted
 Collapsible {
     height: auto;
 }
+
+# Make scrollbar smaller
 * {
-scrollbar-size-vertical:1;
+    scrollbar-size-vertical:1;
 }
