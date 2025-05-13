@@ -138,7 +138,6 @@ class Ayu:
                     send_event(
                         event=Event(
                             event_type=EventType.COVERAGE,
-                            # event_type=EventType.DEBUG,
                             event_payload={
                                 "coverage_dict": cov_dict,
                             },
