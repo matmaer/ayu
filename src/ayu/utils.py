@@ -186,44 +186,59 @@ def build_dict_tree(items: list[Item]) -> dict:
     return {"tree": tree, "meta": {"test_count": len(items), "markers": list(markers)}}
 
 
-def extract_coverage_report(coverage_report_str: str) -> dict[str, list]:
-    report_dict: dict[str, list] = {
-        "module_names": [],
-        "n_statements": [],
-        "n_missed": [],
-        "percent_covered": [],
-        "lines_missing": [],
-    }
-
+def coverage_str_to_dict(coverage_report_str: str) -> dict[str, dict]:
+    report_dict: dict[str, dict] = {}
     lines = coverage_report_str.strip().split("\n")
-    module_names = []
-    n_statements = []
-    n_missed = []
-    percent_coverered = []
-    lines_missing = []
     for line in lines[5:-2]:
         parts = line.split()
-
-        module_names.append(parts[0])
-        n_statements.append(int(parts[1]))
-        n_missed.append(int(parts[2]))
-        percent_coverered.append(int(parts[3].replace("%", "")))
 
         raw_lines_missing = [line_part.replace(",", "") for line_part in parts[4:]]
         int_lines_missing = []
         for line_range in raw_lines_missing:
             int_lines = [int(line) for line in line_range.split("-")]
             int_lines_missing.append(int_lines)
-        lines_missing.append(int_lines_missing)
 
-    report_dict["module_names"] = module_names
-    report_dict["n_statements"] = n_statements
-    report_dict["n_missed"] = n_missed
-    report_dict["percent_covered"] = percent_coverered
-    report_dict["lines_missing"] = lines_missing
-    # report_dict["total_statements"] = sum(n_statements)
-    # report_dict["total_missed"] = sum(n_missed)
-    # report_dict["total_covered"] = sum(percent_coverered) / len(module_names)
+        module_name = parts[0]
+        n_statements = int(parts[1])
+        n_missed = int(parts[2])
+        percent_covered = parts[3]
+
+        report_dict[module_name] = {}
+        report_dict[module_name]["n_statements"] = n_statements
+        report_dict[module_name]["n_missed"] = n_missed
+        report_dict[module_name]["percent_covered"] = percent_covered
+        report_dict[module_name]["lines_missing"] = int_lines_missing
+
+    return report_dict
+
+
+def get_coverage_data(coverage_file=".coverage"):
+    import coverage
+
+    cov = coverage.Coverage(data_file=coverage_file)
+    cov.load()
+
+    report_dict = {}
+
+    for file_path in cov.get_data().measured_files():
+        file_data = cov.analysis2(file_path)
+        # analysis2 returns: (0:filename, 1:statements, 2:excluded, 3:missing, 4:partial)
+        total_statements = len(file_data[1])  # All statements
+        missing_statements = len(file_data[3])  # Uncovered statements
+        coverage_percent = (
+            (total_statements - missing_statements) / total_statements * 100
+            if total_statements > 0
+            else 0
+        )
+
+        # Store data for this file
+        report_dict[Path(file_path).relative_to(Path.cwd()).as_posix()] = {
+            "n_statements": total_statements,
+            "n_missed": missing_statements,
+            "percent_covered": round(coverage_percent, 2),
+            "lines_missing": file_data[3],  # List of uncovered line numbers
+        }
+
     return report_dict
 
 
