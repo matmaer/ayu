@@ -1,0 +1,41 @@
+{
+    "tasks": [
+        {
+            "label": "AYU",
+            "command": "textual run --dev src/ayu/__main__.py",
+            "presentation": {
+                "focus": true,
+                "close": true,
+                "group": "textualize"
+            },
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "type": "shell",
+            "problemMatcher": []
+        },
+        {
+            "label": "AYU SPLIT PANE",
+            "dependsOn": [
+                "AYU",
+                "AYU-CONSOLE"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "AYU-CONSOLE",
+            "command": "textual console -x EVENT -x WORKER",
+            "presentation": {
+                "focus": false,
+                "close": true,
+                "group": "textualize"
+            },
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "type": "shell",
+            "problemMatcher": []
+        },
+    ],
+    "version": "2.0.0"
+}

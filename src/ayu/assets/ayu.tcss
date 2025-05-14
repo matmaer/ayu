@@ -1,6 +1,23 @@
 * {
   layers: coverage log;
+  scrollbar-size-vertical: 1; /* Make scrollbar smaller */
 }
+
+.left-pane {
+    border: yellow;
+    width: 1fr;
+}
+
+.right-pane {
+    border: cyan;
+    width: 2fr;
+}
+
+# #right_side_content {
+#     border: cyan;
+#     width: 2fr;
+# }
+
 CoverageExplorer {
     layer: coverage;
     width: 95%;
@@ -81,7 +98,6 @@ DetailView {
         border-left: none;
         border-right: none;
     }
-
 
     TestResultDetails {
         height: auto;
@@ -186,7 +202,3 @@ Collapsible {
     height: auto;
 }
 
-# Make scrollbar smaller
-* {
-    scrollbar-size-vertical:1;
-}

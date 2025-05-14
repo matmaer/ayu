@@ -81,7 +81,7 @@ class AyuApp(App):
         yield LogViewer()
         yield CoverageExplorer()
         with Horizontal():
-            with Vertical(id="vertical_test_tree"):
+            with Vertical(id="vertical_test_tree", classes="left-pane"):
                 yield TestTree(label="Tests", id="testtree").data_bind(
                     filter=AyuApp.filter,
                     filtered_data_test_tree=AyuApp.data_test_tree,
@@ -90,7 +90,7 @@ class AyuApp(App):
                 yield TreeFilter().data_bind(
                     test_results_ready=AyuApp.test_results_ready, markers=AyuApp.markers
                 )
-            with Vertical():
+            with Vertical(id="right_side_content", classes="right-pane"):
                 yield DetailView()
                 with Collapsible(title="Outcome", collapsed=True):
                     yield outcome_log
