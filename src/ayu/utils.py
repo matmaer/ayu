@@ -232,7 +232,8 @@ def get_coverage_data(coverage_file=".coverage"):
         )
 
         # Store data for this file
-        report_dict[Path(file_path).relative_to(Path.cwd()).as_posix()] = {
+        displayed_path = Path(file_path).relative_to(Path.cwd()).as_posix()
+        report_dict[displayed_path] = {
             "n_statements": total_statements,
             "n_missed": missing_statements,
             "percent_covered": round(coverage_percent, 2),
@@ -258,3 +259,10 @@ def test_node_to_dict(node: Node) -> dict[str, Any]:
         "status": "",
         "children": [],
     }
+
+
+def build_bar(percentage: float) -> str:
+    # SEGS = ["▉", "▊", "▋", "▌", "▍", "▎", "▏", " "]
+    tens = int(percentage // 10)
+    bar = f"[on green]{tens * ' '}[/]"
+    return f"[on red]{bar}{' ' * (10 - int(percentage // 10))}[/]"

@@ -9,7 +9,7 @@ from textual.reactive import reactive
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Label, DataTable, TextArea
 
-from ayu.utils import EventType
+from ayu.utils import EventType, build_bar
 
 
 class CoverageExplorer(Vertical):
@@ -73,29 +73,37 @@ class CoverageTable(DataTable):
     ]
 
     coverage_dict: reactive[dict] = reactive({})
+    COLUMNS = ["Name", "Statements", "Missing", "Covered", ""]
 
     def on_mount(self):
         self.cursor_type = "row"
-        self.add_columns(
-            "Name",
-            "Statements",
-            "Missing",
-            "Covered",
-        )
+
+        for column in self.COLUMNS:
+            self.add_column(label=column, width=None if column else 10)
 
     def watch_coverage_dict(self):
         if not self.coverage_dict:
             return
 
         self.clear()
+
         for module_name, module_dict in self.coverage_dict.items():
             self.add_row(
                 module_name,
                 module_dict["n_statements"],
                 module_dict["n_missed"],
-                module_dict["percent_covered"],
+                f"{module_dict['percent_covered']:05.2f}%",
+                build_bar(module_dict["percent_covered"]),
                 key=module_name,
             )
+
+    @on(DataTable.RowSelected)
+    def test(self):
+        self.notify(f"{self.region.width}", markup=False)
+        self.notify(
+            f"{[(col.width, col.content_width) for col in self.columns.values()]}",
+            markup=False,
+        )
 
     def action_go_to_lines(self):
         self.app.action_focus_next()
