@@ -262,7 +262,12 @@ def test_node_to_dict(node: Node) -> dict[str, Any]:
 
 
 def build_bar(percentage: float) -> str:
-    # SEGS = ["▉", "▊", "▋", "▌", "▍", "▎", "▏", " "]
+    SEGS = ["▉", "▊", "▋", "▌", "▍", "▎", "▏", " "]
     tens = int(percentage // 10)
-    bar = f"[on green]{tens * ' '}[/]"
-    return f"[on red]{bar}{' ' * (10 - int(percentage // 10))}[/]"
+    rest = int(percentage - tens)
+    not_tens = int((100 - percentage) // 10)
+
+    tens_bar = f"[green on green]{tens * ' '}[/]"
+    rest_bar = f"[green on red]{SEGS[2]}[/]" if rest else ""
+    not_tens_bar = f"[on red]{not_tens * ' '}[/]"
+    return tens_bar + rest_bar + not_tens_bar
