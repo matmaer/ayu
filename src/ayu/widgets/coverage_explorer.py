@@ -17,7 +17,7 @@ class CoverageExplorer(Vertical):
 
     coverage_dict: reactive[dict] = reactive({})
     selected_file: reactive[str] = reactive("")
-    selected_lines: reactive[list] = reactive([])
+    selected_line: reactive[list] = reactive([])
 
     def on_mount(self):
         self.display = False
@@ -40,7 +40,7 @@ class CoverageExplorer(Vertical):
                 )
             yield CoverageFilePreview("Preview").data_bind(
                 selected_file=CoverageExplorer.selected_file,
-                selected_lines=CoverageExplorer.selected_lines,
+                selected_line=CoverageExplorer.selected_line,
             )
 
     def update_coverage_dict(self, msg):
@@ -53,10 +53,10 @@ class CoverageExplorer(Vertical):
             self.selected_file = file_name
 
     @on(DataTable.RowHighlighted, "#table_lines")
-    def update_selected_lines(self, event: DataTable.RowHighlighted):
+    def update_selected_line(self, event: DataTable.RowHighlighted):
         if event.row_key:
-            lines = self.query_one(MissingLinesTable).get_row(event.row_key)[0]
-            self.selected_lines = lines
+            line = self.query_one(MissingLinesTable).get_row(event.row_key)[0]
+            self.selected_line = line
 
 
 class CoverageLabel(Label):
@@ -69,6 +69,7 @@ class CoverageTable(DataTable):
     BINDINGS = [
         Binding("j, down", "cursor_down", "down", key_display="j/↓"),
         Binding("k, up", "cursor_up", "up", key_display="k/↑"),
+        Binding("l, right", "go_to_lines", "to lines"),
     ]
 
     coverage_dict: reactive[dict] = reactive({})
@@ -96,6 +97,9 @@ class CoverageTable(DataTable):
                 key=module_name,
             )
 
+    def action_go_to_lines(self):
+        self.app.action_focus_next()
+
 
 class MissingLinesTable(DataTable):
     """Table for Missing Lines"""
@@ -103,6 +107,7 @@ class MissingLinesTable(DataTable):
     BINDINGS = [
         Binding("j, down", "cursor_down", "down", key_display="j/↓"),
         Binding("k, up", "cursor_up", "up", key_display="k/↑"),
+        Binding("h, left", "back_to_coverage", "to cov table"),
     ]
     coverage_dict: reactive[dict] = reactive({})
     selected_file: reactive[str] = reactive("")
@@ -118,32 +123,34 @@ class MissingLinesTable(DataTable):
             return
 
         self.clear()
-        for missing_line_pairs in self.coverage_dict[self.selected_file][
-            "lines_missing"
-        ]:
-            self.add_row(missing_line_pairs)
+        for missing_lines in self.coverage_dict[self.selected_file]["lines_missing"]:
+            self.add_row(missing_lines)
+
+    def action_back_to_coverage(self):
+        self.app.action_focus_previous()
 
 
 class CoverageFilePreview(TextArea):
     """Preview of Lines in source file"""
 
     selected_file: reactive[str] = reactive("")
-    selected_lines: reactive[list] = reactive([])
+    selected_line: reactive[int] = reactive(0)
 
     def on_mount(self):
         self.language = "python"
         self.show_line_numbers = True
         self.read_only = True
+        # self.
 
     def watch_selected_file(self):
         if self.selected_file:
             with open(self.selected_file, "r") as file:
                 self.text = file.read()
 
-    def watch_selected_lines(self):
-        if self.selected_lines:
+    def watch_selected_line(self):
+        if self.selected_line:
             self.scroll_to(
-                y=self.selected_lines - 1,
+                y=self.selected_line - 1,
                 animate=True,
                 duration=0.5,
             )
