@@ -186,7 +186,7 @@ def build_dict_tree(items: list[Item]) -> dict:
     return {"tree": tree, "meta": {"test_count": len(items), "markers": list(markers)}}
 
 
-def extract_coverage_report(coverage_report_str: str) -> dict[str, dict]:
+def coverage_str_to_dict(coverage_report_str: str) -> dict[str, dict]:
     report_dict: dict[str, dict] = {}
     lines = coverage_report_str.strip().split("\n")
     for line in lines[5:-2]:
@@ -208,6 +208,36 @@ def extract_coverage_report(coverage_report_str: str) -> dict[str, dict]:
         report_dict[module_name]["n_missed"] = n_missed
         report_dict[module_name]["percent_covered"] = percent_covered
         report_dict[module_name]["lines_missing"] = int_lines_missing
+
+    return report_dict
+
+
+def get_coverage_data(coverage_file=".coverage"):
+    import coverage
+
+    cov = coverage.Coverage(data_file=coverage_file)
+    cov.load()
+
+    report_dict = {}
+
+    for file_path in cov.get_data().measured_files():
+        file_data = cov.analysis2(file_path)
+        # analysis2 returns: (0:filename, 1:statements, 2:excluded, 3:missing, 4:partial)
+        total_statements = len(file_data[1])  # All statements
+        missing_statements = len(file_data[3])  # Uncovered statements
+        coverage_percent = (
+            (total_statements - missing_statements) / total_statements * 100
+            if total_statements > 0
+            else 0
+        )
+
+        # Store data for this file
+        report_dict[Path(file_path).relative_to(Path.cwd()).as_posix()] = {
+            "n_statements": total_statements,
+            "n_missed": missing_statements,
+            "percent_covered": round(coverage_percent, 2),
+            "lines_missing": file_data[3],  # List of uncovered line numbers
+        }
 
     return report_dict
 

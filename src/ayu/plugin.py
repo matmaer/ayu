@@ -11,7 +11,8 @@ from ayu.utils import (
     TestOutcome,
     remove_ansi_escapes,
     build_dict_tree,
-    extract_coverage_report,
+    # coverage_str_to_dict,
+    get_coverage_data,
 )
 
 # import logging
@@ -128,10 +129,12 @@ class Ayu:
             return
 
         if self.config.pluginmanager.hasplugin("_cov"):
-            coverage_str = self.config.pluginmanager.getplugin(
-                "_cov"
-            ).cov_report.getvalue()
-            cov_dict = extract_coverage_report(coverage_report_str=coverage_str)
+            # coverage_str = self.config.pluginmanager.getplugin(
+            #     "_cov"
+            # ).cov_report.getvalue()
+
+            # coverage_dict = coverage_str_to_dict(coverage_report_str=coverage_str)
+            coverage_dict = get_coverage_data()
 
             if self.connected:
                 asyncio.run(
@@ -139,7 +142,7 @@ class Ayu:
                         event=Event(
                             event_type=EventType.COVERAGE,
                             event_payload={
-                                "coverage_dict": cov_dict,
+                                "coverage_dict": coverage_dict,
                             },
                         )
                     )

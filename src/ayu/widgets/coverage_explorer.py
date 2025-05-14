@@ -4,6 +4,7 @@ if TYPE_CHECKING:
     from ayu.app import AyuApp
 
 from textual import on
+from textual.binding import Binding
 from textual.reactive import reactive
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Label, DataTable, TextArea
@@ -28,18 +29,18 @@ class CoverageExplorer(Vertical):
 
     def compose(self):
         yield CoverageLabel("[bold]Test Coverage[/]")
-        with Horizontal():
-            with Vertical():
+        with Vertical():
+            with Horizontal():
                 yield CoverageTable(id="table_coverage").data_bind(
                     CoverageExplorer.coverage_dict
                 )
-                yield CoverageFilePreview("Preview").data_bind(
+                yield MissingLinesTable(id="table_lines").data_bind(
+                    coverage_dict=CoverageExplorer.coverage_dict,
                     selected_file=CoverageExplorer.selected_file,
-                    selected_lines=CoverageExplorer.selected_lines,
                 )
-            yield MissingLinesTable(id="table_lines").data_bind(
-                coverage_dict=CoverageExplorer.coverage_dict,
+            yield CoverageFilePreview("Preview").data_bind(
                 selected_file=CoverageExplorer.selected_file,
+                selected_lines=CoverageExplorer.selected_lines,
             )
 
     def update_coverage_dict(self, msg):
@@ -64,6 +65,11 @@ class CoverageLabel(Label):
 
 class CoverageTable(DataTable):
     """General Table for Coverage Information"""
+
+    BINDINGS = [
+        Binding("j, down", "cursor_down", "down", key_display="j/↓"),
+        Binding("k, up", "cursor_up", "up", key_display="k/↑"),
+    ]
 
     coverage_dict: reactive[dict] = reactive({})
 
@@ -94,6 +100,10 @@ class CoverageTable(DataTable):
 class MissingLinesTable(DataTable):
     """Table for Missing Lines"""
 
+    BINDINGS = [
+        Binding("j, down", "cursor_down", "down", key_display="j/↓"),
+        Binding("k, up", "cursor_up", "up", key_display="k/↑"),
+    ]
     coverage_dict: reactive[dict] = reactive({})
     selected_file: reactive[str] = reactive("")
 
@@ -133,7 +143,7 @@ class CoverageFilePreview(TextArea):
     def watch_selected_lines(self):
         if self.selected_lines:
             self.scroll_to(
-                y=self.selected_lines[0] - 1,
+                y=self.selected_lines - 1,
                 animate=True,
                 duration=0.5,
             )

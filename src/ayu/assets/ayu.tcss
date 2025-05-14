@@ -21,10 +21,10 @@ CoverageExplorer {
     }
     Vertical {
       height:1fr;
-      width:2fr;
+      width:1fr;
     }
     CoverageTable {
-        width:1fr;
+        width:3fr;
         height:1fr;
     }
     CoverageFilePreview {
