@@ -186,32 +186,6 @@ def build_dict_tree(items: list[Item]) -> dict:
     return {"tree": tree, "meta": {"test_count": len(items), "markers": list(markers)}}
 
 
-def coverage_str_to_dict(coverage_report_str: str) -> dict[str, dict]:
-    report_dict: dict[str, dict] = {}
-    lines = coverage_report_str.strip().split("\n")
-    for line in lines[5:-2]:
-        parts = line.split()
-
-        raw_lines_missing = [line_part.replace(",", "") for line_part in parts[4:]]
-        int_lines_missing = []
-        for line_range in raw_lines_missing:
-            int_lines = [int(line) for line in line_range.split("-")]
-            int_lines_missing.append(int_lines)
-
-        module_name = parts[0]
-        n_statements = int(parts[1])
-        n_missed = int(parts[2])
-        percent_covered = parts[3]
-
-        report_dict[module_name] = {}
-        report_dict[module_name]["n_statements"] = n_statements
-        report_dict[module_name]["n_missed"] = n_missed
-        report_dict[module_name]["percent_covered"] = percent_covered
-        report_dict[module_name]["lines_missing"] = int_lines_missing
-
-    return report_dict
-
-
 def get_coverage_data(coverage_file=".coverage"):
     import coverage
 

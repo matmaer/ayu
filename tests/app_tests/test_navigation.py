@@ -24,6 +24,6 @@ async def test_app_screen(test_app: AyuApp, test_port, test_host):
         assert pilot.app.port == test_port
 
         # Wait for test collection
-        await pilot.pause(3)
+        await pilot.pause(5)
 
         assert pilot.app.data_test_tree
