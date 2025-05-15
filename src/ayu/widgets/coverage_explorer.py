@@ -43,6 +43,9 @@ class CoverageExplorer(Vertical):
                 selected_line=CoverageExplorer.selected_line,
             )
 
+    def watch_disabled(self, disabled: bool) -> None:
+        return super().watch_disabled(disabled)
+
     def update_coverage_dict(self, msg):
         self.coverage_dict = msg["coverage_dict"]
 
@@ -77,6 +80,7 @@ class CoverageTable(DataTable):
 
     def on_mount(self):
         self.cursor_type = "row"
+        self.border_title = "Coverage Report"
 
         for column in self.COLUMNS:
             self.add_column(label=column, width=None if column else 10)
@@ -85,6 +89,7 @@ class CoverageTable(DataTable):
         if not self.coverage_dict:
             return
 
+        current_line = self.cursor_row or 0
         self.clear()
 
         for module_name, module_dict in self.coverage_dict.items():
@@ -96,6 +101,9 @@ class CoverageTable(DataTable):
                 build_bar(module_dict["percent_covered"]),
                 key=module_name,
             )
+
+        # go to last known cursor position
+        self.move_cursor(row=current_line)
 
     @on(DataTable.RowSelected)
     def test(self):
@@ -131,6 +139,7 @@ class MissingLinesTable(DataTable):
             return
 
         self.clear()
+
         for missing_lines in self.coverage_dict[self.selected_file]["lines_missing"]:
             self.add_row(missing_lines)
 
@@ -148,17 +157,20 @@ class CoverageFilePreview(TextArea):
         self.language = "python"
         self.show_line_numbers = True
         self.read_only = True
-        # self.
+        self.border_title = "File Preview"
 
     def watch_selected_file(self):
         if self.selected_file:
             with open(self.selected_file, "r") as file:
                 self.text = file.read()
+            self.border_title = f"[white]{self.selected_file}[/]"
 
     def watch_selected_line(self):
         if self.selected_line:
             self.scroll_to(
-                y=self.selected_line - 1,
+                y=self.selected_line - 5,  # 4 rows space on top
                 animate=True,
                 duration=0.5,
             )
+
+            self.move_cursor(location=(self.selected_line - 1, 0))

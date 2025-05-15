@@ -220,7 +220,8 @@ def get_coverage_data(coverage_file=".coverage"):
 
     report_dict = {}
 
-    for file_path in cov.get_data().measured_files():
+    all_files = cov.get_data().measured_files()
+    for file_path in sorted(all_files):
         file_data = cov.analysis2(file_path)
         # analysis2 returns: (0:filename, 1:statements, 2:excluded, 3:missing, 4:partial)
         total_statements = len(file_data[1])  # All statements

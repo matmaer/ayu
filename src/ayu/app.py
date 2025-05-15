@@ -126,6 +126,7 @@ class AyuApp(App):
             event_type=EventType.COLLECTION,
             handler=lambda data: self.update_app_data(data),
         )
+        self.query_one(TestTree).focus()
 
     def update_app_data(self, data):
         self.data_test_tree = data["tree"]
@@ -216,9 +217,13 @@ class AyuApp(App):
         self.query_one(LogViewer).display = not self.query_one(LogViewer).display
 
     def action_open_coverage(self):
-        self.query_one(CoverageExplorer).display = not self.query_one(
-            CoverageExplorer
-        ).display
+        cov_explorer = self.query_one(CoverageExplorer)
+        cov_explorer.disabled = cov_explorer.display
+        cov_explorer.display = not cov_explorer.display
+        if cov_explorer.display:
+            cov_explorer.query_one("#table_coverage").focus()
+        else:
+            self.query_one(TestTree).focus()
 
     @work(thread=True, group="runner", description="run all tests")
     async def action_run_tests(self):

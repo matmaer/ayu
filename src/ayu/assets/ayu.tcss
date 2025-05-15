@@ -26,11 +26,16 @@ CoverageExplorer {
     CoverageTable {
         width:3fr;
         height:1fr;
+        border-top: $success-darken-2 thick;
     }
     CoverageFilePreview {
         border:none;
         width:1fr;
         height:1fr;
+        border-top: $success-darken-2 thick;
+        .text-area--cursor-line {
+          background:$error-darken-2;
+        }
     }
     MissingLinesTable {
         width:auto;
