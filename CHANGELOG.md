@@ -1,3 +1,7 @@
+# 0.1.6
+- Add CoverageExplorer
+- Add LogWidget
+
 # 0.1.5
 - Increase `MAX_EVENT_SIZE` to send via websocket
 
