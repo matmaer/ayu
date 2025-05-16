@@ -33,7 +33,7 @@ def pytest_addoption(parser: Parser) -> None:
 @pytest.hookimpl(trylast=True)
 def pytest_configure(config: Config) -> None:
     if not config.getoption("--disable-ayu"):
-        config.pluginmanager.register(Ayu(config), "ayu_plugin")
+        config.pluginmanager.register(Ayu(config), "ayu")
 
 
 class Ayu:
@@ -142,6 +142,16 @@ class Ayu:
                             )
                         )
                     )
+            # from pprint import pprint
+            #
+            # pprint(
+            #     set(
+            #         [
+            #             f"{dist.project_name}-{dist.version}"
+            #             for p, dist in self.config.pluginmanager.list_plugin_distinfo()
+            #         ]
+            #     )
+            # )
         return
 
         report_dict = {}

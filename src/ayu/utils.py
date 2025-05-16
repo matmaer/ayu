@@ -2,7 +2,7 @@ from typing import Any
 import os
 import shutil
 import re
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 import subprocess
 
@@ -13,7 +13,7 @@ from _pytest.nodes import Node
 from ayu.constants import WEB_SOCKET_PORT, WEB_SOCKET_HOST
 
 
-class NodeType(str, Enum):
+class NodeType(StrEnum):
     DIR = "DIR"
     MODULE = "MODULE"
     CLASS = "CLASS"
@@ -21,7 +21,7 @@ class NodeType(str, Enum):
     COROUTINE = "COROUTINE"
 
 
-class EventType(str, Enum):
+class EventType(StrEnum):
     COLLECTION = "COLLECTION"
     SCHEDULED = "SCHEDULED"
     OUTCOME = "OUTCOME"
@@ -30,7 +30,7 @@ class EventType(str, Enum):
     DEBUG = "DEBUG"
 
 
-class TestOutcome(str, Enum):
+class TestOutcome(StrEnum):
     PASSED = "PASSED"
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
