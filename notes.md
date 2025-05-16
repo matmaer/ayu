@@ -3,10 +3,11 @@
     - for plugins (https://github.com/pytest-dev/pytest/blob/main/scripts/update-plugin-list.py)
     - general overview
 - menu dynamic plugin installation+flags (needs uv)
-- command preview
+- command preview + builder
 - tox-like multi python-version testing
 - Improve Filtering/numbers
 - Make buttons functional to start/stop test runs
+- xdist messes up coverage
 
 # generals
 - test strategy

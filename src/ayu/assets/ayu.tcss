@@ -1,6 +1,29 @@
 * {
   layers: coverage log;
 }
+# Make Custom Notifications
+ToastRack{
+  dock: top;
+  align: center top;
+  width: auto;
+}
+ToastHolder {
+    align-horizontal: center;
+}
+Toast{
+  &.-information {
+    border-right: outer $success;
+    border-left: outer $success;
+  }
+  &.-warning {
+    border-left: outer $warning;
+    border-right: outer $warning;
+  }
+  &.-error {
+    border-left: outer $error;
+    border-right: outer $error;
+  }
+}
 CoverageExplorer {
     layer: coverage;
     width: 95%;

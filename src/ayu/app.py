@@ -302,6 +302,10 @@ class AyuApp(App):
     def update_debug_log(self, msg):
         self.query_one("#log_debug", Log).write_line(f"{msg}")
 
+    def watch_tests_running(self):
+        if self.tests_running:
+            self.notify("Started Tests", timeout=2)
+
     def watch_data_test_tree(self):
         self.query_one("#log_collection", Log).write_line(f"{self.data_test_tree}")
 
