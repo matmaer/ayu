@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ayu.app import AyuApp
 
-from textual import on
+from textual import on, work
 from textual.binding import Binding
 from textual.reactive import reactive
 from textual.containers import Horizontal, Vertical
@@ -56,10 +56,18 @@ class CoverageExplorer(Vertical):
             self.selected_file = file_name
 
     @on(DataTable.RowHighlighted, "#table_lines")
+    # use an exclusive worker here to support holding down j/k
+    # which would otherwise give a IndexError
+    @work(thread=True, exclusive=True, description="Update Selected Line")
     def update_selected_line(self, event: DataTable.RowHighlighted):
         if event.row_key:
-            line = self.query_one(MissingLinesTable).get_row(event.row_key)[0]
-            self.selected_line = line
+            if isinstance(self.app.focused, CoverageTable):
+                self.selected_line = self.coverage_dict[self.selected_file][
+                    "lines_missing"
+                ][0]
+            else:
+                line = self.query_one(MissingLinesTable).get_row(event.row_key)[0]
+                self.selected_line = line
 
 
 class CoverageLabel(Label):
@@ -106,7 +114,7 @@ class CoverageTable(DataTable):
         self.move_cursor(row=current_line)
 
     @on(DataTable.RowSelected)
-    def test(self):
+    def test(self, event: DataTable.RowSelected):
         self.notify(f"{self.region.width}", markup=False)
         self.notify(
             f"{[(col.width, col.content_width) for col in self.columns.values()]}",
@@ -163,7 +171,7 @@ class CoverageFilePreview(TextArea):
         if self.selected_file:
             with open(self.selected_file, "r") as file:
                 self.text = file.read()
-            self.border_title = f"[white]{self.selected_file}[/]"
+            self.border_title = self.selected_file
 
     def watch_selected_line(self):
         if self.selected_line:

@@ -31,6 +31,7 @@ dev = [
     "pre-commit>=4.2.0",
     "pytest-asyncio>=0.26.0",
     "pytest-cov>=6.1.1",
+    "pytest-xdist>=3.6.1",
     "textual-dev>=1.7.0",
 ]
 
@@ -44,6 +45,6 @@ addopts =[
 "--color=yes",
 "--ignore=tests/test_cases",
 "--verbose",
-# "-n", "auto", "--dist=worksteal"
+"-n", "auto", "--dist=worksteal"
 ]
 testpaths = ["tests"]

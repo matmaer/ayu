@@ -6,7 +6,7 @@
 - command preview + builder
 - tox-like multi python-version testing
 - Improve Filtering/numbers
-- Make buttons functional to start/stop test runs
+- Make buttons functional to stop test runs
 - xdist messes up coverage
 
 # generals

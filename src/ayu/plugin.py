@@ -1,7 +1,7 @@
 import os
 import asyncio
 import pytest
-from pytest import Config, TestReport, Session
+from pytest import Config, TestReport, Session, Parser
 from _pytest.terminal import TerminalReporter
 
 from ayu.event_dispatcher import send_event, check_connection
@@ -19,13 +19,14 @@ from ayu.utils import (
 # logging.basicConfig(level=logging.DEBUG)
 
 
-def pytest_addoption(parser) -> None:
-    parser.addoption(
+def pytest_addoption(parser: Parser) -> None:
+    group = parser.getgroup("ayu", "interactive pytest interface")
+    group.addoption(
         "--disable-ayu",
         "--da",
         action="store_true",
         default=False,
-        help="Enable Ayu plugin functionality",
+        help="Disable Ayu plugin functionality, i.e. do not send events to websocket",
     )
 
 
@@ -126,27 +127,22 @@ class Ayu:
         if self.config.pluginmanager.hasplugin("xdist") and (
             "PYTEST_XDIST_WORKER" not in os.environ
         ):
-            return
+            # Needs to run within workers for correct report
+            if self.config.pluginmanager.hasplugin("_cov"):
+                coverage_dict = get_coverage_data()
 
-        if self.config.pluginmanager.hasplugin("_cov"):
-            # coverage_str = self.config.pluginmanager.getplugin(
-            #     "_cov"
-            # ).cov_report.getvalue()
-
-            # coverage_dict = coverage_str_to_dict(coverage_report_str=coverage_str)
-            coverage_dict = get_coverage_data()
-
-            if self.connected:
-                asyncio.run(
-                    send_event(
-                        event=Event(
-                            event_type=EventType.COVERAGE,
-                            event_payload={
-                                "coverage_dict": coverage_dict,
-                            },
+                if self.connected:
+                    asyncio.run(
+                        send_event(
+                            event=Event(
+                                event_type=EventType.COVERAGE,
+                                event_payload={
+                                    "coverage_dict": coverage_dict,
+                                },
+                            )
                         )
                     )
-                )
+        return
 
         report_dict = {}
         # warning report has no report.when
