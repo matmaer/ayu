@@ -7,7 +7,6 @@
 - tox-like multi python-version testing
 - Improve Filtering/numbers
 - Make buttons functional to stop test runs
-- xdist messes up coverage
 
 # generals
 - test strategy

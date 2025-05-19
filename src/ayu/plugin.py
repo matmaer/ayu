@@ -124,24 +124,25 @@ class Ayu:
     # summary after run for each tests
     @pytest.hookimpl(trylast=True)
     def pytest_terminal_summary(self, terminalreporter: TerminalReporter):
+        # Summary part of individual Workers
         if self.config.pluginmanager.hasplugin("xdist") and (
             "PYTEST_XDIST_WORKER" not in os.environ
         ):
             # Needs to run within workers for correct report
-            if self.config.pluginmanager.hasplugin("_cov"):
+            # if pytest-xdist is available
+            if self.config.pluginmanager.hasplugin("_cov") and self.connected:
                 coverage_dict = get_coverage_data()
 
-                if self.connected:
-                    asyncio.run(
-                        send_event(
-                            event=Event(
-                                event_type=EventType.COVERAGE,
-                                event_payload={
-                                    "coverage_dict": coverage_dict,
-                                },
-                            )
+                asyncio.run(
+                    send_event(
+                        event=Event(
+                            event_type=EventType.COVERAGE,
+                            event_payload={
+                                "coverage_dict": coverage_dict,
+                            },
                         )
                     )
+                )
             # from pprint import pprint
             #
             # pprint(
@@ -152,7 +153,21 @@ class Ayu:
             #         ]
             #     )
             # )
-        return
+            return
+        else:
+            if self.config.pluginmanager.hasplugin("_cov") and self.connected:
+                coverage_dict = get_coverage_data()
+
+                asyncio.run(
+                    send_event(
+                        event=Event(
+                            event_type=EventType.COVERAGE,
+                            event_payload={
+                                "coverage_dict": coverage_dict,
+                            },
+                        )
+                    )
+                )
 
         report_dict = {}
         # warning report has no report.when
