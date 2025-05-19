@@ -86,5 +86,6 @@ class TestResultDetails(TextArea):
     def watch_selected_node_id(self):
         if self.report_data.get(self.selected_node_id):
             self.text = self.report_data[self.selected_node_id]["longreprtext"]
+            self.scroll_end(animate=False)
         else:
             self.text = ""

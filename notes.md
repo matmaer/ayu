@@ -10,7 +10,6 @@
 
 # generals
 - test strategy
-- Make websocket more performant with queues
 
 # optionals
 - align result Icons better on test tree

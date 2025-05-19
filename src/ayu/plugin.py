@@ -101,7 +101,8 @@ class Ayu:
         if self.config.pluginmanager.hasplugin("xdist") and (
             "PYTEST_XDIST_WORKER" not in os.environ
         ):
-            return
+            pass
+            # return
 
         is_relevant = (report.when == "call") or (
             (report.when == "setup")
@@ -153,7 +154,7 @@ class Ayu:
             #         ]
             #     )
             # )
-            return
+
         else:
             if self.config.pluginmanager.hasplugin("_cov") and self.connected:
                 coverage_dict = get_coverage_data()

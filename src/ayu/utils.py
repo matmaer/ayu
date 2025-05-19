@@ -67,7 +67,8 @@ async def run_all_tests(
         command = "uv run python -m pytest "
 
     if tests_to_run:
-        command += " ".join(tests_to_run)
+        # put testnodes in "" to handle spaces in parametrize args
+        command += " ".join([f'"{test}"' for test in tests_to_run])
     else:
         if tests_path:
             command += tests_path
