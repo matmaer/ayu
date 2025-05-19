@@ -175,10 +175,11 @@ class CoverageFilePreview(TextArea):
 
     def watch_selected_line(self):
         if self.selected_line:
+            self.move_cursor(location=(self.selected_line - 1, 0))
+
             self.scroll_to(
                 y=self.selected_line - 5,  # 4 rows space on top
                 animate=True,
-                duration=0.5,
+                duration=0.1,
+                force=True,
             )
-
-            self.move_cursor(location=(self.selected_line - 1, 0))
