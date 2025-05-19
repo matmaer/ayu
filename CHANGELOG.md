@@ -1,3 +1,8 @@
+# 0.1.7
+- Fix Coverage Explorer Scroll
+- Fix Marked Test Execution with spaces in parametrize args
+- Add CommandBuilder
+
 # 0.1.6
 - Add CoverageExplorer
 - Add LogWidget

@@ -133,7 +133,7 @@ class AyuApp(App):
         self.counter_total_tests = data["meta"]["test_count"]
         self.markers = data["meta"]["markers"]
 
-    @work(exclusive=True)
+    @work(exclusive=True, description="Websocket Runner")
     async def start_socket(self):
         self.dispatcher = EventDispatcher(host=self.host, port=self.port)
         self.notify(
@@ -232,7 +232,7 @@ class AyuApp(App):
         self.tests_running = True
         self.reset_filters()
         # Log Runner Output
-        runner = await run_all_tests(tests_path=self.test_path)
+        runner = await run_all_tests(tests_to_run=self.test_path)
 
         while True:
             if (runner.returncode is not None) or (runner.stdout is None):
@@ -249,7 +249,6 @@ class AyuApp(App):
         self.tests_running = True
         self.reset_filters()
         runner = await run_all_tests(
-            tests_path=self.test_path,
             tests_to_run=self.query_one(TestTree).marked_tests,
         )
 

@@ -1,3 +1,4 @@
+from pathlib import Path
 import click
 
 from ayu.app import AyuApp
@@ -10,7 +11,9 @@ from ayu.utils import uv_is_installed, project_is_uv_managed, ayu_is_run_as_tool
 @click.version_option(prog_name="ayu")
 @click.pass_context
 @click.argument(
-    "tests_path", type=click.Path(exists=True, file_okay=False), required=False
+    "tests_path",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    required=False,
 )
 def cli(ctx, tests_path):
     if ayu_is_run_as_tool():

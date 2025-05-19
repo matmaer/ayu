@@ -1,4 +1,5 @@
 import pytest
+from pathlib import Path
 from ayu.command_builder import Plugin, build_command
 
 not_installed_cov_plugin = Plugin(
@@ -18,6 +19,12 @@ not_installed_cov_plugin = Plugin(
             [not_installed_cov_plugin],
             "",
             "uv run --with pytest-cov pytest --cov src/ayu --report term-missing",
+        ],
+        [
+            True,
+            [],
+            Path("tests/test_cases"),
+            "uv run --with ayu pytest tests/test_cases",
         ],
     ),
 )

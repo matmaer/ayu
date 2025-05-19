@@ -11,7 +11,7 @@ class Plugin:
 
 
 def build_command(
-    is_tool: bool, plugins: list[Plugin], tests_to_run: Path | list[str]
+    is_tool: bool, plugins: list[Plugin], tests_to_run: Path | list[str] | None
 ) -> str:
     command_parts = []
 
@@ -36,7 +36,13 @@ def build_command(
 
     # wrap tests in quotes to prevent errors when parametrize
     # args include spaces
-    substring_tests_to_run = ""
+    if tests_to_run:
+        if isinstance(tests_to_run, Path):
+            substring_tests_to_run = tests_to_run.as_posix()
+        else:
+            substring_tests_to_run = " ".join([f'"{test}"' for test in tests_to_run])
+    else:
+        substring_tests_to_run = ""
     command_parts.append(substring_tests_to_run)
 
     # only join non empty substrings

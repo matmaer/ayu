@@ -11,6 +11,7 @@ from pytest import Item, Class, Function
 from _pytest.nodes import Node
 
 from ayu.constants import WEB_SOCKET_PORT, WEB_SOCKET_HOST
+from ayu.command_builder import build_command
 
 
 class NodeType(StrEnum):
@@ -57,21 +58,15 @@ def run_test_collection(tests_path: str | None = None):
     )
 
 
-async def run_all_tests(
-    tests_path: str | None = None, tests_to_run: list[str] | None = None
-):
+async def run_all_tests(tests_to_run: Path | list[str] | None = None):
     """Run all selected tests"""
-    if ayu_is_run_as_tool():
-        command = "uv run --with ayu pytest "
-    else:
-        command = "uv run python -m pytest "
+    is_tool = ayu_is_run_as_tool()
+    command = build_command(
+        is_tool=is_tool,
+        plugins=[],
+        tests_to_run=tests_to_run,
+    )
 
-    if tests_to_run:
-        # put testnodes in "" to handle spaces in parametrize args
-        command += " ".join([f'"{test}"' for test in tests_to_run])
-    else:
-        if tests_path:
-            command += tests_path
     return await asyncio.create_subprocess_shell(
         command,
         stdout=asyncio.subprocess.PIPE,
@@ -238,12 +233,25 @@ def test_node_to_dict(node: Node) -> dict[str, Any]:
 
 
 def build_bar(percentage: float) -> str:
-    SEGS = ["▉", "▊", "▋", "▌", "▍", "▎", "▏", " "]
+    SEGS = ["▉", "▊", "▋", "▌", "▍", "▎", "▏", ""]
     tens = int(percentage // 10)
-    rest = int(percentage - tens)
+    rest = int(percentage - tens * 10)
     not_tens = int((100 - percentage) // 10)
 
     tens_bar = f"[green on green]{tens * ' '}[/]"
-    rest_bar = f"[green on red]{SEGS[2]}[/]" if rest else ""
+
+    if rest == 0:
+        rest_bar = ""
+    elif rest < 2:
+        rest_bar = f"[green on red]{SEGS[5]}[/]"
+    elif rest < 4:
+        rest_bar = f"[green on red]{SEGS[3]}[/]"
+    elif rest < 6:
+        rest_bar = f"[green on red]{SEGS[2]}[/]"
+    elif rest < 8:
+        rest_bar = f"[green on red]{SEGS[1]}[/]"
+    elif rest < 10:
+        rest_bar = f"[green on red]{SEGS[0]}[/]"
+
     not_tens_bar = f"[on red]{not_tens * ' '}[/]"
     return tens_bar + rest_bar + not_tens_bar
