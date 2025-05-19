@@ -93,6 +93,20 @@ class CoverageTable(DataTable):
         for column in self.COLUMNS:
             self.add_column(label=column, width=None if column else 10)
 
+    # Go to first row, when navigating down on last row
+    def action_cursor_down(self) -> None:
+        if self.cursor_coordinate.row == (self.row_count - 1):
+            self.move_cursor(row=0)
+            return
+        return super().action_cursor_down()
+
+    # Go to last row, when navigating up on first row
+    def action_cursor_up(self) -> None:
+        if self.cursor_coordinate.row == 0:
+            self.move_cursor(row=self.row_count - 1)
+            return
+        return super().action_cursor_up()
+
     def watch_coverage_dict(self):
         if not self.coverage_dict:
             return
@@ -141,6 +155,20 @@ class MissingLinesTable(DataTable):
         self.add_columns(
             "Missing Lines",
         )
+
+    # Go to first row, when navigating down on last row
+    def action_cursor_down(self) -> None:
+        if self.cursor_coordinate.row == (self.row_count - 1):
+            self.move_cursor(row=0)
+            return
+        return super().action_cursor_down()
+
+    # Go to last row, when navigating up on first row
+    def action_cursor_up(self) -> None:
+        if self.cursor_coordinate.row == 0:
+            self.move_cursor(row=self.row_count - 1)
+            return
+        return super().action_cursor_up()
 
     def watch_selected_file(self):
         if not self.selected_file:
