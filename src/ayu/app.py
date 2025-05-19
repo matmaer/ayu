@@ -233,10 +233,7 @@ class AyuApp(App):
         self.reset_filters()
         # Log Runner Output
         runner = await run_all_tests(tests_to_run=self.test_path)
-
-        while True:
-            if (runner.returncode is not None) or (runner.stdout is None):
-                break
+        while runner:
             output_line = await runner.stdout.readline()
             decoded_line = remove_ansi_escapes(output_line.decode())
             self.call_from_thread(self.query_one(OutputLog).write_line, decoded_line)
@@ -251,10 +248,7 @@ class AyuApp(App):
         runner = await run_all_tests(
             tests_to_run=self.query_one(TestTree).marked_tests,
         )
-
         while True:
-            if (runner.returncode is not None) or (runner.stdout is None):
-                break
             output_line = await runner.stdout.readline()
             decoded_line = remove_ansi_escapes(output_line.decode())
             self.call_from_thread(self.query_one(OutputLog).write_line, decoded_line)

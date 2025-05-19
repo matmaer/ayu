@@ -94,9 +94,9 @@ class TestTree(Tree):
         self.app.refresh_bindings()
 
     @work(thread=True)
-    def action_collect_tests(self):
+    async def action_collect_tests(self):
         self.app.test_results_ready = False
-        run_test_collection(tests_path=self.app.test_path)
+        await run_test_collection(tests_to_run=self.app.test_path)
 
     def build_tree(self):
         self.clear()

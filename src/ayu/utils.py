@@ -42,20 +42,22 @@ class TestOutcome(StrEnum):
     ERROR = "XPASSED"
 
 
-def run_test_collection(tests_path: str | None = None):
+async def run_test_collection(tests_to_run: Path | None = None):
     """Collect All Tests without running them"""
-    if ayu_is_run_as_tool():
-        command = "uv run --with ayu pytest --co".split()
-    else:
-        command = "uv run pytest --co".split()
-
-    if tests_path:
-        command.extend([tests_path])
-
-    return subprocess.run(
-        command,
-        capture_output=True,
+    is_tool = ayu_is_run_as_tool()
+    command = build_command(
+        is_tool=is_tool,
+        plugins=None,
+        tests_to_run=tests_to_run,
+        pytest_options=["--co"],
     )
+
+    process = await asyncio.create_subprocess_shell(
+        command,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT,
+    )
+    await process.wait()
 
 
 async def run_all_tests(tests_to_run: Path | list[str] | None = None):
@@ -63,7 +65,7 @@ async def run_all_tests(tests_to_run: Path | list[str] | None = None):
     is_tool = ayu_is_run_as_tool()
     command = build_command(
         is_tool=is_tool,
-        plugins=[],
+        plugins=None,
         tests_to_run=tests_to_run,
     )
 
@@ -235,7 +237,8 @@ def test_node_to_dict(node: Node) -> dict[str, Any]:
 def build_bar(percentage: float) -> str:
     SEGS = ["▉", "▊", "▋", "▌", "▍", "▎", "▏", ""]
     tens = int(percentage // 10)
-    rest = int(percentage - tens * 10)
+    # can stay float cause we dont multiply it with strings
+    rest = percentage - tens * 10
     not_tens = int((100 - percentage) // 10)
 
     tens_bar = f"[green on green]{tens * ' '}[/]"
