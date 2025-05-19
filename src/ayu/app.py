@@ -136,7 +136,9 @@ class AyuApp(App):
     @work(exclusive=True)
     async def start_socket(self):
         self.dispatcher = EventDispatcher(host=self.host, port=self.port)
-        self.notify("Websocket Started", timeout=1)
+        self.notify(
+            f"Websocket Started at\n[orange]{self.host}:{self.port}[/]", timeout=1
+        )
         await self.dispatcher.start()
 
     def on_key(self, event: Key):

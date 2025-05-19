@@ -11,6 +11,8 @@ ToastHolder {
     align-horizontal: center;
 }
 Toast{
+  text-align: center;
+
   &.-information {
     border-right: outer $success;
     border-left: outer $success;
