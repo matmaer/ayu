@@ -63,6 +63,7 @@ class ButtonPanel(Vertical):
     tests_running: reactive[bool] = reactive(False, init=False)
 
     def compose(self):
+        yield Button(label="Plugins", id="button_plugins", variant="warning")
         yield Button(label="Show Log", id="button_log", variant="primary")
         yield Button(label="Show Coverage", id="button_coverage", variant="warning")
         with Horizontal():

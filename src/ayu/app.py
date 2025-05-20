@@ -234,6 +234,8 @@ class AyuApp(App):
         # Log Runner Output
         runner = await run_all_tests(tests_to_run=self.test_path)
         while runner:
+            if runner.returncode is not None:
+                break
             output_line = await runner.stdout.readline()
             decoded_line = remove_ansi_escapes(output_line.decode())
             self.call_from_thread(self.query_one(OutputLog).write_line, decoded_line)
@@ -248,7 +250,9 @@ class AyuApp(App):
         runner = await run_all_tests(
             tests_to_run=self.query_one(TestTree).marked_tests,
         )
-        while True:
+        while runner:
+            if runner.returncode is not None:
+                break
             output_line = await runner.stdout.readline()
             decoded_line = remove_ansi_escapes(output_line.decode())
             self.call_from_thread(self.query_one(OutputLog).write_line, decoded_line)
