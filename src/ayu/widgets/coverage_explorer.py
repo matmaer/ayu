@@ -128,12 +128,7 @@ class CoverageTable(DataTable):
         self.move_cursor(row=current_line)
 
     @on(DataTable.RowSelected)
-    def test(self, event: DataTable.RowSelected):
-        self.notify(f"{self.region.width}", markup=False)
-        self.notify(
-            f"{[(col.width, col.content_width) for col in self.columns.values()]}",
-            markup=False,
-        )
+    def test(self, event: DataTable.RowSelected): ...
 
     def action_go_to_lines(self):
         self.app.action_focus_next()

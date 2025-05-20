@@ -17,6 +17,7 @@ from ayu.widgets.detail_viewer import DetailView, TestResultDetails
 from ayu.widgets.filter import TreeFilter, MarkersFilter
 from ayu.widgets.helper_widgets import ToggleRule, ButtonPanel
 from ayu.widgets.modals.search import ModalSearch
+from ayu.widgets.modals.plugin_manager import ModalPlugin
 from ayu.widgets.coverage_explorer import CoverageExplorer
 from ayu.widgets.log import OutputLog, LogViewer
 
@@ -194,6 +195,10 @@ class AyuApp(App):
 
         self.query_one(ToggleRule).test_result = event.node.data["status"]
         self.query_one(TestResultDetails).selected_node_id = event.node.data["nodeid"]
+
+    @on(Button.Pressed, "#button_plugins")
+    def open_plugin_screen(self, event: Button.Pressed):
+        self.push_screen(ModalPlugin())
 
     @on(Button.Pressed, "#button_coverage")
     def toggle_coverage_explorer(self, event: Button.Pressed):
