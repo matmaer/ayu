@@ -1,3 +1,4 @@
+from types import FunctionType, NoneType
 from typing import Any
 from collections import defaultdict
 import os
@@ -30,6 +31,7 @@ class EventType(StrEnum):
     OUTCOME = "OUTCOME"
     REPORT = "REPORT"
     COVERAGE = "COVERAGE"
+    PLUGIN = "PLUGIN"
     DEBUG = "DEBUG"
 
 
@@ -42,6 +44,15 @@ class TestOutcome(StrEnum):
     XFAILED = "XFAILED"
     XPASSED = "XPASSED"
     ERROR = "XPASSED"
+
+
+class OptionType(StrEnum):
+    INT = "INT"
+    LIST = "LIST"
+    STR = "STR"
+    BOOL = "BOOL"
+    SELECTION = "SELECTION"
+    UNKNOWN = "UNKNOWN"
 
 
 async def run_test_collection(tests_to_run: Path | None = None):
@@ -265,10 +276,13 @@ def build_bar(percentage: float) -> str:
 def build_plugin_dict(conf: Config) -> dict:
     from pprint import pprint
 
-    plugin_infos = set(
-        (conf.pluginmanager.get_name(p), dist.version)
-        for p, dist in conf.pluginmanager.list_plugin_distinfo()
+    plugin_infos = sorted(
+        set(
+            (conf.pluginmanager.get_name(p), dist.version)
+            for p, dist in conf.pluginmanager.list_plugin_distinfo()
+        )
     )
+
     all_plugins_dict: dict[str, dict] = defaultdict(dict)
     for plugin_name, version in plugin_infos:
         clean_name = (
@@ -303,7 +317,8 @@ def get_plugin_option_dict(option: OptionGroup) -> dict[str, Any]:
     option_attrs = option.attrs()
     option_default = option_attrs.get("default")
     option_help = option_attrs.get("help")
-    option_type = option_attrs.get("type")
+    # set type as 'None' if type is desclared as a function e.g. for validation
+    option_type = infer_option_type(option_attributes=option_attrs)
     option_choices = option_attrs.get("choices")
     option_destination = option_attrs.get("dest")
 
@@ -317,3 +332,26 @@ def get_plugin_option_dict(option: OptionGroup) -> dict[str, Any]:
     # option_dict["attrs"] = option_attrs
 
     return option_dict
+
+
+def infer_option_type(option_attributes: dict) -> OptionType:
+    option_default = option_attributes.get("default")
+    option_type = option_attributes.get(
+        "type", type(option_default) if option_default is not None else None
+    )
+    if isinstance(option_type, (FunctionType, NoneType)):
+        return OptionType.STR
+    elif option_type is bool:
+        return OptionType.BOOL
+    elif option_attributes.get("choices"):
+        return OptionType.SELECTION
+    elif option_type is str:
+        return OptionType.STR
+    elif option_type is list:
+        return OptionType.LIST
+    elif option_type is int:
+        return OptionType.INT
+    else:
+        return OptionType.UNKNOWN
+
+    return option_type

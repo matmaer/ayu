@@ -57,8 +57,8 @@ class Ayu:
             asyncio.run(
                 send_event(
                     event=Event(
-                        event_type=EventType.DEBUG,
-                        event_payload={"test": plugin_dict},
+                        event_type=EventType.PLUGIN,
+                        event_payload={"plugin_dict": plugin_dict},
                     )
                 )
             )

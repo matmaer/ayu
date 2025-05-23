@@ -39,6 +39,7 @@ class AyuApp(App):
 
     data_test_tree: reactive[dict] = reactive({}, init=False)
     counter_total_tests: reactive[int] = reactive(0, init=False)
+    plugin_dict: reactive[dict] = reactive({}, init=False)
 
     filter: reactive[dict] = reactive(
         {
@@ -116,6 +117,10 @@ class AyuApp(App):
             handler=lambda msg: self.update_debug_log(msg),
         )
         self.dispatcher.register_handler(
+            event_type=EventType.PLUGIN,
+            handler=lambda msg: self.update_plugin_dict(msg),
+        )
+        self.dispatcher.register_handler(
             event_type=EventType.DEBUG,
             handler=lambda msg: self.update_debug_log(msg),
         )
@@ -133,6 +138,11 @@ class AyuApp(App):
         self.data_test_tree = data["tree"]
         self.counter_total_tests = data["meta"]["test_count"]
         self.markers = data["meta"]["markers"]
+
+    def update_plugin_dict(self, data):
+        if not self.plugin_dict:
+            self.plugin_dict = data["plugin_dict"]
+            self.notify(f"{self.plugin_dict.keys()}", markup=False)
 
     @work(exclusive=True, description="Websocket Runner")
     async def start_socket(self):
