@@ -4,7 +4,8 @@ if TYPE_CHECKING:
     from ayu.app import AyuApp
 from textual.screen import ModalScreen
 from textual.binding import Binding
-from textual.widgets import Placeholder
+from textual.widgets import Placeholder, Footer
+from textual.containers import Center
 
 
 class ModalPlugin(ModalScreen):
@@ -15,4 +16,6 @@ class ModalPlugin(ModalScreen):
     ]
 
     def compose(self):
-        yield Placeholder("Test")
+        with Center():
+            yield Placeholder("Test")
+            yield Footer()

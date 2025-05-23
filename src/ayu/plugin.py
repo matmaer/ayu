@@ -11,7 +11,7 @@ from ayu.utils import (
     TestOutcome,
     remove_ansi_escapes,
     build_dict_tree,
-    # coverage_str_to_dict,
+    build_plugin_dict,
     get_coverage_data,
 )
 
@@ -33,7 +33,7 @@ def pytest_addoption(parser: Parser) -> None:
 @pytest.hookimpl(trylast=True)
 def pytest_configure(config: Config) -> None:
     if not config.getoption("--disable-ayu"):
-        config.pluginmanager.register(Ayu(config), "ayu")
+        config.pluginmanager.register(Ayu(config))
 
 
 class Ayu:
@@ -48,16 +48,21 @@ class Ayu:
             self.connected = False
             print("Websocket not connected")
 
-        # if self.config.pluginmanager.hasplugin("pytest_cov"):
-        #     from pytest_cov.plugin import CovPlugin
-        #     self.cov_plugin: CovPlugin = self.config.pluginmanager.get_plugin("pytest_cov").CovPlugin(
-        #         options = self.config.option,
-        #         pluginmanager = self.config.pluginmanager,
-        #     )
-
     # must tryfirst, otherwise collection-only is returning
     @pytest.hookimpl(tryfirst=True)
     def pytest_runtestloop(self, session: Session):
+        plugin_dict = build_plugin_dict(conf=self.config)
+        if self.connected:
+            plugin_dict = build_plugin_dict(conf=self.config)
+            asyncio.run(
+                send_event(
+                    event=Event(
+                        event_type=EventType.DEBUG,
+                        event_payload={"test": plugin_dict},
+                    )
+                )
+            )
+
         if self.connected and session.config.getoption("--collect-only"):
             asyncio.run(
                 send_event(
@@ -81,7 +86,6 @@ class Ayu:
                         event=Event(
                             event_type=EventType.COLLECTION,
                             event_payload=tree,
-                            # event_payload={"items":session.items},
                         )
                     ),
                 )
@@ -144,16 +148,6 @@ class Ayu:
                         )
                     )
                 )
-            # from pprint import pprint
-            #
-            # pprint(
-            #     set(
-            #         [
-            #             f"{dist.project_name}-{dist.version}"
-            #             for p, dist in self.config.pluginmanager.list_plugin_distinfo()
-            #         ]
-            #     )
-            # )
 
         else:
             if self.config.pluginmanager.hasplugin("_cov") and self.connected:

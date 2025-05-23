@@ -198,6 +198,27 @@ ModalSearch {
             }
     }
 }
+ModalPlugin {
+    align: center middle;
+    width:60%;
+    background:$background 30%;
+
+    Center {
+        width:60%;
+        background:transparent;
+    }
+
+    Footer{
+        layout:horizontal;
+        background:$success-darken-2;
+        dock:top;
+
+    }
+    Placeholder {
+      width: 1fr;
+      height: 1fr;
+    }
+}
 ButtonPanel{
     width:1fr;
     height:auto;

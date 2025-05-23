@@ -1,4 +1,5 @@
 from typing import Any
+from collections import defaultdict
 import os
 import shutil
 import re
@@ -7,6 +8,7 @@ from pathlib import Path
 import subprocess
 
 import asyncio
+from pytest import Config, OptionGroup
 from pytest import Item, Class, Function
 from _pytest.nodes import Node
 
@@ -258,3 +260,60 @@ def build_bar(percentage: float) -> str:
 
     not_tens_bar = f"[on red]{not_tens * ' '}[/]"
     return tens_bar + rest_bar + not_tens_bar
+
+
+def build_plugin_dict(conf: Config) -> dict:
+    from pprint import pprint
+
+    plugin_infos = set(
+        (conf.pluginmanager.get_name(p), dist.version)
+        for p, dist in conf.pluginmanager.list_plugin_distinfo()
+    )
+    all_plugins_dict: dict[str, dict] = defaultdict(dict)
+    for plugin_name, version in plugin_infos:
+        clean_name = (
+            plugin_name[7:] if plugin_name.startswith("pytest") else plugin_name
+        )
+        plugin_dict = {}
+        plugin_group = conf._parser.getgroup(clean_name)
+        group_name = plugin_group.name
+        group_description = plugin_group.description
+        group_options = plugin_group.options
+        if not group_options:
+            continue
+        else:
+            group_option_list = []
+            for option in group_options:
+                option_dict = get_plugin_option_dict(option=option)
+                group_option_list.append(option_dict)
+
+        plugin_dict["name"] = group_name
+        plugin_dict["version"] = version
+        plugin_dict["description"] = group_description
+        plugin_dict["options"] = group_option_list
+
+        all_plugins_dict[plugin_name] = plugin_dict
+
+    pprint(all_plugins_dict, sort_dicts=False)
+    return all_plugins_dict
+
+
+def get_plugin_option_dict(option: OptionGroup) -> dict[str, Any]:
+    option_names = option.names()
+    option_attrs = option.attrs()
+    option_default = option_attrs.get("default")
+    option_help = option_attrs.get("help")
+    option_type = option_attrs.get("type")
+    option_choices = option_attrs.get("choices")
+    option_destination = option_attrs.get("dest")
+
+    option_dict = {}
+    option_dict["names"] = option_names
+    option_dict["default"] = option_default
+    option_dict["help"] = option_help
+    option_dict["type"] = option_type
+    option_dict["choices"] = option_choices
+    option_dict["destination"] = option_destination
+    # option_dict["attrs"] = option_attrs
+
+    return option_dict

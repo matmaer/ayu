@@ -12,7 +12,7 @@ class Plugin:
 
 def build_command(
     is_tool: bool,
-    plugins: list[Plugin] | None,
+    plugins: list[Plugin] | None = None,
     tests_to_run: Path | list[str] | None = None,
     pytest_options: list[str] | None = None,
 ) -> str:
