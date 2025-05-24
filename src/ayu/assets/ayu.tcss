@@ -205,6 +205,7 @@ ModalPlugin {
 
     Center {
         width:60%;
+        height:60%;
         background:transparent;
     }
 
@@ -217,6 +218,16 @@ ModalPlugin {
     Placeholder {
       width: 1fr;
       height: 1fr;
+    }
+    Collapsible {
+      width: 1fr;
+      height:auto;
+      border-top: hkey $background;
+      padding-bottom: 0;
+
+        &.-collapsed{
+          padding-bottom: 1;
+        }
     }
 }
 ButtonPanel{
@@ -233,7 +244,52 @@ ButtonPanel{
       width:1fr;
     }
 }
+# plugin collapsibles
+.optionwidget {
+    width:1fr;
+    height:auto;
 
+    Horizontal {
+        width: 1fr;
+        height:auto;
+    }
+
+    Label {
+        width: 1fr;
+        height:auto;
+        padding: 1 0 0 0;
+    }
+
+    Switch {
+        width: 1fr;
+        height:auto;
+        & > .switch--slider {
+            color: $error;
+        }
+
+        &.-on > .switch--slider {
+                color: $success;
+            }
+    }
+
+    Select {
+        width: 1fr;
+        height:auto;
+    }
+
+    Input {
+        width: 1fr;
+        height:auto;
+    }
+    Rule {
+        margin: 0;
+        color: black;
+    }
+
+    DataTable {
+        width: 0.5fr;
+    }
+}
 # Can be Deleted
 Collapsible {
     height: auto;
