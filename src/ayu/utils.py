@@ -322,7 +322,15 @@ def get_plugin_option_dict(option: OptionGroup) -> dict[str, Any]:
     option_choices = option_attrs.get("choices")
     option_destination = option_attrs.get("dest")
 
+    from enum import Enum
+
     option_dict = {}
+
+    # handle enums, cause they are not serializable
+    if isinstance(option_default, Enum):
+        option_default = option_default.value
+        option_choices = [choice.value for choice in option_choices]
+
     option_dict["names"] = option_names
     option_dict["default"] = option_default
     option_dict["help"] = option_help
@@ -339,6 +347,9 @@ def infer_option_type(option_attributes: dict) -> OptionType:
     option_type = option_attributes.get(
         "type", type(option_default) if option_default is not None else None
     )
+    # if option_type not in [str, list, None, int, float]:
+    #     return OptionType.STR
+
     if isinstance(option_type, (FunctionType, NoneType)):
         return OptionType.STR
     elif option_type is bool:

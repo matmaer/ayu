@@ -140,9 +140,9 @@ class AyuApp(App):
         self.markers = data["meta"]["markers"]
 
     def update_plugin_dict(self, data):
-        if not self.plugin_dict:
-            self.plugin_dict = data["plugin_dict"]
-            self.notify(f"{self.plugin_dict.keys()}", markup=False)
+        # if not self.plugin_dict:
+        self.plugin_dict = data["plugin_dict"]
+        self.notify(f"{self.plugin_dict.keys()}", markup=False)
 
     @work(exclusive=True, description="Websocket Runner")
     async def start_socket(self):
