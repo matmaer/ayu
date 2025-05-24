@@ -199,13 +199,15 @@ ModalSearch {
     }
 }
 ModalPlugin {
-    align: center middle;
+    align: center top;
     width:60%;
     background:$background 30%;
 
-    Center {
+    & >VerticalScroll {
         width:60%;
-        height:60%;
+        offset-y: 5;
+        height:auto;
+        max-height:80%;
         background:transparent;
     }
 
@@ -220,14 +222,15 @@ ModalPlugin {
       height: 1fr;
     }
     Collapsible {
+      CollapsibleTitle {
+        padding-top: 1;
+        height:3;
+        width:1fr;
+      }
       width: 1fr;
       height:auto;
-      border-top: hkey $background;
+      border:none;
       padding-bottom: 0;
-
-        &.-collapsed{
-          padding-bottom: 1;
-        }
     }
 }
 ButtonPanel{

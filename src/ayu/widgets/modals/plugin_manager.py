@@ -17,7 +17,7 @@ from textual.widgets import (
     Rule,
     DataTable,
 )
-from textual.containers import Center, Horizontal, Vertical
+from textual.containers import Horizontal, Vertical, VerticalScroll
 
 from ayu.utils import OptionType
 
@@ -30,7 +30,7 @@ class ModalPlugin(ModalScreen):
     ]
 
     def compose(self):
-        with Center():
+        with VerticalScroll():
             # yield Placeholder("Test")
             yield Footer()
             for plugin, plugin_dict in self.app.plugin_dict.items():
@@ -39,8 +39,8 @@ class ModalPlugin(ModalScreen):
                         match option_dict["type"]:
                             case OptionType.BOOL:
                                 yield BoolOption(option_dict=option_dict)
-                            # case OptionType.STR:
-                            #     yield StringOption(flag_dict=option_dict)
+                            case OptionType.STR:
+                                yield StringOption(option_dict=option_dict)
                             # case OptionType.LIST:
                             #     yield ListOption(flag_dict=option_dict)
                             # case OptionType.SELECTION:
@@ -112,6 +112,7 @@ class BoolOption(Vertical):
         else:
             self.query_one(Label).update(self.option)
 
+    # complete option string for the command builder
     def watch_complete_option(self):
         if self.complete_option is None:
             # self.app.options.pop(self.flag)
@@ -125,48 +126,51 @@ class BoolOption(Vertical):
 
 class StringOption(Vertical):
     app: "AyuApp"
-    flag: reactive[str] = reactive("", init=False)
-    flag_value: reactive[str] = reactive("", init=False)
-    complete_flag: reactive[str | None] = reactive(None, init=False)
+    option: reactive[str] = reactive("", init=False)
+    option_value: reactive[str] = reactive("", init=False)
+    complete_option: reactive[str | None] = reactive(None, init=False)
     was_changed: reactive[bool] = reactive(False, init=False)
 
-    def __init__(self, flag_dict: dict[str, str], *args, **kwargs) -> None:
-        self.flag_dict = flag_dict
+    def __init__(self, option_dict: dict[str, str], *args, **kwargs) -> None:
+        self.option_dict = option_dict
         super().__init__(*args, **kwargs)
-        self.classes = "flagwidget"
-        self.flag = flag_dict["flag"]
-        self.flag_value = flag_dict["default"]
+        self.classes = "optionwidget"
+        self.option = "".join(option_dict["names"])
+        self.option_value = option_dict["default"]
+
+    def on_mount(self):
+        self.query_one(Label).tooltip = self.option_dict["help"]
 
     def compose(self):
         with Horizontal():
-            yield Label(self.flag_dict["flag"])
-            yield Input(placeholder=f"default: {self.flag_dict['default']}")
+            yield Label(self.option)
+            yield Input(placeholder=f"default: {self.option_dict['default']}")
         yield Rule()
         return super().compose()
 
     def on_input_changed(self, event: Input.Changed):
-        self.flag_value = event.input.value
+        self.option_value = event.input.value
 
-    def watch_flag_value(self):
-        if self.flag_value == self.flag_dict["default"]:
-            self.complete_flag = None
+    def watch_option_value(self):
+        if self.option_value in [self.option_dict["default"], ""]:
+            self.complete_option = None
         else:
-            self.complete_flag = f"{self.flag}={self.flag_value}"
+            self.complete_option = f"{self.option}={self.option_value}"
 
     def watch_was_changed(self):
         if self.was_changed:
-            self.query_one(Label).update(f"[$success]{self.flag}[/]")
+            self.query_one(Label).update(f"[$success]{self.option}[/]")
         else:
-            self.query_one(Label).update(self.flag)
+            self.query_one(Label).update(self.option)
 
-    def watch_complete_flag(self):
-        if self.complete_flag is None:
-            self.app.options.pop(self.flag)
+    def watch_complete_option(self):
+        if self.complete_option is None:
+            # self.app.options.pop(self.option)
             self.was_changed = False
         else:
-            self.app.options[self.flag] = self.complete_flag
+            # self.app.options[self.option] = self.complete_option
             self.was_changed = True
-        self.app.update_options()
+        # self.app.update_options()
 
 
 class SelectionOption(Vertical):
