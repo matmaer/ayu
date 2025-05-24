@@ -4,7 +4,7 @@ from collections import defaultdict
 import os
 import shutil
 import re
-from enum import StrEnum
+from enum import StrEnum, Enum
 from pathlib import Path
 import subprocess
 
@@ -321,8 +321,6 @@ def get_plugin_option_dict(option: OptionGroup) -> dict[str, Any]:
     option_type = infer_option_type(option_attributes=option_attrs)
     option_choices = option_attrs.get("choices")
     option_destination = option_attrs.get("dest")
-
-    from enum import Enum
 
     option_dict = {}
 
