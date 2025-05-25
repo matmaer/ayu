@@ -291,6 +291,8 @@ ButtonPanel{
 
     DataTable {
         width: 0.5fr;
+        background: $surface;
+        background-tint: $foreground 5%;
     }
 }
 # Can be Deleted

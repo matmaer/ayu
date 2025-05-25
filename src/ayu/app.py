@@ -35,6 +35,7 @@ class AyuApp(App):
         Binding("O", "open_search", "Search", show=True, priority=True),
         Binding("L", "open_log", "Log", show=True),
         Binding("C", "open_coverage", "Coverage", show=True),
+        Binding("P", "open_plugin", "Plugin", show=False),
     ]
 
     data_test_tree: reactive[dict] = reactive({}, init=False)
@@ -142,7 +143,6 @@ class AyuApp(App):
     def update_plugin_dict(self, data):
         # if not self.plugin_dict:
         self.plugin_dict = data["plugin_dict"]
-        self.notify(f"{self.plugin_dict.keys()}", markup=False)
 
     @work(exclusive=True, description="Websocket Runner")
     async def start_socket(self):
@@ -208,7 +208,7 @@ class AyuApp(App):
 
     @on(Button.Pressed, "#button_plugins")
     def open_plugin_screen(self, event: Button.Pressed):
-        self.push_screen(ModalPlugin())
+        self.action_open_plugin()
 
     @on(Button.Pressed, "#button_coverage")
     def toggle_coverage_explorer(self, event: Button.Pressed):
@@ -226,6 +226,9 @@ class AyuApp(App):
             self.action_run_tests()
 
     # Actions
+    def action_open_plugin(self):
+        self.push_screen(ModalPlugin().data_bind(plugin_dict=AyuApp.plugin_dict))
+
     def action_show_details(self):
         self.query_one(DetailView).toggle()
         self.query_one(TreeFilter).toggle()
