@@ -46,8 +46,8 @@ class ModalPlugin(ModalScreen):
                                 yield StringOption(option_dict=option_dict)
                             case OptionType.LIST:
                                 yield ListOption(option_dict=option_dict)
-                            # case OptionType.SELECTION:
-                            #     yield SelectionOption(flag_dict=option_dict)
+                            case OptionType.SELECTION:
+                                yield SelectionOption(option_dict=option_dict)
 
     def watch_plugin_dict(self):
         # self.notify(f'modal: {self.plugin_dict.keys()}', markup=False)
@@ -197,7 +197,7 @@ class SelectionOption(Vertical):
 
     def compose(self):
         with Horizontal():
-            yield Label(self.option_dict["option"])
+            yield Label(self.option)
             with self.prevent(Select.Changed):
                 yield Select(
                     value=self.option_dict["default"],
@@ -226,12 +226,12 @@ class SelectionOption(Vertical):
 
     def watch_complete_option(self):
         if self.complete_option is None:
-            self.app.options.pop(self.option)
+            # self.app.options.pop(self.option)
             self.was_changed = False
         else:
-            self.app.options[self.option] = self.complete_option
+            # self.app.options[self.option] = self.complete_option
             self.was_changed = True
-        self.app.update_options()
+        # self.app.update_options()
 
 
 class ListOption(Vertical):
