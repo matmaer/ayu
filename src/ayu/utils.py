@@ -32,6 +32,7 @@ class EventType(StrEnum):
     REPORT = "REPORT"
     COVERAGE = "COVERAGE"
     PLUGIN = "PLUGIN"
+    OPTIONS = "OPTIONS"
     DEBUG = "DEBUG"
 
 
@@ -351,7 +352,7 @@ def get_plugin_option_dict(option: OptionGroup) -> dict[str, Any]:
     option_dict["help"] = option_help
     option_dict["type"] = option_type
     option_dict["choices"] = option_choices
-    option_dict["destination"] = option_destination
+    option_dict["dest"] = option_destination
     # option_dict["attrs"] = option_attrs
 
     return option_dict
@@ -362,8 +363,6 @@ def infer_option_type(option_attributes: dict) -> OptionType:
     option_type = option_attributes.get(
         "type", type(option_default) if option_default is not None else None
     )
-    # if option_type not in [str, list, None, int, float]:
-    #     return OptionType.STR
 
     if isinstance(option_type, (FunctionType, NoneType)):
         return OptionType.STR

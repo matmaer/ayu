@@ -20,4 +20,4 @@ async def test_app_plugins(testcase_path):
         assert isinstance(pilot.app.screen, ModalPlugin)
 
         for plugin in ["ayu", "asyncio", "xdist", "pytest_cov"]:
-            assert plugin in list(pilot.app.plugin_dict.keys())
+            assert plugin in list(pilot.app.plugin_option_dict.keys())

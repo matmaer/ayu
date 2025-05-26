@@ -40,7 +40,8 @@ class AyuApp(App):
 
     data_test_tree: reactive[dict] = reactive({}, init=False)
     counter_total_tests: reactive[int] = reactive(0, init=False)
-    plugin_dict: reactive[dict] = reactive({}, init=False)
+    plugin_option_dict: reactive[dict] = reactive({}, init=False)
+    selected_options_dict: reactive[dict] = reactive({}, init=False)
 
     filter: reactive[dict] = reactive(
         {
@@ -127,6 +128,10 @@ class AyuApp(App):
             event_type=EventType.DEBUG,
             handler=lambda msg: self.update_debug_log(msg),
         )
+        self.dispatcher.register_handler(
+            event_type=EventType.OPTIONS,
+            handler=lambda msg: self.update_selected_options(msg),
+        )
 
         self.dispatcher.register_handler(
             event_type=EventType.REPORT, handler=lambda msg: self.update_report_log(msg)
@@ -144,7 +149,12 @@ class AyuApp(App):
 
     def update_plugin_dict(self, data):
         # if not self.plugin_dict:
-        self.plugin_dict = data["plugin_dict"]
+        self.plugin_option_dict = data["plugin_dict"]
+
+    def update_selected_options(self, data):
+        # if not self.plugin_dict:
+        if not self.selected_options_dict:
+            self.selected_options_dict = data["option_dict"]
 
     @work(exclusive=True, description="Websocket Runner")
     async def start_socket(self):
@@ -233,7 +243,12 @@ class AyuApp(App):
 
     # Actions
     def action_open_plugin(self):
-        self.push_screen(ModalPlugin().data_bind(plugin_dict=AyuApp.plugin_dict))
+        self.push_screen(
+            ModalPlugin().data_bind(
+                selected_options_dict=AyuApp.selected_options_dict,
+                plugin_option_dict=AyuApp.plugin_option_dict,
+            )
+        )
 
     def action_show_details(self):
         self.query_one(DetailView).toggle()

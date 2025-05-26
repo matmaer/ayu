@@ -46,6 +46,8 @@ class EventDispatcher:
                         handlers = self.event_handler[EventType.COVERAGE]
                     case EventType.PLUGIN:
                         handlers = self.event_handler[EventType.PLUGIN]
+                    case EventType.OPTIONS:
+                        handlers = self.event_handler[EventType.OPTIONS]
                     case EventType.DEBUG:
                         handlers = self.event_handler[EventType.DEBUG]
 

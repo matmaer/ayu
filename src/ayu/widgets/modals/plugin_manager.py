@@ -24,7 +24,8 @@ from ayu.utils import OptionType, run_plugin_collection
 
 class ModalPlugin(ModalScreen):
     app: "AyuApp"
-    plugin_dict: reactive[dict] = reactive({}, init=False)
+    plugin_option_dict: reactive[dict] = reactive({}, init=False)
+    selected_options_dict: reactive[dict] = reactive({}, init=False)
 
     BINDINGS = [
         Binding("escape", "app.pop_screen", "Close", show=True),
@@ -37,7 +38,7 @@ class ModalPlugin(ModalScreen):
     def compose(self):
         with VerticalScroll():
             yield Footer()
-            for plugin, plugin_dict in self.app.plugin_dict.items():
+            for plugin, plugin_dict in self.app.plugin_option_dict.items():
                 with PlugInCollapsible(title=plugin):
                     for option_dict in plugin_dict["options"]:
                         match option_dict["type"]:
@@ -50,10 +51,13 @@ class ModalPlugin(ModalScreen):
                             case OptionType.SELECTION:
                                 yield SelectionOption(option_dict=option_dict)
 
-    def watch_plugin_dict(self):
+    def watch_plugin_option_dict(self):
         # self.notify(f'modal: {self.plugin_dict.keys()}', markup=False)
         # Refresh like this turns all other settings to default
         self.refresh(recompose=True)
+
+    def watch_selected_options_dict(self):
+        self.notify(f"{self.selected_options_dict}", markup=False, timeout=0.5)
 
 
 class PlugInCollapsible(Collapsible):
@@ -98,10 +102,14 @@ class BoolOption(Vertical):
 
     def on_mount(self):
         self.query_one(Label).tooltip = self.option_dict["help"]
+        # Set to current Value
+        dest = self.option_dict["dest"]
+        if dest != self.option_dict["default"]:
+            self.query_one(Switch).value = self.app.selected_options_dict[dest]
 
     def compose(self):
         with Horizontal():
-            yield Label(self.option)
+            yield Label(f"{self.option} [gray]{self.option_dict['dest']}[/]")
             yield Switch(value=self.option_dict["default"])
         yield Rule()
         return super().compose()
@@ -117,9 +125,13 @@ class BoolOption(Vertical):
 
     def watch_was_changed(self):
         if self.was_changed:
-            self.query_one(Label).update(f"[$success]{self.option}[/]")
+            self.query_one(Label).update(
+                f"[$success]{self.option}[/] [gray]{self.option_dict['dest']}[/]"
+            )
         else:
-            self.query_one(Label).update(self.option)
+            self.query_one(Label).update(
+                f"{self.option} [gray]{self.option_dict['dest']}[/]"
+            )
 
     # complete option string for the command builder
     def watch_complete_option(self):
@@ -149,10 +161,15 @@ class StringOption(Vertical):
 
     def on_mount(self):
         self.query_one(Label).tooltip = self.option_dict["help"]
+        # Set to current Value
+        dest = self.option_dict["dest"]
+        if dest != self.option_dict["default"]:
+            value = self.app.selected_options_dict[dest]
+            self.query_one(Input).value = f"{value}" if isinstance(value, list) else ""
 
     def compose(self):
         with Horizontal():
-            yield Label(self.option)
+            yield Label(f"{self.option} [gray]{self.option_dict['dest']}[/]")
             yield Input(placeholder=f"default: {self.option_dict['default']}")
         yield Rule()
         return super().compose()
@@ -168,9 +185,13 @@ class StringOption(Vertical):
 
     def watch_was_changed(self):
         if self.was_changed:
-            self.query_one(Label).update(f"[$success]{self.option}[/]")
+            self.query_one(Label).update(
+                f"[$success]{self.option}[/] [gray]{self.option_dict['dest']}[/]"
+            )
         else:
-            self.query_one(Label).update(self.option)
+            self.query_one(Label).update(
+                f"{self.option} [gray]{self.option_dict['dest']}[/]"
+            )
 
     def watch_complete_option(self):
         if self.complete_option is None:
@@ -198,7 +219,7 @@ class SelectionOption(Vertical):
 
     def compose(self):
         with Horizontal():
-            yield Label(self.option)
+            yield Label(f"{self.option} [gray]{self.option_dict['dest']}[/]")
             with self.prevent(Select.Changed):
                 yield Select(
                     value=self.option_dict["default"],
@@ -209,6 +230,13 @@ class SelectionOption(Vertical):
                 )
         yield Rule()
         return super().compose()
+
+    def on_mount(self):
+        self.query_one(Label).tooltip = self.option_dict["help"]
+        # Set to current Value
+        dest = self.option_dict["dest"]
+        if dest != self.option_dict["default"]:
+            self.query_one(Select).value = self.app.selected_options_dict[dest]
 
     def on_select_changed(self, event: Select.Changed):
         self.option_value = event.select.value
@@ -221,9 +249,13 @@ class SelectionOption(Vertical):
 
     def watch_was_changed(self):
         if self.was_changed:
-            self.query_one(Label).update(f"[$success]{self.option}[/]")
+            self.query_one(Label).update(
+                f"[$success]{self.option}[/] [gray]{self.option_dict['dest']}[/]"
+            )
         else:
-            self.query_one(Label).update(self.option)
+            self.query_one(Label).update(
+                f"{self.option} [gray]{self.option_dict['dest']}[/]"
+            )
 
     def watch_complete_option(self):
         if self.complete_option is None:
@@ -251,10 +283,16 @@ class ListOption(Vertical):
 
     def on_mount(self):
         self.query_one(Label).tooltip = self.option_dict["help"]
+        dest = self.option_dict["dest"]
+        dest_values = self.app.selected_options_dict[dest]
+        if dest_values != self.option_dict["default"]:
+            for value in dest_values:
+                self.add_new_value(new_value=value)
+            self.parent.parent.update_amount()
 
     def compose(self):
         with Horizontal():
-            yield Label(self.option)
+            yield Label(f"{self.option} [gray]{self.option_dict['dest']}[/]")
             yield Input(placeholder="enter a value and press enter to add to list")
         self.list_table = DataTable(cursor_type="row", show_header=False)
         self.list_table.add_column("option", key="option")
@@ -269,14 +307,20 @@ class ListOption(Vertical):
     def on_input_submitted(self, event: Input.Submitted):
         new_value = event.input.value.strip()
         if new_value:
-            self.list_table.add_row(
-                new_value,
-                ":cross_mark: click to remove",
-                key=new_value,
-            )
+            self.add_new_value(new_value=new_value)
             event.input.clear()
-            self.option_value.append(new_value)
-            self.mutate_reactive(ListOption.option_value)
+
+    def add_new_value(self, new_value):
+        if new_value in self.list_table.rows.keys():
+            return
+
+        self.list_table.add_row(
+            new_value,
+            ":cross_mark: click to remove",
+            key=new_value,
+        )
+        self.option_value.append(new_value)
+        self.mutate_reactive(ListOption.option_value)
 
     def on_data_table_row_selected(self, event: DataTable.RowSelected):
         self.option_value.remove(event.row_key)
@@ -296,9 +340,13 @@ class ListOption(Vertical):
 
     def watch_was_changed(self):
         if self.was_changed:
-            self.query_one(Label).update(f"[$success]{self.option}[/]")
+            self.query_one(Label).update(
+                f"[$success]{self.option}[/] [gray]{self.option_dict['dest']}[/]"
+            )
         else:
-            self.query_one(Label).update(self.option)
+            self.query_one(Label).update(
+                f"{self.option} [gray]{self.option_dict['dest']}[/]"
+            )
             self.query_one(Input).focus()
         self.list_table.display = self.was_changed
 
@@ -307,6 +355,7 @@ class ListOption(Vertical):
             # self.app.options.pop(self.option)
             self.was_changed = False
         else:
+            self.notify(f" {self.option} was changed")
             # self.app.options[self.option] = self.complete_option
             self.was_changed = True
         # self.app.update_options()

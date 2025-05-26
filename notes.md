@@ -1,4 +1,3 @@
-- Fix Border Numbers
 - menu dynamic plugin installation+flags (needs uv)
     - Parse valid serializable types
     - Keep Current Options

@@ -48,9 +48,23 @@ class Ayu:
             self.connected = False
             print("Websocket not connected")
         self.load_used_plugin_infos()
+        self.load_current_options()
+
+    def load_current_options(self):
+        if self.connected and self.config.getoption("--help"):
+            option_dict = {
+                option: value for option, value in self.config.option._get_kwargs()
+            }
+            asyncio.run(
+                send_event(
+                    event=Event(
+                        event_type=EventType.OPTIONS,
+                        event_payload={"option_dict": option_dict},
+                    )
+                )
+            )
 
     def load_used_plugin_infos(self):
-        plugin_dict = build_plugin_dict(conf=self.config)
         if self.connected and self.config.getoption("--help"):
             plugin_dict = build_plugin_dict(conf=self.config)
             asyncio.run(
@@ -131,6 +145,11 @@ class Ayu:
     # summary after run for each tests
     @pytest.hookimpl(trylast=True)
     def pytest_terminal_summary(self, terminalreporter: TerminalReporter):
+        # Debugging
+        # from pprint import pprint
+        # option_dict = {option:value for option, value in self.config.option._get_kwargs()}
+        # pprint(option_dict)
+
         # Summary part of individual Workers
         if self.config.pluginmanager.hasplugin("xdist") and (
             "PYTEST_XDIST_WORKER" not in os.environ
