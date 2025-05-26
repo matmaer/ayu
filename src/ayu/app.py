@@ -59,13 +59,15 @@ class AyuApp(App):
     def __init__(
         self,
         test_path: Path | None = None,
-        host: str | None = WEB_SOCKET_HOST,
-        port: int | None = WEB_SOCKET_PORT,
+        host: str | None = None,
+        port: int | None = None,
         *args,
         **kwargs,
     ):
-        self.host = host
-        self.port = port
+        import os
+
+        self.host = host or os.environ.get("AYU_HOST") or WEB_SOCKET_HOST
+        self.port = port or int(os.environ.get("AYU_PORT", 0)) or WEB_SOCKET_PORT
         self.dispatcher = None
         self.test_path = test_path
         super().__init__(*args, **kwargs)
@@ -150,7 +152,11 @@ class AyuApp(App):
         self.notify(
             f"Websocket Started at\n[orange]{self.host}:{self.port}[/]", timeout=1
         )
-        await self.dispatcher.start()
+        try:
+            await self.dispatcher.start()
+        except OSError as e:
+            print(e)
+            pass
 
     def on_key(self, event: Key):
         if event.key == "w":
