@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from ayu.app import AyuApp
 
-from textual import on
+from textual import on, work
 from textual.reactive import reactive
 from textual.screen import ModalScreen
 from textual.binding import Binding
@@ -19,7 +19,7 @@ from textual.widgets import (
 )
 from textual.containers import Horizontal, Vertical, VerticalScroll
 
-from ayu.utils import OptionType
+from ayu.utils import OptionType, run_plugin_collection
 
 
 class ModalPlugin(ModalScreen):
@@ -30,11 +30,12 @@ class ModalPlugin(ModalScreen):
         Binding("escape", "app.pop_screen", "Close", show=True),
     ]
 
-    def on_mount(self): ...
+    @work()
+    async def on_mount(self):
+        await run_plugin_collection()
 
     def compose(self):
         with VerticalScroll():
-            # yield Placeholder("Test")
             yield Footer()
             for plugin, plugin_dict in self.app.plugin_dict.items():
                 with PlugInCollapsible(title=plugin):

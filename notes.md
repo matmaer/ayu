@@ -1,6 +1,6 @@
 - menu dynamic plugin installation+flags (needs uv)
     - Parse valid serializable types
-    - Error, when resetting the the str input (empty) still shows that it changed
+    - Keep Current Options
 
 # features
 - some form of result viewer

@@ -47,12 +47,11 @@ class Ayu:
         else:
             self.connected = False
             print("Websocket not connected")
+        self.load_used_plugin_infos()
 
-    # must tryfirst, otherwise collection-only is returning
-    @pytest.hookimpl(tryfirst=True)
-    def pytest_runtestloop(self, session: Session):
+    def load_used_plugin_infos(self):
         plugin_dict = build_plugin_dict(conf=self.config)
-        if self.connected:
+        if self.connected and self.config.getoption("--help"):
             plugin_dict = build_plugin_dict(conf=self.config)
             asyncio.run(
                 send_event(
@@ -63,6 +62,9 @@ class Ayu:
                 )
             )
 
+    # must tryfirst, otherwise collection-only is returning
+    @pytest.hookimpl(tryfirst=True)
+    def pytest_runtestloop(self, session: Session):
         if self.connected and session.config.getoption("--collect-only"):
             asyncio.run(
                 send_event(

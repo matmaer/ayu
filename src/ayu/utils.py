@@ -55,6 +55,22 @@ class OptionType(StrEnum):
     UNKNOWN = "UNKNOWN"
 
 
+async def run_plugin_collection():
+    """Collect All Tests without running them"""
+    is_tool = ayu_is_run_as_tool()
+    command = build_command(
+        is_tool=is_tool,
+        pytest_options=["--help"],
+    )
+
+    process = await asyncio.create_subprocess_shell(
+        command,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT,
+    )
+    await process.wait()
+
+
 async def run_test_collection(tests_to_run: Path | None = None):
     """Collect All Tests without running them"""
     is_tool = ayu_is_run_as_tool()
@@ -308,6 +324,7 @@ def build_plugin_dict(conf: Config) -> dict:
 
         all_plugins_dict[plugin_name] = plugin_dict
 
+    # Remove Later
     pprint(all_plugins_dict, sort_dicts=False)
     return all_plugins_dict
 
