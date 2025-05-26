@@ -108,7 +108,7 @@ class Ayu:
             "PYTEST_XDIST_WORKER" not in os.environ
         ):
             pass
-            # return
+            return
 
         is_relevant = (report.when == "call") or (
             (report.when == "setup")
