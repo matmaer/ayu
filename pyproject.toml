@@ -45,6 +45,6 @@ addopts =[
 "--color=yes",
 "--ignore=tests/test_cases",
 "--verbose",
-"-n", "auto", "--dist=loadgroup"
+"-n", "auto", "--dist=worksteal"
 ]
 testpaths = ["tests"]
