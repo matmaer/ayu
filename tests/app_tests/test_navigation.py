@@ -5,17 +5,8 @@ import pytest
 
 from ayu.app import AyuApp
 
-# from ayu.event_dispatcher import check_connection
 
-
-# async def test_port_and_host(test_app: AyuApp, test_host, test_port) :
-#     async with test_app.run_test() as pilot:
-#         assert check_connection()
-#         assert pilot.app.host == test_host
-#         assert pilot.app.port == test_port
-
-
-@pytest.mark.xdist_group(name="group1")
+# @pytest.mark.xdist_group(name="group1")
 @pytest.mark.skipif(sys.platform.startswith("win"), reason="Windows is too slow")
 async def test_app_screen(testcase_path):
     os.environ["AYU_PORT"] = "1338"
@@ -32,9 +23,12 @@ async def test_app_screen(testcase_path):
 # @pytest.mark.xdist_group(name='group1')
 # class Test_App:
 #
+#     os.environ["AYU_PORT"] = "1338"
+#     os.environ["AYU_HOST"] = "localhost"
+#
 #     @pytest.fixture(autouse=True)
 #     def test_app(self, testcase_path):
-#         self.app = AyuApp(test_path=testcase_path, port=1338)
+#         self.app = AyuApp(test_path=testcase_path)
 #
 #     async def test_app_vars(self):
 #         async with self.app.run_test() as pilot:

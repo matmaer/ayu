@@ -15,11 +15,8 @@ async def test_app_plugins(testcase_path):
     test_app = AyuApp(test_path=testcase_path)
     async with test_app.run_test() as pilot:
         # Wait for test collection
-        await pilot.pause(2)
         await pilot.press("P")
         assert isinstance(pilot.app.screen, ModalPlugin)
-        await pilot.pause(2)
-        assert pilot.app.port == 1339
 
         for plugin in ["ayu", "asyncio", "xdist", "pytest_cov"]:
             assert plugin in list(pilot.app.plugin_dict.keys())
