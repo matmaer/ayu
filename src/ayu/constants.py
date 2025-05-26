@@ -13,3 +13,10 @@ OUTCOME_SYMBOLS = {
     "SKIPPED": "[on yellow]:next_track_button: [/]",
     "QUEUED": ":hourglass_not_done:",
 }
+
+# Some Plugin Options are not really parseable
+# with the given approach, e.g. --cov-reset
+# which dest is cov_source
+# Will look later into that, and disable it for now
+
+OPTIONS_TO_DISABLE = ["--cov-reset"]

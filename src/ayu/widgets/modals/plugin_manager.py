@@ -20,6 +20,7 @@ from textual.widgets import (
 from textual.containers import Horizontal, Vertical, VerticalScroll
 
 from ayu.utils import OptionType, run_plugin_collection
+from ayu.constants import OPTIONS_TO_DISABLE
 
 
 class ModalPlugin(ModalScreen):
@@ -41,6 +42,12 @@ class ModalPlugin(ModalScreen):
             for plugin, plugin_dict in self.app.plugin_option_dict.items():
                 with PlugInCollapsible(title=plugin):
                     for option_dict in plugin_dict["options"]:
+                        option_name = "".join(option_dict["names"])
+
+                        # Skip certain options for now
+                        if option_name in OPTIONS_TO_DISABLE:
+                            continue
+
                         match option_dict["type"]:
                             case OptionType.BOOL:
                                 yield BoolOption(option_dict=option_dict)
