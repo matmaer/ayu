@@ -14,7 +14,7 @@ from pytest import Item, Class, Function
 from _pytest.nodes import Node
 
 from ayu.constants import WEB_SOCKET_PORT, WEB_SOCKET_HOST
-from ayu.command_builder import build_command
+from ayu.command_builder import Plugin, build_command
 
 
 class NodeType(StrEnum):
@@ -56,11 +56,12 @@ class OptionType(StrEnum):
     UNKNOWN = "UNKNOWN"
 
 
-async def run_plugin_collection():
+async def run_plugin_collection(additional_plugins: list[Plugin] = []):
     """Collect All Tests without running them"""
     is_tool = ayu_is_run_as_tool()
     command = build_command(
         is_tool=is_tool,
+        plugins=additional_plugins,
         pytest_options=["--help"],
     )
 
@@ -380,3 +381,12 @@ def infer_option_type(option_attributes: dict) -> OptionType:
         return OptionType.UNKNOWN
 
     return option_type
+
+
+def get_pytest_current_options(conf: Config) -> dict:
+    def handle_enums(value: Enum | Any):
+        if isinstance(value, Enum):
+            return value.value
+        return value
+
+    return {option: handle_enums(value) for option, value in conf.option._get_kwargs()}

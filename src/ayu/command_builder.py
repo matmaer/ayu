@@ -5,9 +5,9 @@ from dataclasses import dataclass
 @dataclass
 class Plugin:
     name: str
-    version: str
     is_installed: bool
     options: list[str]
+    version: str = ""
 
 
 def build_command(

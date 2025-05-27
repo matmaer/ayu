@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING, Any
 import json
 
+from ayu.command_builder import Plugin
+
 if TYPE_CHECKING:
     from ayu.app import AyuApp
 
@@ -51,7 +53,7 @@ class ModalPlugin(ModalScreen):
         with Vertical():
             yield Footer()
             self.button = Button("Refresh plugin list", id="button_refresh_plugin")
-            self.button.loading = True
+            # self.button.loading = True
             yield self.button
             yield PluginInput(id="input_plugin_list")
             yield PluginAutoComplete(
@@ -120,6 +122,20 @@ class ModalPlugin(ModalScreen):
     async def fetch_plugin_list(self):
         self.available_plugin_list = await get_plugin_list()
         self.notify(f"found {len(self.available_plugin_list)} plugins", timeout=1)
+
+    @on(Input.Submitted, "#input_plugin_list")
+    @work(thread=True, description="Load new PluginInfos")
+    async def load_plugin_into_options(self, event: Input.Submitted):
+        new_plugin_name = event.input.value
+        if new_plugin_name not in self.available_plugin_list:
+            self.notify(
+                title="Error", message="plugin not in pluginlist", severity="warning"
+            )
+        else:
+            new_plugin = Plugin(name=new_plugin_name, is_installed=False, options=[])
+
+            await run_plugin_collection(additional_plugins=[new_plugin])
+            self.mutate_reactive(ModalPlugin.plugin_option_dict)
 
 
 class PluginInput(Input):

@@ -9,6 +9,7 @@ from ayu.classes.event import Event
 from ayu.utils import (
     EventType,
     TestOutcome,
+    get_pytest_current_options,
     remove_ansi_escapes,
     build_dict_tree,
     build_plugin_dict,
@@ -47,14 +48,12 @@ class Ayu:
         else:
             self.connected = False
             print("Websocket not connected")
-        self.load_used_plugin_infos()
         self.load_current_options()
+        self.load_used_plugin_infos()
 
     def load_current_options(self):
         if self.connected and self.config.getoption("--help"):
-            option_dict = {
-                option: value for option, value in self.config.option._get_kwargs()
-            }
+            option_dict = get_pytest_current_options(conf=self.config)
             asyncio.run(
                 send_event(
                     event=Event(
