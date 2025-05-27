@@ -1,4 +1,6 @@
 import os
+from pathlib import Path
+from platformdirs import user_data_dir
 
 WEB_SOCKET_HOST = os.environ.get("AYU_HOST") or "localhost"
 WEB_SOCKET_PORT = int(os.environ.get("AYU_PORT", 0)) or 1337
@@ -20,3 +22,8 @@ OUTCOME_SYMBOLS = {
 # Will look later into that, and disable it for now
 
 OPTIONS_TO_DISABLE = ["--cov-reset"]
+
+PLUGIN_JSON_PATH = Path(
+    user_data_dir(appname="ayu", appauthor=False, ensure_exists=True)
+)
+PLUGIN_JSON_FILE = PLUGIN_JSON_PATH.joinpath("pytest_plugins.json")

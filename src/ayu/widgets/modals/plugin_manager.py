@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING, Any
+import json
 
 if TYPE_CHECKING:
     from ayu.app import AyuApp
@@ -8,6 +9,7 @@ from textual.reactive import reactive
 from textual.screen import ModalScreen
 from textual.binding import Binding
 from textual.widgets import (
+    Button,
     Footer,
     Label,
     Switch,
@@ -18,13 +20,16 @@ from textual.widgets import (
     DataTable,
 )
 from textual.containers import Horizontal, Vertical, VerticalScroll
+from textual_autocomplete import AutoComplete, TargetState, DropdownItem
 
 from ayu.utils import OptionType, run_plugin_collection
-from ayu.constants import OPTIONS_TO_DISABLE
+from ayu.constants import OPTIONS_TO_DISABLE, PLUGIN_JSON_FILE, PLUGIN_JSON_PATH
+from ayu.plugin_list_fetcher import get_plugin_list
 
 
 class ModalPlugin(ModalScreen):
     app: "AyuApp"
+    available_plugin_list: reactive[dict] = reactive({})
     plugin_option_dict: reactive[dict] = reactive({}, init=False)
     selected_options_dict: reactive[dict] = reactive({}, init=False)
 
@@ -32,39 +37,109 @@ class ModalPlugin(ModalScreen):
         Binding("escape", "app.pop_screen", "Close", show=True),
     ]
 
-    @work()
+    @work(thread=True, description="Collect Plugins")
     async def on_mount(self):
         await run_plugin_collection()
 
+        # Load Plugins on first Load
+        if not PLUGIN_JSON_FILE.exists():
+            self.update_plugins()
+        else:
+            self.load_plugins()
+
     def compose(self):
-        with VerticalScroll():
+        with Vertical():
             yield Footer()
-            for plugin, plugin_dict in self.app.plugin_option_dict.items():
-                with PlugInCollapsible(title=plugin):
-                    for option_dict in plugin_dict["options"]:
-                        option_name = "".join(option_dict["names"])
+            self.button = Button("Refresh plugin list", id="button_refresh_plugin")
+            self.button.loading = True
+            yield self.button
+            yield PluginInput(id="input_plugin_list")
+            yield PluginAutoComplete(
+                target="#input_plugin_list",
+            ).data_bind(available_plugin_list=ModalPlugin.available_plugin_list)
 
-                        # Skip certain options for now
-                        if option_name in OPTIONS_TO_DISABLE:
-                            continue
+            with VerticalScroll():
+                for plugin, plugin_dict in self.app.plugin_option_dict.items():
+                    with PlugInCollapsible(title=plugin):
+                        for option_dict in plugin_dict["options"]:
+                            option_name = " ".join(option_dict["names"])
 
-                        match option_dict["type"]:
-                            case OptionType.BOOL:
-                                yield BoolOption(option_dict=option_dict)
-                            case OptionType.STR:
-                                yield StringOption(option_dict=option_dict)
-                            case OptionType.LIST:
-                                yield ListOption(option_dict=option_dict)
-                            case OptionType.SELECTION:
-                                yield SelectionOption(option_dict=option_dict)
+                            # Skip certain options for now
+                            if option_name in OPTIONS_TO_DISABLE:
+                                continue
+
+                            match option_dict["type"]:
+                                case OptionType.BOOL:
+                                    yield BoolOption(option_dict=option_dict)
+                                case OptionType.STR:
+                                    yield StringOption(option_dict=option_dict)
+                                case OptionType.LIST:
+                                    yield ListOption(option_dict=option_dict)
+                                case OptionType.SELECTION:
+                                    yield SelectionOption(option_dict=option_dict)
 
     def watch_plugin_option_dict(self):
         # self.notify(f'modal: {self.plugin_dict.keys()}', markup=False)
         # Refresh like this turns all other settings to default
         self.refresh(recompose=True)
 
-    def watch_selected_options_dict(self):
-        self.notify(f"{self.selected_options_dict}", markup=False, timeout=0.5)
+    def watch_available_plugin_list(self):
+        if self.available_plugin_list:
+            self.query_one("#input_plugin_list", Input).display = True
+            self.query_one(
+                "#input_plugin_list", Input
+            ).placeholder = (
+                f"Type to search for plugins (found {len(self.available_plugin_list)})"
+            )
+            self.query_one(Button).loading = False
+        else:
+            self.query_one("#input_plugin_list", Input).display = False
+            self.query_one(Button).loading = True
+
+    def watch_selected_options_dict(self): ...
+
+    @on(Button.Pressed, "#button_refresh_plugin")
+    def refresh_plugin_list(self, event: Button.Pressed):
+        # Create Pluginfolder and load plugin_dict
+        # if not PLUGIN_JSON_FILE.exists():
+        #     await self.update_plugins()
+        # else:
+        self.available_plugin_list = []
+        self.mutate_reactive(ModalPlugin.available_plugin_list)
+        self.update_plugins()
+
+    def update_plugins(self):
+        PLUGIN_JSON_PATH.mkdir(exist_ok=True, parents=True)
+        PLUGIN_JSON_FILE.touch(exist_ok=True)
+        self.fetch_plugin_list()
+        with open(PLUGIN_JSON_FILE, "w") as json_file:
+            json.dump(self.available_plugin_list, json_file)
+
+    def load_plugins(self):
+        with open(PLUGIN_JSON_FILE, "r") as json_file:
+            self.available_plugin_list = json.load(json_file)
+
+    # @work(thread=True)
+    @work(thread=True, description="Refresh Plugins")
+    def fetch_plugin_list(self):
+        self.available_plugin_list = get_plugin_list()
+        self.notify(f"found {len(self.available_plugin_list)} plugins", timeout=1)
+
+
+class PluginInput(Input):
+    def on_mount(self):
+        self.display = False
+
+
+class PluginAutoComplete(AutoComplete):
+    available_plugin_list: reactive[list[str]] = reactive([])
+
+    # def on_mount(self):
+    #     self.display = False
+
+    def get_candidates(self, target_state: TargetState) -> list[DropdownItem]:
+        # Filter candidates based on target_state.text
+        return [DropdownItem(main=plugin) for plugin in self.available_plugin_list]
 
 
 class PlugInCollapsible(Collapsible):
@@ -104,7 +179,7 @@ class BoolOption(Vertical):
         self.option_dict = option_dict
         super().__init__(*args, **kwargs)
         self.classes = "optionwidget"
-        self.option = "".join(option_dict["names"])
+        self.option = " ".join(option_dict["names"])
         self.option_value = option_dict["default"]
 
     def on_mount(self):
@@ -163,7 +238,7 @@ class StringOption(Vertical):
         self.option_dict = option_dict
         super().__init__(*args, **kwargs)
         self.classes = "optionwidget"
-        self.option = "".join(option_dict["names"])
+        self.option = " ".join(option_dict["names"])
         self.option_value = option_dict["default"]
 
     def on_mount(self):
@@ -221,7 +296,7 @@ class SelectionOption(Vertical):
         self.option_dict = option_dict
         super().__init__(*args, **kwargs)
         self.classes = "optionwidget"
-        self.option = "".join(option_dict["names"])
+        self.option = " ".join(option_dict["names"])
         self.option_value = option_dict["default"]
 
     def compose(self):
@@ -285,7 +360,7 @@ class ListOption(Vertical):
         self.option_dict = option_dict
         super().__init__(*args, **kwargs)
         self.classes = "optionwidget"
-        self.option = "".join(option_dict["names"])
+        self.option = " ".join(option_dict["names"])
         self.option_value = option_dict["default"]
 
     def on_mount(self):
@@ -362,7 +437,6 @@ class ListOption(Vertical):
             # self.app.options.pop(self.option)
             self.was_changed = False
         else:
-            self.notify(f" {self.option} was changed")
             # self.app.options[self.option] = self.complete_option
             self.was_changed = True
         # self.app.update_options()

@@ -203,13 +203,27 @@ ModalPlugin {
     width:60%;
     background:$background 30%;
 
-    & >VerticalScroll {
-        width:60%;
-        offset-y: 5;
-        height:auto;
-        max-height:80%;
-        background:transparent;
+    & >Vertical {
+      width:60%;
+      offset-y: 5;
+      height:auto;
+      max-height:80%;
+      background:transparent;
+
+      Button {
+
+        width: 1fr;
+        background:$success-darken-2;
+      }
+      Input {
+        width: 1fr;
+        padding:0;
+        border:$success-darken-2 vkey;
+      }
     }
+    & >VerticalScroll {
+    }
+
 
     Footer{
         layout:horizontal;
@@ -226,6 +240,7 @@ ModalPlugin {
         padding-top: 1;
         height:3;
         width:1fr;
+        border-bottom: $success-darken-2 tall;
       }
       width: 1fr;
       height:auto;

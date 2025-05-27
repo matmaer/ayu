@@ -93,7 +93,7 @@ class TestTree(Tree):
         self.update_border_title()
         self.app.refresh_bindings()
 
-    @work(thread=True)
+    @work(thread=True, description="Test Collection")
     async def action_collect_tests(self):
         self.app.test_results_ready = False
         await run_test_collection(tests_to_run=self.app.test_path)
