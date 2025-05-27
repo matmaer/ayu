@@ -43,7 +43,7 @@ class ModalPlugin(ModalScreen):
 
         # Load Plugins on first Load
         if not PLUGIN_JSON_FILE.exists():
-            self.update_plugins()
+            await self.update_plugins()
         else:
             self.load_plugins()
 
@@ -91,27 +91,24 @@ class ModalPlugin(ModalScreen):
             ).placeholder = (
                 f"Type to search for plugins (found {len(self.available_plugin_list)})"
             )
-            self.query_one(Button).loading = False
+            self.button.loading = False
         else:
             self.query_one("#input_plugin_list", Input).display = False
-            self.query_one(Button).loading = True
+            self.button.loading = True
 
     def watch_selected_options_dict(self): ...
 
     @on(Button.Pressed, "#button_refresh_plugin")
-    def refresh_plugin_list(self, event: Button.Pressed):
-        # Create Pluginfolder and load plugin_dict
-        # if not PLUGIN_JSON_FILE.exists():
-        #     await self.update_plugins()
-        # else:
-        self.available_plugin_list = []
-        self.mutate_reactive(ModalPlugin.available_plugin_list)
-        self.update_plugins()
+    @work(thread=True, description="Refresh Plugins")
+    async def refresh_plugin_list(self, event: Button.Pressed):
+        # TODO Make Loading work on refresh
+        await self.update_plugins()
 
-    def update_plugins(self):
+    async def update_plugins(self):
+        # Create Pluginfolder and load plugin_dict
         PLUGIN_JSON_PATH.mkdir(exist_ok=True, parents=True)
         PLUGIN_JSON_FILE.touch(exist_ok=True)
-        self.fetch_plugin_list()
+        await self.fetch_plugin_list()
         with open(PLUGIN_JSON_FILE, "w") as json_file:
             json.dump(self.available_plugin_list, json_file)
 
@@ -120,9 +117,8 @@ class ModalPlugin(ModalScreen):
             self.available_plugin_list = json.load(json_file)
 
     # @work(thread=True)
-    @work(thread=True, description="Refresh Plugins")
-    def fetch_plugin_list(self):
-        self.available_plugin_list = get_plugin_list()
+    async def fetch_plugin_list(self):
+        self.available_plugin_list = await get_plugin_list()
         self.notify(f"found {len(self.available_plugin_list)} plugins", timeout=1)
 
 
@@ -132,14 +128,19 @@ class PluginInput(Input):
 
 
 class PluginAutoComplete(AutoComplete):
-    available_plugin_list: reactive[list[str]] = reactive([])
-
-    # def on_mount(self):
-    #     self.display = False
+    available_plugin_list: reactive[dict[str]] = reactive({})
 
     def get_candidates(self, target_state: TargetState) -> list[DropdownItem]:
         # Filter candidates based on target_state.text
         return [DropdownItem(main=plugin) for plugin in self.available_plugin_list]
+
+    # Display Infos on completion about plugin
+    # Maybe even better on typing
+    def post_completion(self) -> None:
+        self.notify(f"{self.target.value}")
+        return super().post_completion()
+
+    # TODO Add ctrl + j/k navigation
 
 
 class PlugInCollapsible(Collapsible):

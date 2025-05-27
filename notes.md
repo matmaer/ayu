@@ -1,5 +1,6 @@
 - menu dynamic plugin installation+flags (needs uv)
     - Keep Current Options
+- Make Button Loading animation Work on refresh
 
 # features
 - some form of result viewer

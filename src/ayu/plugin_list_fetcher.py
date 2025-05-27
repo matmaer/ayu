@@ -97,7 +97,7 @@ class PluginInfo(TypedDict):
     requires: str
 
 
-def get_plugin_list() -> dict[str, int]:
+async def get_plugin_list() -> dict[str, int]:
     session = _get_session()
     name_2_serial = _pytest_plugin_projects_from_pypi(session)
     return name_2_serial
