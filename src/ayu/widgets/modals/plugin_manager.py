@@ -31,7 +31,7 @@ from ayu.plugin_list_fetcher import get_plugin_list
 
 class ModalPlugin(ModalScreen):
     app: "AyuApp"
-    available_plugin_list: reactive[dict] = reactive({})
+    available_plugin_list: list[str] = reactive([])
     plugin_option_dict: reactive[dict] = reactive({}, init=False)
     selected_options_dict: reactive[dict] = reactive({}, init=False)
 
@@ -144,7 +144,7 @@ class PluginInput(Input):
 
 
 class PluginAutoComplete(AutoComplete):
-    available_plugin_list: reactive[dict[str]] = reactive({})
+    available_plugin_list: reactive[list[str]] = reactive([])
 
     def get_candidates(self, target_state: TargetState) -> list[DropdownItem]:
         # Filter candidates based on target_state.text
