@@ -215,7 +215,7 @@ ModalPlugin {
         width: 1fr;
         background:$success-darken-2;
       }
-      Input {
+      &>Input {
         width: 1fr;
         padding:0;
         border:$success-darken-2 vkey;
