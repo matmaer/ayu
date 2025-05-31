@@ -221,7 +221,11 @@ ModalPlugin {
         border:$success-darken-2 vkey;
       }
     }
-    & >VerticalScroll {
+
+    VerticalScroll {
+      Vertical{
+        height:auto;
+      }
     }
 
 

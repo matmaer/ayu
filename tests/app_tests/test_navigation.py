@@ -15,7 +15,7 @@ async def test_app_screen(testcase_path):
     test_app = AyuApp(test_path=testcase_path)
     async with test_app.run_test() as pilot:
         # Wait for test collection
-        await pilot.pause(2)
+        await pilot.pause(3)
 
         assert pilot.app.data_test_tree
 

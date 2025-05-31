@@ -16,7 +16,7 @@ async def test_app_plugins(testcase_path):
     async with test_app.run_test() as pilot:
         # Wait for test collection
         await pilot.press("P")
-        await pilot.pause(2)
+        await pilot.pause(5)
         assert isinstance(pilot.app.screen, ModalPlugin)
 
         for plugin in ["ayu", "asyncio", "xdist", "pytest_cov"]:

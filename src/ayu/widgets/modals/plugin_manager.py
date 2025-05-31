@@ -32,8 +32,11 @@ from ayu.plugin_list_fetcher import get_plugin_list
 class ModalPlugin(ModalScreen):
     app: "AyuApp"
     available_plugin_list: list[str] = reactive([])
+    """Plugins loaded from PyPi"""
     plugin_option_dict: reactive[dict] = reactive({}, init=False)
+    """Dict of available plugins {plugin_name: plugin_dict}"""
     selected_options_dict: reactive[dict] = reactive({}, init=False)
+    """Dict of active options {optionname:value}"""
 
     BINDINGS = [
         Binding("escape", "app.pop_screen", "Close", show=True),
@@ -62,23 +65,9 @@ class ModalPlugin(ModalScreen):
 
             with VerticalScroll():
                 for plugin, plugin_dict in self.app.plugin_option_dict.items():
-                    with PlugInCollapsible(title=plugin):
-                        for option_dict in plugin_dict["options"]:
-                            option_name = " ".join(option_dict["names"])
-
-                            # Skip certain options for now
-                            if option_name in OPTIONS_TO_DISABLE:
-                                continue
-
-                            match option_dict["type"]:
-                                case OptionType.BOOL:
-                                    yield BoolOption(option_dict=option_dict)
-                                case OptionType.STR:
-                                    yield StringOption(option_dict=option_dict)
-                                case OptionType.LIST:
-                                    yield ListOption(option_dict=option_dict)
-                                case OptionType.SELECTION:
-                                    yield SelectionOption(option_dict=option_dict)
+                    yield PluginEntry(
+                        plugin_name=plugin, plugin_dict=plugin_dict, installed=True
+                    )
 
     def watch_plugin_option_dict(self):
         # self.notify(f'modal: {self.plugin_dict.keys()}', markup=False)
@@ -138,6 +127,43 @@ class ModalPlugin(ModalScreen):
             self.mutate_reactive(ModalPlugin.plugin_option_dict)
 
 
+class PluginEntry(Vertical):
+    def __init__(
+        self,
+        plugin_name: str,
+        plugin_dict: dict,
+        installed: bool = False,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.plugin_name = plugin_name
+        self.installed = installed
+        self.plugin_dict = plugin_dict
+        self.plugin = Plugin(
+            name=self.plugin_name, is_installed=self.installed, options=[]
+        )
+
+    def compose(self):
+        with PlugInCollapsible(title=self.plugin_name):
+            for option_dict in self.plugin_dict["options"]:
+                option_name = " ".join(option_dict["names"])
+
+                # Skip certain options for now
+                if option_name in OPTIONS_TO_DISABLE:
+                    continue
+
+                match option_dict["type"]:
+                    case OptionType.BOOL:
+                        yield BoolOption(option_dict=option_dict)
+                    case OptionType.STR:
+                        yield StringOption(option_dict=option_dict)
+                    case OptionType.LIST:
+                        yield ListOption(option_dict=option_dict)
+                    case OptionType.SELECTION:
+                        yield SelectionOption(option_dict=option_dict)
+
+
 class PluginInput(Input):
     def on_mount(self):
         self.display = False
@@ -153,7 +179,7 @@ class PluginAutoComplete(AutoComplete):
     # Display Infos on completion about plugin
     # Maybe even better on typing
     def post_completion(self) -> None:
-        self.notify(f"{self.target.value}")
+        self.notify(f"press enter to add plugin {self.target.value}")
         return super().post_completion()
 
     # TODO Add ctrl + j/k navigation
