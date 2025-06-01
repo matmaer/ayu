@@ -93,10 +93,9 @@ class ModalPlugin(ModalScreen):
     def watch_selected_options_dict(self): ...
 
     @on(Button.Pressed, "#button_refresh_plugin")
-    # @work(thread=True, description="Refresh Plugins")
-    async def refresh_plugin_list(self, event: Button.Pressed):
+    def refresh_plugin_list(self, event: Button.Pressed):
         # TODO Make Loading work on refresh
-        await self.update_plugins()
+        self.update_plugins()
 
     @work(thread=True, description="Refresh Plugins")
     async def update_plugins(self):
