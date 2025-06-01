@@ -4,7 +4,7 @@ from collections import defaultdict
 import os
 import shutil
 import re
-from enum import StrEnum, Enum
+from enum import Enum
 from pathlib import Path
 import subprocess
 
@@ -16,7 +16,7 @@ from _pytest.nodes import Node
 from ayu.constants import WEB_SOCKET_PORT, WEB_SOCKET_HOST
 
 
-class NodeType(StrEnum):
+class NodeType(str, Enum):
     DIR = "DIR"
     MODULE = "MODULE"
     CLASS = "CLASS"
@@ -24,7 +24,7 @@ class NodeType(StrEnum):
     COROUTINE = "COROUTINE"
 
 
-class EventType(StrEnum):
+class EventType(str, Enum):
     COLLECTION = "COLLECTION"
     SCHEDULED = "SCHEDULED"
     OUTCOME = "OUTCOME"
@@ -35,7 +35,7 @@ class EventType(StrEnum):
     DEBUG = "DEBUG"
 
 
-class TestOutcome(StrEnum):
+class TestOutcome(str, Enum):
     PASSED = "PASSED"
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
@@ -46,7 +46,7 @@ class TestOutcome(StrEnum):
     ERROR = "XPASSED"
 
 
-class OptionType(StrEnum):
+class OptionType(str, Enum):
     INT = "INT"
     LIST = "LIST"
     STR = "STR"
