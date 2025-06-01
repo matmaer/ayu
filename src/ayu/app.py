@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from textual import work, on
 from textual.app import App
@@ -65,8 +66,6 @@ class AyuApp(App):
         *args,
         **kwargs,
     ):
-        import os
-
         self.host = host or os.environ.get("AYU_HOST") or WEB_SOCKET_HOST
         self.port = port or int(os.environ.get("AYU_PORT", 0)) or WEB_SOCKET_PORT
         self.dispatcher = None
