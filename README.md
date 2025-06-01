@@ -10,7 +10,7 @@ Ayu is a TUI and pytest-plugin, which allows you to run your pytest tests in a m
 fashion in your terminal.
 
 
-![image](https://raw.githubusercontent.com/Zaloog/ayu/main/images/main_screen.png)
+![preview](https://raw.githubusercontent.com/Zaloog/ayu/main/images/main_screen.png)
 
 ## How does it work
 The application starts a local websocket server at `localhost:1337` and the plugin sends data about
