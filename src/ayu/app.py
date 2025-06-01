@@ -65,6 +65,7 @@ class AyuApp(App):
     test_results_ready: reactive[bool] = reactive(False, init=False)
     tests_running: reactive[bool] = reactive(False, init=False)
     markers: reactive[list[str]] = reactive([])
+    DEV: bool = False
 
     def __init__(
         self,
@@ -105,44 +106,49 @@ class AyuApp(App):
                 )
             with Vertical():
                 yield DetailView()
-                with Collapsible(title="Outcome", collapsed=True):
-                    yield outcome_log
-                with Collapsible(title="Report", collapsed=True):
-                    yield report_log
-                with Collapsible(title="Collection", collapsed=True):
-                    yield collection_log
-                with Collapsible(title="Debug", collapsed=False):
-                    yield debug_log
+                if self.DEV:
+                    with Collapsible(title="Outcome", collapsed=True):
+                        yield outcome_log
+                    with Collapsible(title="Report", collapsed=True):
+                        yield report_log
+                    with Collapsible(title="Collection", collapsed=True):
+                        yield collection_log
+                    with Collapsible(title="Debug", collapsed=False):
+                        yield debug_log
                 yield ButtonPanel().data_bind(tests_running=AyuApp.tests_running)
 
     async def on_load(self):
         self.start_socket()
 
     def on_mount(self):
-        self.dispatcher.register_handler(
-            event_type=EventType.OUTCOME,
-            handler=lambda msg: self.update_outcome_log(msg),
-        )
-        self.dispatcher.register_handler(
-            event_type=EventType.COVERAGE,
-            handler=lambda msg: self.update_debug_log(msg),
-        )
+        # For Developing/Debugging
+        if self.DEV:
+            self.dispatcher.register_handler(
+                event_type=EventType.OUTCOME,
+                handler=lambda msg: self.update_outcome_log(msg),
+            )
+            self.dispatcher.register_handler(
+                event_type=EventType.COVERAGE,
+                handler=lambda msg: self.update_debug_log(msg),
+            )
+            self.dispatcher.register_handler(
+                event_type=EventType.DEBUG,
+                handler=lambda msg: self.update_debug_log(msg),
+            )
+            self.dispatcher.register_handler(
+                event_type=EventType.REPORT,
+                handler=lambda msg: self.update_report_log(msg),
+            )
+
         self.dispatcher.register_handler(
             event_type=EventType.PLUGIN,
             handler=lambda msg: self.update_plugin_dict(msg),
-        )
-        self.dispatcher.register_handler(
-            event_type=EventType.DEBUG,
-            handler=lambda msg: self.update_debug_log(msg),
         )
         self.dispatcher.register_handler(
             event_type=EventType.OPTIONS,
             handler=lambda msg: self.update_selected_options(msg),
         )
 
-        self.dispatcher.register_handler(
-            event_type=EventType.REPORT, handler=lambda msg: self.update_report_log(msg)
-        )
         self.dispatcher.register_handler(
             event_type=EventType.COLLECTION,
             handler=lambda data: self.update_app_data(data),
@@ -339,6 +345,7 @@ class AyuApp(App):
 
     def action_refresh(self):
         self.collect_initial_test_tree()
+        self.test_results_ready = False
 
     def action_clear_test_results(self):
         self.test_results_ready = False
@@ -368,7 +375,6 @@ class AyuApp(App):
             return True
         return True
 
-    # Watchers
     def update_outcome_log(self, msg):
         self.query_one("#log_outcome", Log).write_line(f"{msg}")
 
@@ -382,8 +388,9 @@ class AyuApp(App):
         if self.tests_running:
             self.notify("Started Tests", timeout=2)
 
-    def watch_data_test_tree(self):
-        self.query_one("#log_collection", Log).write_line(f"{self.data_test_tree}")
+    # Watchers
+    # def watch_data_test_tree(self):
+    #     self.query_one("#log_collection", Log).write_line(f"{self.data_test_tree}")
 
 
 # https://watchfiles.helpmanual.io
