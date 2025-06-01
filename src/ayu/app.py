@@ -12,7 +12,14 @@ from textual_tags import Tag
 
 from ayu.event_dispatcher import EventDispatcher
 from ayu.constants import WEB_SOCKET_HOST, WEB_SOCKET_PORT
-from ayu.utils import EventType, NodeType, run_all_tests, remove_ansi_escapes
+from ayu.utils import (
+    EventType,
+    NodeType,
+    run_all_tests,
+    remove_ansi_escapes,
+    run_plugin_collection,
+    run_test_collection,
+)
 from ayu.widgets.navigation import TestTree
 from ayu.widgets.detail_viewer import DetailView, TestResultDetails
 from ayu.widgets.filter import TreeFilter, MarkersFilter
@@ -21,6 +28,7 @@ from ayu.widgets.modals.search import ModalSearch
 from ayu.widgets.modals.plugin_manager import ModalPlugin
 from ayu.widgets.coverage_explorer import CoverageExplorer
 from ayu.widgets.log import OutputLog, LogViewer
+from ayu.command_builder import build_command
 
 
 class AyuApp(App):
@@ -141,6 +149,9 @@ class AyuApp(App):
         )
         self.query_one(TestTree).focus()
 
+        self.collect_initial_plugins()
+        self.collect_initial_test_tree()
+
     def update_app_data(self, data):
         self.data_test_tree = data["tree"]
         self.counter_total_tests = data["meta"]["test_count"]
@@ -154,7 +165,26 @@ class AyuApp(App):
     def update_selected_options(self, data):
         # if not self.plugin_dict:
         # if not self.selected_options_dict:
-        self.selected_options_dict = data["option_dict"]
+        self.selected_options_dict.update(data["option_dict"])
+
+    # Get initial Data
+    @work(exclusive=True, group="test_init", description="Collect Tests")
+    async def collect_initial_test_tree(self):
+        command = build_command(
+            plugins=None,
+            tests_to_run=self.test_path,
+            pytest_options=["--co"],
+        )
+        await run_test_collection(command=command)
+
+    @work(exclusive=True, group="plugin_init", description="Collect Plugins")
+    async def collect_initial_plugins(self):
+        command = build_command(
+            plugins=None,
+            tests_to_run=self.test_path,
+            pytest_options=["--help"],
+        )
+        await run_plugin_collection(command=command)
 
     @work(exclusive=True, description="Websocket Runner")
     async def start_socket(self):
@@ -271,7 +301,12 @@ class AyuApp(App):
         self.tests_running = True
         self.reset_filters()
         # Log Runner Output
-        runner = await run_all_tests(tests_to_run=self.test_path)
+
+        command = build_command(
+            plugins=None,
+            tests_to_run=self.test_path,
+        )
+        runner = await run_all_tests(command=command)
         while runner:
             if runner.returncode is not None:
                 break
@@ -286,9 +321,12 @@ class AyuApp(App):
     async def action_run_marked_tests(self):
         self.tests_running = True
         self.reset_filters()
-        runner = await run_all_tests(
+
+        command = build_command(
+            plugins=None,
             tests_to_run=self.query_one(TestTree).marked_tests,
         )
+        runner = await run_all_tests(command=command)
         while runner:
             if runner.returncode is not None:
                 break
@@ -300,7 +338,7 @@ class AyuApp(App):
         self.test_results_ready = True
 
     def action_refresh(self):
-        self.query_one(TestTree).action_collect_tests()
+        self.collect_initial_test_tree()
 
     def action_clear_test_results(self):
         self.test_results_ready = False

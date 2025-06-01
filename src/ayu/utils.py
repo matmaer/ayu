@@ -14,7 +14,6 @@ from pytest import Item, Class, Function
 from _pytest.nodes import Node
 
 from ayu.constants import WEB_SOCKET_PORT, WEB_SOCKET_HOST
-from ayu.command_builder import Plugin, build_command
 
 
 class NodeType(StrEnum):
@@ -56,14 +55,8 @@ class OptionType(StrEnum):
     UNKNOWN = "UNKNOWN"
 
 
-async def run_plugin_collection(additional_plugins: list[Plugin] = []):
+async def run_plugin_collection(command: str):
     """Collect All Tests without running them"""
-    is_tool = ayu_is_run_as_tool()
-    command = build_command(
-        is_tool=is_tool,
-        plugins=additional_plugins,
-        pytest_options=["--help"],
-    )
 
     process = await asyncio.create_subprocess_shell(
         command,
@@ -73,15 +66,8 @@ async def run_plugin_collection(additional_plugins: list[Plugin] = []):
     await process.wait()
 
 
-async def run_test_collection(tests_to_run: Path | None = None):
+async def run_test_collection(command: str):
     """Collect All Tests without running them"""
-    is_tool = ayu_is_run_as_tool()
-    command = build_command(
-        is_tool=is_tool,
-        plugins=None,
-        tests_to_run=tests_to_run,
-        pytest_options=["--co"],
-    )
 
     process = await asyncio.create_subprocess_shell(
         command,
@@ -91,14 +77,8 @@ async def run_test_collection(tests_to_run: Path | None = None):
     await process.wait()
 
 
-async def run_all_tests(tests_to_run: Path | list[str] | None = None):
+async def run_all_tests(command: str):
     """Run all selected tests"""
-    is_tool = ayu_is_run_as_tool()
-    command = build_command(
-        is_tool=is_tool,
-        plugins=None,
-        tests_to_run=tests_to_run,
-    )
 
     return await asyncio.create_subprocess_shell(
         command,

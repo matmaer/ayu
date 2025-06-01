@@ -16,7 +16,6 @@ from ayu.utils import (
     NodeType,
     TestOutcome,
     get_nice_tooltip,
-    run_test_collection,
 )
 from ayu.constants import OUTCOME_SYMBOLS
 
@@ -49,7 +48,6 @@ class TestTree(Tree):
             "show_skipped": True,
             "show_passed": True,
         },
-        # init=False,
     )
 
     def on_mount(self):
@@ -61,8 +59,6 @@ class TestTree(Tree):
             event_type=EventType.OUTCOME,
             handler=lambda data: self.update_test_outcome(data),
         )
-
-        self.action_collect_tests()
 
         return super().on_mount()
 
@@ -92,11 +88,6 @@ class TestTree(Tree):
     def watch_counter_marked(self):
         self.update_border_title()
         self.app.refresh_bindings()
-
-    @work(thread=True, description="Test Collection")
-    async def action_collect_tests(self):
-        self.app.test_results_ready = False
-        await run_test_collection(tests_to_run=self.app.test_path)
 
     def build_tree(self):
         self.clear()

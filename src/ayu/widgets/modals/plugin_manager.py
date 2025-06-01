@@ -24,14 +24,14 @@ from textual.widgets import (
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual_autocomplete import AutoComplete, TargetState, DropdownItem
 
-from ayu.utils import OptionType, run_plugin_collection
+from ayu.utils import OptionType
 from ayu.constants import OPTIONS_TO_DISABLE, PLUGIN_JSON_FILE, PLUGIN_JSON_PATH
 from ayu.plugin_list_fetcher import get_plugin_list
 
 
 class ModalPlugin(ModalScreen):
     app: "AyuApp"
-    available_plugin_list: list[str] = reactive([])
+    available_plugin_list: list[str] = reactive([], init=False)
     """Plugins loaded from PyPi"""
     plugin_option_dict: reactive[dict] = reactive({}, init=False)
     """Dict of available plugins {plugin_name: plugin_dict}"""
@@ -42,22 +42,20 @@ class ModalPlugin(ModalScreen):
         Binding("escape", "app.pop_screen", "Close", show=True),
     ]
 
-    @work(thread=True, description="Collect Plugins")
+    # @work(thread=True, description="Collect Plugins")
     async def on_mount(self):
-        await run_plugin_collection()
-
         # Load Plugins on first Load
         if not PLUGIN_JSON_FILE.exists():
-            await self.update_plugins()
+            self.update_plugins()
         else:
             self.load_plugins()
 
     def compose(self):
         with Vertical():
             yield Footer()
-            self.button = Button("Refresh plugin list", id="button_refresh_plugin")
+
             # self.button.loading = True
-            yield self.button
+            yield Button("Refresh plugin list", id="button_refresh_plugin")
             yield PluginInput(id="input_plugin_list")
             yield PluginAutoComplete(
                 target="#input_plugin_list",
@@ -70,31 +68,33 @@ class ModalPlugin(ModalScreen):
                     )
 
     def watch_plugin_option_dict(self):
-        # self.notify(f'modal: {self.plugin_dict.keys()}', markup=False)
+        self.notify(f"modal: {self.plugin_option_dict.keys()}", markup=False)
         # Refresh like this turns all other settings to default
-        self.refresh(recompose=True)
+        # self.refresh(recompose=True)
 
     def watch_available_plugin_list(self):
         if self.available_plugin_list:
+            self.notify(f"{len(self.available_plugin_list)}", markup=False)
             self.query_one("#input_plugin_list", Input).display = True
             self.query_one(
                 "#input_plugin_list", Input
             ).placeholder = (
                 f"Type to search for plugins (found {len(self.available_plugin_list)})"
             )
-            self.button.loading = False
+            self.query_one("#button_refresh_plugin", Button).loading = False
         else:
             self.query_one("#input_plugin_list", Input).display = False
-            self.button.loading = True
+            self.query_one("#button_refresh_plugin", Button).loading = True
 
     def watch_selected_options_dict(self): ...
 
     @on(Button.Pressed, "#button_refresh_plugin")
-    @work(thread=True, description="Refresh Plugins")
+    # @work(thread=True, description="Refresh Plugins")
     async def refresh_plugin_list(self, event: Button.Pressed):
         # TODO Make Loading work on refresh
         await self.update_plugins()
 
+    @work(thread=True, description="Refresh Plugins")
     async def update_plugins(self):
         # Create Pluginfolder and load plugin_dict
         PLUGIN_JSON_PATH.mkdir(exist_ok=True, parents=True)
@@ -104,6 +104,7 @@ class ModalPlugin(ModalScreen):
             json.dump(self.available_plugin_list, json_file)
 
     def load_plugins(self):
+        """load preloaded pluginlist from file"""
         with open(PLUGIN_JSON_FILE, "r") as json_file:
             self.available_plugin_list = json.load(json_file)
 
@@ -113,7 +114,7 @@ class ModalPlugin(ModalScreen):
         self.notify(f"found {len(self.available_plugin_list)} plugins", timeout=1)
 
     @on(Input.Submitted, "#input_plugin_list")
-    @work(thread=True, description="Load new PluginInfos")
+    # @work(thread=True, description="Load new PluginInfos")
     async def load_plugin_into_options(self, event: Input.Submitted):
         new_plugin_name = event.input.value
         if new_plugin_name not in self.available_plugin_list:
@@ -122,9 +123,11 @@ class ModalPlugin(ModalScreen):
             )
         else:
             new_plugin = Plugin(name=new_plugin_name, is_installed=False, options=[])
+            self.notify(f"{new_plugin}", markup=False)
 
-            await run_plugin_collection(additional_plugins=[new_plugin])
-            self.mutate_reactive(ModalPlugin.plugin_option_dict)
+            # Update option dict with new plugins
+            # await run_plugin_collection(additional_plugins=[new_plugin])
+            # self.mutate_reactive(ModalPlugin.plugin_option_dict)
 
 
 class PluginEntry(Vertical):

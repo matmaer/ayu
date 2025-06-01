@@ -1,6 +1,8 @@
 from pathlib import Path
 from dataclasses import dataclass
 
+from ayu.utils import ayu_is_run_as_tool
+
 
 @dataclass
 class Plugin:
@@ -11,12 +13,14 @@ class Plugin:
 
 
 def build_command(
-    is_tool: bool,
     plugins: list[Plugin] | None = None,
     tests_to_run: Path | list[str] | None = None,
     pytest_options: list[str] | None = None,
 ) -> str:
     command_parts = []
+
+    # is ayu installed in the current project or run as tool
+    is_tool = ayu_is_run_as_tool()
 
     # install ayu on the fly, if ayu is not installed in the project itself
     substring_uv = "uv run --with ayu" if is_tool else "uv run"

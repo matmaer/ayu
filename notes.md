@@ -1,5 +1,5 @@
-- menu dynamic plugin installation+flags (needs uv)
-    - Keep Current Options
+Musthaves before release
+- command build at app level
 
 # features
 - some form of result viewer
