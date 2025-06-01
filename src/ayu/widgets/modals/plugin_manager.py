@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING, Any
 import json
 
-from ayu.command_builder import Plugin
 
 if TYPE_CHECKING:
     from ayu.app import AyuApp
@@ -24,9 +23,10 @@ from textual.widgets import (
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual_autocomplete import AutoComplete, TargetState, DropdownItem
 
-from ayu.utils import OptionType
+from ayu.utils import OptionType, run_plugin_collection
 from ayu.constants import OPTIONS_TO_DISABLE, PLUGIN_JSON_FILE, PLUGIN_JSON_PATH
 from ayu.plugin_list_fetcher import get_plugin_list
+from ayu.command_builder import Plugin, build_command
 
 
 class ModalPlugin(ModalScreen):
@@ -68,13 +68,17 @@ class ModalPlugin(ModalScreen):
                     )
 
     def watch_plugin_option_dict(self):
-        self.notify(f"modal: {self.plugin_option_dict.keys()}", markup=False)
+        # self.notify(f"modal: {self.plugin_option_dict.keys()}", markup=False)
         # Refresh like this turns all other settings to default
         # self.refresh(recompose=True)
+        for plugin, plugin_dict in self.plugin_option_dict.items():
+            if plugin not in self.loaded_plugins:
+                vs = self.query_one(VerticalScroll)
+                vs.mount(PluginEntry(plugin_name=plugin, plugin_dict=plugin_dict))
 
     def watch_available_plugin_list(self):
         if self.available_plugin_list:
-            self.notify(f"{len(self.available_plugin_list)}", markup=False)
+            # self.notify(f"{len(self.available_plugin_list)}", markup=False)
             self.query_one("#input_plugin_list", Input).display = True
             self.query_one(
                 "#input_plugin_list", Input
@@ -114,7 +118,7 @@ class ModalPlugin(ModalScreen):
         self.notify(f"found {len(self.available_plugin_list)} plugins", timeout=1)
 
     @on(Input.Submitted, "#input_plugin_list")
-    # @work(thread=True, description="Load new PluginInfos")
+    @work(thread=True, description="Load new PluginInfos")
     async def load_plugin_into_options(self, event: Input.Submitted):
         new_plugin_name = event.input.value
         if new_plugin_name not in self.available_plugin_list:
@@ -123,11 +127,17 @@ class ModalPlugin(ModalScreen):
             )
         else:
             new_plugin = Plugin(name=new_plugin_name, is_installed=False, options=[])
-            self.notify(f"{new_plugin}", markup=False)
+            # self.notify(f"{new_plugin}", markup=False)
 
             # Update option dict with new plugins
-            # await run_plugin_collection(additional_plugins=[new_plugin])
+            command = build_command(plugins=[new_plugin], pytest_options=["--help"])
+            await run_plugin_collection(command=command)
+            self.query_one(Input).clear()
             # self.mutate_reactive(ModalPlugin.plugin_option_dict)
+
+    @property
+    def loaded_plugins(self) -> list[str]:
+        return [plugin.plugin_name for plugin in self.query(PluginEntry)]
 
 
 class PluginEntry(Vertical):
@@ -194,6 +204,9 @@ class PlugInCollapsible(Collapsible):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.plugin = self.title
+
+    def on_mount(self):
+        self.update_amount()
 
     @on(Switch.Changed)
     @on(Input.Changed)
@@ -398,7 +411,7 @@ class SelectionOption(Vertical):
 class ListOption(Vertical):
     app: "AyuApp"
     option: reactive[str] = reactive("", init=False)
-    option_value: reactive[list] = reactive(list, init=False)
+    option_value: reactive[list[str]] = reactive(list, init=False)
     complete_option: reactive[str | None] = reactive(None, init=False)
     was_changed: reactive[bool] = reactive(False, init=False)
 
@@ -416,7 +429,6 @@ class ListOption(Vertical):
         if dest_values != self.option_dict["default"]:
             for value in dest_values:
                 self.add_new_value(new_value=value)
-            self.parent.parent.update_amount()
 
     def compose(self):
         with Horizontal():
@@ -460,6 +472,7 @@ class ListOption(Vertical):
     def watch_option_value(self):
         if self.option_value == self.option_dict["default"]:
             self.complete_option = None
+            # self.parent.parent.update_amount()
         else:
             if len(self.option_value) == 1:
                 self.complete_option = f"{self.option}={self.option_value[0]}"
