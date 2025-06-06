@@ -8,6 +8,7 @@ from textual import on
 from textual.reactive import reactive
 from textual.widgets import TextArea
 from textual_slidecontainer import SlideContainer
+from rich.text import Text
 
 from ayu.utils import EventType, get_preview_test
 from ayu.widgets.helper_widgets import ToggleRule
@@ -85,7 +86,20 @@ class TestResultDetails(TextArea):
 
     def watch_selected_node_id(self):
         if self.report_data.get(self.selected_node_id):
-            self.text = self.report_data[self.selected_node_id]["longreprtext"]
+            text = self.report_data[self.selected_node_id]["longreprtext"]
+            self.text = self.make_error_part_red(text)
+
+            duration = self.report_data[self.selected_node_id]["duration"]
+            self.parent.border_subtitle = Text.from_markup(
+                f":hourglass_not_done: {duration:.5f}s"
+            )
+
             self.scroll_end(animate=False)
         else:
             self.text = ""
+            self.parent.border_subtitle = ""
+
+    def make_error_part_red(self, text: str) -> str:
+        """highlight lines which caused the error"""
+        # TODO
+        return text

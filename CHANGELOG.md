@@ -1,3 +1,6 @@
+# 0.3.0
+- Add Test Run duration to detailview border
+
 # 0.2.0
 - Fix Coverage Explorer Scroll
 - Fix Marked Test Execution with spaces in parametrize args
