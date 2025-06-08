@@ -1,4 +1,9 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ayu.app import AyuApp
+
 
 from textual.reactive import reactive
 from textual.widgets import Rule, Button
@@ -60,12 +65,21 @@ class ToggleRule(Rule):
 
 
 class ButtonPanel(Vertical):
+    app: "AyuApp"
     tests_running: reactive[bool] = reactive(False, init=False)
+    file_watcher: reactive[bool] = reactive(False, init=False)
+
+    def on_mount(self):
+        # Add Tooltips
+        self.query_one(
+            "#button_watcher", Button
+        ).tooltip = f"If [$success]On[/], tracks file changes under [$warning]{self.app.test_path}[/] and reruns tests in changed files automatically"
 
     def compose(self):
         yield Button(label="Plugins", id="button_plugins", variant="warning")
         yield Button(label="Show Log", id="button_log", variant="primary")
         yield Button(label="Show Coverage", id="button_coverage", variant="warning")
+        yield Button(label="File Watcher: Off", id="button_watcher", variant="warning")
         with Horizontal():
             yield Button(label="Run tests", id="button_run", variant="success")
             yield Button(label="Cancel Run", id="button_cancel", variant="error")
@@ -73,3 +87,11 @@ class ButtonPanel(Vertical):
     def watch_tests_running(self):
         self.query_one("#button_run", Button).disabled = self.tests_running
         self.query_one("#button_cancel", Button).disabled = not self.tests_running
+
+    def watch_file_watcher(self):
+        if self.file_watcher:
+            self.query_one("#button_watcher", Button).variant = "success"
+            self.query_one("#button_watcher", Button).label = "File Watcher: On"
+        else:
+            self.query_one("#button_watcher", Button).variant = "error"
+            self.query_one("#button_watcher", Button).label = "File Watcher: Off"

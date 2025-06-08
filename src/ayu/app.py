@@ -9,6 +9,7 @@ from textual.events import Key
 from textual.widgets import Log, Header, Footer, Collapsible, Tree, Button
 from textual.containers import Horizontal, Vertical
 from textual_tags import Tag
+from watchfiles import awatch, PythonFilter
 
 from ayu.event_dispatcher import EventDispatcher
 from ayu.constants import WEB_SOCKET_HOST, WEB_SOCKET_PORT
@@ -64,8 +65,10 @@ class AyuApp(App):
     )
     test_results_ready: reactive[bool] = reactive(False, init=False)
     tests_running: reactive[bool] = reactive(False, init=False)
-    markers: reactive[list[str]] = reactive([])
+    file_watcher: reactive[bool] = reactive(False, init=False)
+    markers: reactive[list[str]] = reactive(list)
     DEV: bool = False
+    """Show The Log Collapsibles"""
 
     def __init__(
         self,
@@ -115,31 +118,33 @@ class AyuApp(App):
                         yield collection_log
                     with Collapsible(title="Debug", collapsed=False):
                         yield debug_log
-                yield ButtonPanel().data_bind(tests_running=AyuApp.tests_running)
+                yield ButtonPanel().data_bind(
+                    tests_running=AyuApp.tests_running, file_watcher=AyuApp.file_watcher
+                )
 
     async def on_load(self):
         self.start_socket()
 
         # Watcher
-        self.watcher()
+        # self.run_tests_on_change()
 
     @work(
         exclusive=True,
         description="Watches files for changes to automatically rerun the changed file",
         group="Watcher",
     )
-    async def watcher(self):
-        from watchfiles import awatch, PythonFilter
-
-        async for changes in awatch(self.test_path, watch_filter=PythonFilter()):
+    async def start_tests_on_change_worker(self):
+        path_to_watch = self.test_path or Path("tests")
+        async for changes in awatch(path_to_watch, watch_filter=PythonFilter()):
             if not self.tests_running:
-                self.notify("Files changed")
+                self.notify("Files have changed", severity="information")
                 for change in changes:
                     change_mode, path = change
-                    self.notify(f"{change_mode}: {path}", timeout=5)
                     self.action_run_tests(tests_to_run=Path(path))
             else:
-                self.notify("Tests running already")
+                self.notify(
+                    title="Warning", message="Tests running already", severity="warning"
+                )
 
     def on_mount(self):
         # For Developing/Debugging
@@ -288,6 +293,10 @@ class AyuApp(App):
         self.query_one(ToggleRule).test_result = event.node.data["status"]
         self.query_one(TestResultDetails).selected_node_id = event.node.data["nodeid"]
 
+    @on(Button.Pressed, "#button_watcher")
+    def toggle_file_watcher(self, event: Button.Pressed):
+        self.file_watcher = not self.file_watcher
+
     @on(Button.Pressed, "#button_plugins")
     def open_plugin_screen(self, event: Button.Pressed):
         self.action_open_plugin()
@@ -419,6 +428,12 @@ class AyuApp(App):
 
     def update_debug_log(self, msg):
         self.query_one("#log_debug", Log).write_line(f"{msg}")
+
+    def watch_file_watcher(self):
+        if self.file_watcher:
+            self.start_tests_on_change_worker()
+        else:
+            self.workers.cancel_group(node=self, group="Watcher")
 
     def watch_tests_running(self):
         if self.tests_running:
