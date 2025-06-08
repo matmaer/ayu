@@ -7,7 +7,7 @@ Musthaves before release
     - general overview
 - command preview + builder
 - tox-like multi python-version testing
-- Improve Filtering/numbers
+- Improve Filtering/numbers?
 - Make buttons functional to stop test runs
 
 # generals
