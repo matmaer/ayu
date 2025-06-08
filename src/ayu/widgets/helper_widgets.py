@@ -71,9 +71,16 @@ class ButtonPanel(Vertical):
 
     def on_mount(self):
         # Add Tooltips
+        path_to_watch = self.app.test_path or "tests"
         self.query_one(
             "#button_watcher", Button
-        ).tooltip = f"If [$success]On[/], tracks file changes under [$warning]{self.app.test_path}[/] and reruns tests in changed files automatically"
+        ).tooltip = f"If [$success]On[/], tracks file changes under 📁[$warning]{path_to_watch}[/] and reruns tests in changed files automatically"
+        self.query_one(
+            "#button_plugins", Button
+        ).tooltip = "Explore the current plugin options [$warning](changes have no influence on the test execution yet)[/]"
+        self.query_one(
+            "#button_coverage", Button
+        ).tooltip = "Show the current test coverage"
 
     def compose(self):
         yield Button(label="Plugins", id="button_plugins", variant="warning")

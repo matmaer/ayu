@@ -1,3 +1,7 @@
+# 0.4.1
+- Fix Tooltip for Filewatcher-Button, to show correct path if `self.test_path` is `None`
+i.e. `ayu` is run without any arguments
+
 # 0.4.0
 - Add File Watcher to rerun tests in changed file automatically
 
