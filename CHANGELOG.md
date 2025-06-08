@@ -1,3 +1,6 @@
+# 0.4.0
+- Add File Watcher to rerun tests in changed file automatically
+
 # 0.3.0
 - Add Test Run duration to detailview border
 
