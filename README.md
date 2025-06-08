@@ -31,10 +31,19 @@ fashion in your terminal.
 ![log](https://raw.githubusercontent.com/Zaloog/ayu/main/images/log_screen.png)
 - Shows the console output, that would normally be written into the terminal
 
+## File Watcher
+If toggled, ayu utilizes [watchfiles], to detect changes in the directory you declared when executing ayu (default: `tests`).
+After a change is detected, a notification is shown and all tests under the specific file will be run automatically.
+
 ## How does it work
 The application starts a local websocket server at `localhost:1337` and the plugin sends data about
 collected tests/plugins/results to the app.
 The host and port can be customized with the following environment variables
+
+It utilizes [uv] in the background to run [pytest] commands.
+Concrete it runs `uv run --with ayu pytest [PYTEST-OPTION]` to utilize your python environment and installs the
+plugin temporary on the fly to send the data to the TUI, without changing your local environment
+or adding dependencies to your project.
 
 ```bash
 AYU_HOST=localhost
@@ -43,17 +52,31 @@ AYU_PORT=1337
 
 # Requirements & Usage
 ## Requirements
-ayu needs your project to be uv-managed.
-It utilizes [uv] in the background to run [pytest] commands.
-Concrete it runs `uv run --with ayu pytest [PYTEST-OPTION]` to utilize your python environment and installs the
-plugin temporary on the fly to send the data to the TUI, without changing your local environment
-or adding dependencies to your project.
+ayu needs your project to be uv-managed and you need your tests be discoverable by pytest.
 
 ## Usage
+To discover all your tests under `tests`
 
 ```bash
 uvx ayu
 ```
 
+To discover all your tests under a specific directory
+```bash
+uvx ayu <PATH/TO/DIR>
+```
+
+# Feedback and Issues
+Feel free to reach out and share your feedback, or open an [Issue],
+if something doesnt work as expected.
+Also check the [Changelog] for new updates.
+
+
+<!-- Repo Links -->
+[Changelog]: https://github.com/Zaloog/ayu/blob/main/CHANGELOG.md
+[Issue]: https://github.com/Zaloog/ayu/issues
+
+<!-- Python Package Links -->
 [uv]: https://docs.astral.sh/uv
 [pytest]: https://docs.pytest.org/en/stable/
+[watchfiles]: https://watchfiles.helpmanual.io
