@@ -83,7 +83,7 @@ class AyuApp(App):
 
     def compose(self):
         yield Header()
-        yield Footer()
+        yield Footer(show_command_palette=False)
         outcome_log = Log(id="log_outcome")
         outcome_log.border_title = "Outcome"
         report_log = Log(id="log_report")
@@ -119,6 +119,27 @@ class AyuApp(App):
 
     async def on_load(self):
         self.start_socket()
+
+        # Watcher
+        self.watcher()
+
+    @work(
+        exclusive=True,
+        description="Watches files for changes to automatically rerun the changed file",
+        group="Watcher",
+    )
+    async def watcher(self):
+        from watchfiles import awatch, PythonFilter
+
+        async for changes in awatch(self.test_path, watch_filter=PythonFilter()):
+            if not self.tests_running:
+                self.notify("Files changed")
+                for change in changes:
+                    change_mode, path = change
+                    self.notify(f"{change_mode}: {path}", timeout=5)
+                    self.action_run_tests(tests_to_run=Path(path))
+            else:
+                self.notify("Tests running already")
 
     def on_mount(self):
         # For Developing/Debugging
@@ -174,7 +195,11 @@ class AyuApp(App):
         self.selected_options_dict.update(data["option_dict"])
 
     # Get initial Data
-    @work(exclusive=True, group="test_init", description="Collect Tests")
+    @work(
+        exclusive=True,
+        group="Collector",
+        description="Executes `pytest --co` and collects tests",
+    )
     async def collect_initial_test_tree(self):
         command = build_command(
             plugins=None,
@@ -183,7 +208,11 @@ class AyuApp(App):
         )
         await run_test_collection(command=command)
 
-    @work(exclusive=True, group="plugin_init", description="Collect Plugins")
+    @work(
+        exclusive=True,
+        group="Plugin",
+        description="Executes `pytest --help` and collect Plugin Infos",
+    )
     async def collect_initial_plugins(self):
         command = build_command(
             plugins=None,
@@ -192,7 +221,7 @@ class AyuApp(App):
         )
         await run_plugin_collection(command=command)
 
-    @work(exclusive=True, description="Websocket Runner")
+    @work(exclusive=True, description="Keeps the websocket alive", group="Websocket")
     async def start_socket(self):
         self.dispatcher = EventDispatcher(host=self.host, port=self.port)
         self.notify(
@@ -201,12 +230,13 @@ class AyuApp(App):
         try:
             await self.dispatcher.start()
         except OSError as e:
-            print(e)
+            self.log.error(e)
             pass
 
     def on_key(self, event: Key):
         if event.key == "w":
-            self.notify(f"{self.workers}")
+            for worker in self.workers:
+                self.notify(f"{worker}", markup=False)
 
     @on(Button.Pressed, ".filter-button")
     def update_test_tree_filter(self, event: Button.Pressed):
@@ -302,15 +332,21 @@ class AyuApp(App):
         else:
             self.query_one(TestTree).focus()
 
-    @work(thread=True, group="runner", description="run all tests")
-    async def action_run_tests(self):
+    @work(
+        thread=True,
+        group="Test Runner",
+        description="runs all tests under a specific path",
+    )
+    async def action_run_tests(self, tests_to_run: Path | None = None):
         self.tests_running = True
         self.reset_filters()
         # Log Runner Output
+        if not tests_to_run:
+            tests_to_run = self.test_path
 
         command = build_command(
             plugins=None,
-            tests_to_run=self.test_path,
+            tests_to_run=tests_to_run,
         )
         runner = await run_all_tests(command=command)
         while runner:
@@ -323,7 +359,7 @@ class AyuApp(App):
         self.tests_running = False
         self.test_results_ready = True
 
-    @work(thread=True, group="runner", description="run marked tests")
+    @work(thread=True, group="Test Runner", description="runs marked tests only")
     async def action_run_marked_tests(self):
         self.tests_running = True
         self.reset_filters()
