@@ -194,6 +194,7 @@ class Ayu:
                 report_dict[report.nodeid] = {
                     "nodeid": report.nodeid,
                     # Not in warning report
+                    # TODO Handle warning reports
                     "when": report.when,
                     "caplog": report.caplog,
                     "longreprtext": remove_ansi_escapes(report.longreprtext),
